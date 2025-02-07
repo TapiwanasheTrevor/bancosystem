@@ -1,0 +1,133 @@
+{
+  "form": {
+    "sections": [
+      {
+        "title": "Business Information",
+        "fields": [
+          { "label": "Registered Name", "type": "text", "required": true },
+          { "label": "Trading Name", "type": "text", "required": false },
+          { "label": "Certificate of Incorporation Number", "type": "text", "required": true },
+          { "label": "Business Type", "type": "select", "options": ["Company", "PBC", "Informal Body"], "required": true },
+          { "label": "Business Address", "type": "textarea", "required": true },
+          { "label": "Contact Phone Number", "type": "text", "required": true },
+          { "label": "Email Address", "type": "email", "required": true },
+          { "label": "Period at Current Business Location (Years)", "type": "number", "required": true },
+          { "label": "Number of Employees (Full-time & Owner)", "type": "number", "required": true },
+          { "label": "Number of Employees (Part-time)", "type": "number", "required": true },
+          { "label": "Number of Employees (Non-paid Family)", "type": "number", "required": true },
+          { "label": "Main Products/Services", "type": "textarea", "required": true },
+          { "label": "Main Problems Faced by Business", "type": "textarea", "required": true },
+          { "label": "Sources of Capital", "type": "checkbox_list", "options": ["Own Savings", "Family Gift", "Loan", "Other"], "required": true },
+          { "label": "Who are your main customers?", "type": "checkbox_list", "options": ["Individuals", "Other Businesses", "Other"], "required": true },
+          { "label": "Where are your customers from?", "type": "checkbox_list", "options": ["Neighborhood", "This Town", "Other"], "required": true },
+          { "label": "Estimated Annual Sales (USD)", "type": "number", "required": true },
+          { "label": "Net Profit (USD)", "type": "number", "required": true },
+          { "label": "Total Liabilities (USD)", "type": "number", "required": true },
+          { "label": "Net Cash Flow (USD)", "type": "number", "required": true },
+          { "label": "Incorporation Date", "type": "date", "required": true },
+          { "label": "BP Number", "type": "text", "required": false }
+        ]
+      },
+      {
+        "title": "Loan Information",
+        "fields": [
+          { "label": "Loan Amount (USD)", "type": "number", "required": true },
+          { "label": "Repayment Period (Months)", "type": "number", "required": true },
+          { "label": "Purpose of Loan", "type": "textarea", "required": true }
+        ]
+      },
+      {
+        "title": "References",
+        "fields": [
+          { "label": "Reference 1 Name", "type": "text", "required": true },
+          { "label": "Reference 1 Phone Number", "type": "text", "required": true },
+          { "label": "Reference 2 Name", "type": "text", "required": true },
+          { "label": "Reference 2 Phone Number", "type": "text", "required": true },
+          { "label": "Reference 3 Name", "type": "text", "required": false },
+          { "label": "Reference 3 Phone Number", "type": "text", "required": false }
+        ]
+      },
+      {
+        "title": "Security (Assets Pledged)",
+        "fields": [
+          { "label": "Asset 1 Description", "type": "text", "required": true },
+          { "label": "Asset 1 Serial/Reg Number", "type": "text", "required": true },
+          { "label": "Asset 1 Estimated Value (USD)", "type": "number", "required": true },
+          { "label": "Asset 2 Description", "type": "text", "required": false },
+          { "label": "Asset 2 Serial/Reg Number", "type": "text", "required": false },
+          { "label": "Asset 2 Estimated Value (USD)", "type": "number", "required": false },
+          { "label": "Asset 3 Description", "type": "text", "required": false },
+          { "label": "Asset 3 Serial/Reg Number", "type": "text", "required": false },
+          { "label": "Asset 3 Estimated Value (USD)", "type": "number", "required": false }
+        ]
+      },
+      {
+        "title": "Directors' Personal Details",
+        "fields": [
+          { "label": "First Name", "type": "text", "required": true },
+          { "label": "Surname", "type": "text", "required": true },
+          { "label": "Title", "type": "select", "options": ["Mr", "Mrs", "Dr", "Prof"], "required": true },
+          { "label": "Gender", "type": "radio", "options": ["Male", "Female"], "required": true },
+          { "label": "Date of Birth", "type": "date", "required": true },
+          { "label": "Nationality", "type": "text", "required": true },
+          { "label": "ID Number", "type": "text", "required": true },
+          { "label": "Marital Status", "type": "select", "options": ["Single", "Married", "Divorced", "Widowed"], "required": true },
+          { "label": "Cell Number", "type": "text", "required": true },
+          { "label": "Email Address", "type": "email", "required": true }
+        ]
+      },
+      {
+        "title": "Banking/Mobile Account Details",
+        "fields": [
+          { "label": "Bank", "type": "text", "required": true },
+          { "label": "Branch", "type": "text", "required": true },
+          { "label": "Account Number", "type": "text", "required": true }
+        ]
+      },
+      {
+        "title": "Declaration",
+        "fields": [
+          { "label": "Full Name", "type": "text", "required": true },
+          { "label": "Signature", "type": "signature", "required": true },
+          { "label": "Date", "type": "date", "required": true }
+        ]
+      },
+      {
+        "title": "For Official Use Only",
+        "fields": [
+          { "label": "Received & Checked By", "type": "text", "required": true },
+          { "label": "Signature", "type": "signature", "required": true },
+          { "label": "Date", "type": "date", "required": true },
+          { "label": "Approved By", "type": "text", "required": true },
+          { "label": "Signature", "type": "signature", "required": true },
+          { "label": "Date", "type": "date", "required": true }
+        ]
+      },
+      {
+        "title": "KYC Checklist",
+        "fields": [
+          {
+            "label": "Required Documents",
+            "type": "checkbox_list",
+            "options": [
+              "Copy of ID, License, Valid Passport",
+              "Financial Statement",
+              "Articles of Association/PBC",
+              "Certificate of Incorporation",
+              "CR11",
+              "Stamped 3 Months’ Bank Statement",
+              "Ecocash Statements (if applicable)",
+              "CR6",
+              "Group Constitution",
+              "Resolution to Borrow",
+              "CR5",
+              "Proof of Residence/Confirmation Letter",
+              "Company Documents: MOA"
+            ],
+            "required": true
+          }
+        ]
+      }
+    ]
+  }
+}
