@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from 'react';
 
-const CreditApplicationFlow = () => {
+type Product = {
+    id: number;
+    name: string;
+    image_url: string;
+};
+
+type Category = {
+    id: number;
+    name: string;
+    products: Product[];
+};
+
+type ProductsResponse = {
+    categories: Category[];
+};
+
+const CreditApplicationFlow = ({ onComplete }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         language: '',
@@ -17,50 +33,73 @@ const CreditApplicationFlow = () => {
         }
     });
 
-    const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    // Simulated products fetch
     useEffect(() => {
-        // In real implementation, replace with actual API endpoint
         const fetchProducts = async () => {
-            const response = {
-                categories: [
-                    {
-                        id: 1,
-                        name: "Micro Biz Starter Packs",
-                        products: [
-                            {
-                                id: 1,
-                                name: "Ngwavha Pack",
-                                image_url: "/api/placeholder/200/200"
-                            },
-                            {
-                                id: 2,
-                                name: "Hustle Pack",
-                                image_url: "/api/placeholder/200/200"
-                            },
-                            {
-                                id: 3,
-                                name: "Spana Pack",
-                                image_url: "/api/placeholder/200/200"
-                            }
-                        ]
-                    }
-                ]
-            };
-            setProducts(response.categories);
+            setLoading(true);
+            setError(null);
+            try {
+                const apiUrl = import.meta.env.DEV
+                    ? '/api/products'
+                    : `${import.meta.env.VITE_API_BASE_URL}/products`;
+
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch products');
+                }
+
+                const data: ProductsResponse = await response.json();
+                setCategories(data.categories);
+            } catch (err) {
+                console.error('Error fetching products:', err);
+                setError('Failed to load products. Please try again later.');
+
+                if (import.meta.env.DEV) {
+                    setCategories([
+                        {
+                            id: 1,
+                            name: "Micro Biz Starter Packs",
+                            products: [
+                                {
+                                    id: 1,
+                                    name: "Ngwavha Pack",
+                                    image_url: "https://images.unsplash.com/photo-1512314889357-e157c22f938d?w=500&auto=format"
+                                },
+                                {
+                                    id: 2,
+                                    name: "Hustle Pack",
+                                    image_url: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=500&auto=format"
+                                },
+                                {
+                                    id: 3,
+                                    name: "Spana Pack",
+                                    image_url: "https://images.unsplash.com/photo-1493612276216-ee3925520721?w=500&auto=format"
+                                }
+                            ]
+                        }
+                    ]);
+                }
+            } finally {
+                setLoading(false);
+            }
         };
-        fetchProducts();
-    }, []);
+
+        if (step === 4) {
+            fetchProducts();
+        }
+    }, [step]);
 
     // Step 1: Language Selection
     const renderLanguageSelection = () => (
         <div className="space-y-6">
             <div className="text-center space-y-4">
                 <img
-                    src="/api/placeholder/80/80"
+                    src="https://images.unsplash.com/photo-1531379410502-63bfe8cdaf6f?w=500&auto=format"
                     alt="Adala Bot"
-                    className="mx-auto rounded-full"
+                    className="mx-auto rounded-full w-20 h-20 object-cover"
                 />
                 <h2 className="text-xl font-semibold">Hi there! I am Adala, a smart assistant chatbot.</h2>
                 <p className="text-gray-600">Consider me your uncle from a different mother. My mission is to ensure you get the best online service experience possible for your next credit consideration.</p>
@@ -117,7 +156,7 @@ const CreditApplicationFlow = () => {
         </div>
     );
 
-    // Step 3: Employer Selection (for Micro Biz)
+    // Step 3: Employer Selection
     const renderEmployerSelection = () => (
         <div className="space-y-6">
             <div className="text-center">
@@ -153,27 +192,69 @@ const CreditApplicationFlow = () => {
 
     // Step 4: Product Selection
     const renderProductSelection = () => (
-        <div className="space-y-6">
-            <div className="text-center">
-                <h2 className="text-xl font-semibold">Select Your MicroBiz Start Pack</h2>
-                <p className="text-gray-600">Choose the package that best suits your needs</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {products[0]?.products.map((product) => (
+        <div className="space-y-8">
+            {loading ? (
+                <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading available products...</p>
+                </div>
+            ) : error ? (
+                <div className="text-center py-12">
+                    <p className="text-red-500">{error}</p>
                     <button
-                        key={product.id}
-                        onClick={() => {
-                            setFormData(prev => ({...prev, selectedProduct: product}));
-                            setStep(5);
-                        }}
-                        className="p-4 border rounded-lg hover:border-blue-500 transition-colors"
+                        onClick={() => setStep(4)}
+                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                     >
-                        <img src={product.image_url} alt={product.name} className="w-full h-48 object-cover rounded mb-4" />
-                        <div className="font-semibold text-center">{product.name}</div>
+                        Retry
                     </button>
-                ))}
-            </div>
+                </div>
+            ) : (
+                <>
+                    {categories.map((category) => (
+                        <div key={category.id} className="space-y-6">
+                            <div className="text-center">
+                                <h2 className="text-2xl font-semibold">{category.name}</h2>
+                                <p className="text-gray-600 mt-2">Choose the package that best suits your needs</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {category.products.map((product) => (
+                                    <button
+                                        key={product.id}
+                                        onClick={() => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                selectedProduct: {
+                                                    ...product,
+                                                    category: category.name
+                                                }
+                                            }));
+                                            setStep(5);
+                                        }}
+                                        className="group relative bg-white p-4 border rounded-lg hover:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md"
+                                    >
+                                        <div className="aspect-w-16 aspect-h-9 mb-4">
+                                            <img
+                                                src={product.image_url}
+                                                alt={product.name}
+                                                className="w-full h-48 object-cover rounded-md group-hover:opacity-90 transition-opacity"
+                                            />
+                                        </div>
+                                        <div className="text-center">
+                                            <h3 className="font-semibold text-lg group-hover:text-blue-600 transition-colors">
+                                                {product.name}
+                                            </h3>
+                                            <p className="text-sm text-gray-500 mt-1">
+                                                {category.name}
+                                            </p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </>
+            )}
         </div>
     );
 
@@ -252,7 +333,7 @@ const CreditApplicationFlow = () => {
             </p>
             {step !== 'terminate' && (
                 <button
-                    onClick={() => console.log('Form Data:', formData)}
+                    onClick={() => onComplete(formData)}
                     className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
                     Continue to Application

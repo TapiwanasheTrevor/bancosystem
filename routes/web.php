@@ -1,17 +1,35 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/products', function () {
+    return view('products');
+})->middleware(['auth', 'verified'])->name('products');
+
+Route::get('/applications', function () {
+    return view('applications');
+})->middleware(['auth', 'verified'])->name('applications');
+
+Route::get('/forms', function () {
+    return view('forms');
+})->middleware(['auth', 'verified'])->name('forms');
+
+Route::get('/agents', function () {
+    return view('agents');
+})->middleware(['auth', 'verified'])->name('agents');
+
+Route::get('/settings', function () {
+    return view('settings');
+})->middleware(['auth', 'verified'])->name('settings');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
