@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Form extends Model
 {
-    protected $fillable = ['name', 'type', 'schema'];
-    protected $casts = ['schema' => 'array'];
-
+    protected $fillable = [
+        'form_values',
+        'questionnaire_data',
+    ];
 }

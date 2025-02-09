@@ -40,6 +40,8 @@
         "clsx": "^2.1.1",
         "lucide-react": "^0.475.0",
         "npx": "^10.2.2",
+        "react-lottie": "^1.2.10",
+        "react-router-dom": "^7.1.5",
         "shadcn-ui": "^0.9.4",
         "tailwind-merge": "^3.0.1",
         "tailwindcss-animate": "^1.0.7"

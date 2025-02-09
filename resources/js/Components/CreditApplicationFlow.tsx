@@ -239,13 +239,13 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
 
     const renderLanguageSelection = () => (
         <StepContainer
-            title="Welcome to ZB Credit Application"
-            subtitle="I am Adala, your personal credit assistant"
+            title="Hi there! I am Adala, a smart assistant chatbot"
+            subtitle="Consider me your digital uncle. My mission is to ensure you get the best online service experience possible for your next credit consideration because we are family."
         >
             <div className="p-6 md:p-8 space-y-8">
                 <div className="flex justify-center">
                     <img
-                        src="https://images.unsplash.com/photo-1531379410502-63bfe8cdaf6f?w=500&auto=format"
+                        src="/adala.jpg"
                         alt="Adala Bot"
                         className="w-24 h-24 rounded-full object-cover ring-4 ring-emerald-500/20"
                     />

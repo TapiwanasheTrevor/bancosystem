@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {ChevronLeft, ChevronRight} from 'lucide-react';
+import Lottie from 'react-lottie';
+import completeAnimation from './complete.json';
 
 interface DynamicFormWizardProps {
     formId: string;
@@ -23,6 +25,7 @@ interface FormDataType {
     title: string;
     description: string;
     sections: Section[];
+    formType: string;  // Add formType to the FormDataType interface
 }
 
 const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
@@ -31,9 +34,14 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
     const [formValues, setFormValues] = useState<Record<string, any>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
+    const [agentId, setAgentId] = useState<string | null>(null);
 
     useEffect(() => {
+        // Fetch form data
         fetchFormData();
+
+        // Prepopulate form values if initialData is provided
         if (initialData) {
             const prepopulatedData = {
                 'personal-details': {
@@ -52,6 +60,13 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
             };
             setFormValues(prepopulatedData);
         }
+
+        // Get agent ID from query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const referral = urlParams.get('referral');
+        if (referral) {
+            setAgentId(referral);
+        }
     }, [formId, initialData]);
 
     const fetchFormData = async () => {
@@ -61,7 +76,7 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
             const response = await fetch(`/api/forms/${formId}`);
             if (!response.ok) throw new Error('Failed to fetch form data');
             const data = await response.json();
-            setFormData(data.form);
+            setFormData({...data.form, formType: data.formType});
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -245,15 +260,26 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
                 body: JSON.stringify({
                     formId,
                     formValues,
-                    questionnaireData: initialData
+                    questionnaireData: initialData,
+                    agent_id: agentId,
+                    formType: formData?.formType, // Include the form type
                 }),
             });
 
             if (!response.ok) throw new Error('Failed to submit form');
-            console.log('Form submitted successfully');
+            setSuccess(true);
         } catch (err) {
             console.error('Error submitting form:', err);
             setError('Failed to submit form. Please try again.');
+        }
+    };
+
+    const defaultOptions = {
+        loop: true,
+        autoplay: true,
+        animationData: completeAnimation,
+        rendererSettings: {
+            preserveAspectRatio: 'xMidYMid slice'
         }
     };
 
@@ -273,6 +299,15 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
                 <div className="w-full max-w-2xl bg-red-50 p-4 rounded-xl border border-red-200 text-red-700">
                     Error: {error}
                 </div>
+            </div>
+        );
+    }
+
+    if (success) {
+        return (
+            <div
+                className="fixed inset-0 bg-gradient-to-b from-emerald-50 to-orange-50 flex items-center justify-center">
+                <Lottie options={defaultOptions} height={400} width={400}/>
             </div>
         );
     }

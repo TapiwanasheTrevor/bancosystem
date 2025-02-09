@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\FormController;
+use App\Http\Controllers\FormSubmissionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,3 +20,6 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']); // Get subc
 // Product details API
 Route::get('/products/{id}', [ProductController::class, 'show']); // Get product details
 
+Route::post('/submit-form', [FormSubmissionController::class, 'submit'])->name('api.form.submit');
+
+Route::get('/applications/{formType}', [FormSubmissionController::class, 'listFormSubmissions']);

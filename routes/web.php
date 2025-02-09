@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\ProfileController;
+use App\Models\Form;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -23,7 +24,9 @@ Route::get('/applications', function () {
 })->middleware(['auth', 'verified'])->name('applications');
 
 Route::get('/forms', function () {
-    return view('forms');
+    // Fetch all form submissions
+    $formSubmissions = Form::all();
+    return view('forms', compact('formSubmissions'));
 })->middleware(['auth', 'verified'])->name('forms');
 
 Route::get('/agents', function () {

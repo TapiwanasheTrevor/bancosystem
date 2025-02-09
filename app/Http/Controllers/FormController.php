@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Form;
 use Illuminate\Http\Request;
 
 class FormController extends Controller
@@ -16,5 +17,14 @@ class FormController extends Controller
 
         $formSchema = json_decode(file_get_contents($path), true);
         return response()->json($formSchema);
+    }
+
+    public function loadApplications()
+    {
+        // Fetch all form submissions
+        $formSubmissions = Form::all();
+
+        // Return the view with form submissions
+        return view('admin.form_submissions', compact('formSubmissions'));
     }
 }

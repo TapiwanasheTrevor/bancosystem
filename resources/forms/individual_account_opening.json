@@ -1,140 +1,427 @@
 {
-  "form": {
-    "sections": [
-      {
-        "title": "Account Specifications",
-        "fields": [
-          {
-            "label": "Currency of Account",
-            "type": "radio",
-            "options": ["ZWL$", "USD", "ZAR", "BWP", "EURO", "Other"],
-            "required": true
-          }
-        ]
-      },
-      {
-        "title": "Customer Personal Details",
-        "fields": [
-          { "label": "Title", "type": "select", "options": ["Mr", "Mrs", "Ms", "Dr", "Prof"], "required": true },
-          { "label": "First Name", "type": "text", "required": true },
-          { "label": "Surname", "type": "text", "required": true },
-          { "label": "Maiden Name", "type": "text", "required": false },
-          { "label": "Other Names", "type": "text", "required": false },
-          { "label": "Gender", "type": "radio", "options": ["Male", "Female"], "required": true },
-          { "label": "Date of Birth", "type": "date", "required": true },
-          { "label": "Place of Birth", "type": "text", "required": true },
-          { "label": "Nationality", "type": "text", "required": true },
-          { "label": "Marital Status", "type": "radio", "options": ["Single", "Married", "Other"], "required": true },
-          { "label": "Citizenship", "type": "text", "required": true },
-          { "label": "Dependents", "type": "number", "required": false },
-          { "label": "National ID Number", "type": "text", "required": true },
-          { "label": "Driver’s License No", "type": "text", "required": false },
-          { "label": "Passport Number", "type": "text", "required": false },
-          { "label": "Passport Expiry Date", "type": "date", "required": false },
-          { "label": "Country of Residence", "type": "text", "required": true },
-          { "label": "Highest Educational Qualification", "type": "text", "required": false },
-          { "label": "Hobbies", "type": "textarea", "required": false }
-        ]
-      },
-      {
-        "title": "Customer Contact Details",
-        "fields": [
-          { "label": "Residential Address", "type": "textarea", "required": true },
-          { "label": "Telephone (Residential)", "type": "text", "required": false },
-          { "label": "Mobile", "type": "text", "required": true },
-          { "label": "Telephone (Business)", "type": "text", "required": false },
-          { "label": "Email Address", "type": "email", "required": true }
-        ]
-      },
-      {
-        "title": "Customer Employment Details",
-        "fields": [
-          { "label": "Employer Name", "type": "text", "required": true },
-          { "label": "Occupation", "type": "text", "required": true },
-          {
-            "label": "Employment Status",
-            "type": "radio",
-            "options": ["Permanent", "Contract", "Pensioner", "Unemployed", "Self-Employed"],
-            "required": true
-          },
-          { "label": "Business Description (if self-employed)", "type": "text", "required": false },
-          {
-            "label": "Employer Type",
-            "type": "select",
-            "options": ["Government", "Local Company", "Multinational", "NGO", "Other"],
-            "required": true
-          },
-          { "label": "Employer Physical Address", "type": "textarea", "required": true },
-          { "label": "Employer Contact Number", "type": "text", "required": true },
-          { "label": "Gross Monthly Salary (USD)", "type": "number", "required": false },
-          { "label": "Other Sources of Income", "type": "text", "required": false }
-        ]
-      },
-      {
-        "title": "Spouse/Next of Kin",
-        "fields": [
-          { "label": "Title", "type": "select", "options": ["Mr", "Mrs", "Ms", "Dr", "Prof"], "required": true },
-          { "label": "Full Name", "type": "text", "required": true },
-          { "label": "Residential Address", "type": "textarea", "required": true },
-          { "label": "National ID No", "type": "text", "required": true },
-          { "label": "Contact Number", "type": "text", "required": true },
-          { "label": "Nature of Relationship", "type": "text", "required": true },
-          { "label": "Gender", "type": "radio", "options": ["Male", "Female"], "required": true },
-          { "label": "Email Address", "type": "email", "required": false }
-        ]
-      },
-      {
-        "title": "Other Services",
-        "fields": [
-          { "label": "SMS Alerts", "type": "checkbox", "required": false },
-          { "label": "SMS Alert Mobile Number", "type": "text", "required": false },
-          { "label": "E-Statements", "type": "checkbox", "required": false },
-          { "label": "E-Statement Email Address", "type": "email", "required": false }
-        ]
-      },
-      {
-        "title": "Digital Banking Services",
-        "fields": [
-          { "label": "Mobile Money (Ecocash)", "type": "checkbox", "required": false },
-          { "label": "Mobile Money Number", "type": "text", "required": false },
-          { "label": "E-Wallet", "type": "checkbox", "required": false },
-          { "label": "E-Wallet Mobile Number", "type": "text", "required": false },
-          { "label": "WhatsApp Banking", "type": "checkbox", "required": false },
-          { "label": "Internet Banking", "type": "checkbox", "required": false }
-        ]
-      },
-      {
-        "title": "Declaration",
-        "fields": [
-          { "label": "Full Name", "type": "text", "required": true },
-          { "label": "Applicant's Signature", "type": "signature", "required": true },
-          { "label": "Date", "type": "date", "required": true }
-        ]
-      },
-      {
-        "title": "For Official Use Only",
-        "fields": [
-          {
-            "label": "Type of Account",
-            "type": "select",
-            "options": [
-              "Individual Transactional Account",
-              "Senior Citizen Transactional Account",
-              "Informal Trader Transactional Account",
-              "Individual Current Account",
-              "Sta$h Transactional Account",
-              "Other"
-            ],
-            "required": true
-          },
-          { "label": "Supporting KYC Documents", "type": "checkbox_list", "options": ["Two Passport Photos", "Proof of Residence", "Payslip", "National ID", "Passport", "Driver’s License"], "required": true },
-          { "label": "Service Center Name", "type": "text", "required": true },
-          { "label": "Domicile Service Center Code", "type": "text", "required": true },
-          { "label": "Account Opened By", "type": "text", "required": true },
-          { "label": "Signature", "type": "signature", "required": true },
-          { "label": "Date", "type": "date", "required": true }
-        ]
-      }
-    ]
-  }
+    "form": {
+        "sections": [
+            {
+                "title": "Account Specifications",
+                "fields": [
+                    {
+                        "label": "Currency of Account",
+                        "type": "radio",
+                        "options": [
+                            "ZWL$",
+                            "USD",
+                            "ZAR",
+                            "BWP",
+                            "EURO",
+                            "Other"
+                        ],
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "Customer Personal Details",
+                "fields": [
+                    {
+                        "label": "Title",
+                        "type": "select",
+                        "options": [
+                            "Mr",
+                            "Mrs",
+                            "Ms",
+                            "Dr",
+                            "Prof"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "First Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Surname",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Maiden Name",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Other Names",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Gender",
+                        "type": "radio",
+                        "options": [
+                            "Male",
+                            "Female"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Date of Birth",
+                        "type": "date",
+                        "required": true
+                    },
+                    {
+                        "label": "Place of Birth",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Nationality",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Marital Status",
+                        "type": "radio",
+                        "options": [
+                            "Single",
+                            "Married",
+                            "Other"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Citizenship",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Dependents",
+                        "type": "number",
+                        "required": false
+                    },
+                    {
+                        "label": "National ID Number",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Driver’s License No",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Passport Number",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Passport Expiry Date",
+                        "type": "date",
+                        "required": false
+                    },
+                    {
+                        "label": "Country of Residence",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Highest Educational Qualification",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Hobbies",
+                        "type": "textarea",
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "title": "Customer Contact Details",
+                "fields": [
+                    {
+                        "label": "Residential Address",
+                        "type": "textarea",
+                        "required": true
+                    },
+                    {
+                        "label": "Telephone (Residential)",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Mobile",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Telephone (Business)",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Email Address",
+                        "type": "email",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "Customer Employment Details",
+                "fields": [
+                    {
+                        "label": "Employer Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Occupation",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Employment Status",
+                        "type": "radio",
+                        "options": [
+                            "Permanent",
+                            "Contract",
+                            "Pensioner",
+                            "Unemployed",
+                            "Self-Employed"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Business Description (if self-employed)",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Employer Type",
+                        "type": "select",
+                        "options": [
+                            "Government",
+                            "Local Company",
+                            "Multinational",
+                            "NGO",
+                            "Other"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Employer Physical Address",
+                        "type": "textarea",
+                        "required": true
+                    },
+                    {
+                        "label": "Employer Contact Number",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Gross Monthly Salary (USD)",
+                        "type": "number",
+                        "required": false
+                    },
+                    {
+                        "label": "Other Sources of Income",
+                        "type": "text",
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "title": "Spouse/Next of Kin",
+                "fields": [
+                    {
+                        "label": "Title",
+                        "type": "select",
+                        "options": [
+                            "Mr",
+                            "Mrs",
+                            "Ms",
+                            "Dr",
+                            "Prof"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Full Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Residential Address",
+                        "type": "textarea",
+                        "required": true
+                    },
+                    {
+                        "label": "National ID No",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Contact Number",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Nature of Relationship",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Gender",
+                        "type": "radio",
+                        "options": [
+                            "Male",
+                            "Female"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Email Address",
+                        "type": "email",
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "title": "Other Services",
+                "fields": [
+                    {
+                        "label": "SMS Alerts",
+                        "type": "checkbox",
+                        "required": false
+                    },
+                    {
+                        "label": "SMS Alert Mobile Number",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "E-Statements",
+                        "type": "checkbox",
+                        "required": false
+                    },
+                    {
+                        "label": "E-Statement Email Address",
+                        "type": "email",
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "title": "Digital Banking Services",
+                "fields": [
+                    {
+                        "label": "Mobile Money (Ecocash)",
+                        "type": "checkbox",
+                        "required": false
+                    },
+                    {
+                        "label": "Mobile Money Number",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "E-Wallet",
+                        "type": "checkbox",
+                        "required": false
+                    },
+                    {
+                        "label": "E-Wallet Mobile Number",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "WhatsApp Banking",
+                        "type": "checkbox",
+                        "required": false
+                    },
+                    {
+                        "label": "Internet Banking",
+                        "type": "checkbox",
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "title": "Declaration",
+                "fields": [
+                    {
+                        "label": "Full Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Applicant's Signature",
+                        "type": "signature",
+                        "required": true
+                    },
+                    {
+                        "label": "Date",
+                        "type": "date",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "For Official Use Only",
+                "fields": [
+                    {
+                        "label": "Type of Account",
+                        "type": "select",
+                        "options": [
+                            "Individual Transactional Account",
+                            "Senior Citizen Transactional Account",
+                            "Informal Trader Transactional Account",
+                            "Individual Current Account",
+                            "Sta$h Transactional Account",
+                            "Other"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Supporting KYC Documents",
+                        "type": "checkbox_list",
+                        "options": [
+                            "Two Passport Photos",
+                            "Proof of Residence",
+                            "Payslip",
+                            "National ID",
+                            "Passport",
+                            "Driver’s License"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Service Center Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Domicile Service Center Code",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Account Opened By",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Signature",
+                        "type": "signature",
+                        "required": true
+                    },
+                    {
+                        "label": "Date",
+                        "type": "date",
+                        "required": true
+                    }
+                ]
+            }
+        ],
+        "fileName": "individual_account_opening"
+    }
 }
