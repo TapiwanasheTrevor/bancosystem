@@ -97,7 +97,7 @@
                     {data: 'id'},
                     {
                         data: 'image', render: function (data) {
-                            return `<img src="/storage/${data}" class="w-10 h-10 rounded-full">`;
+                            return `<img src="${data}" class="w-10 h-10 rounded-full">`;
                         }
                     },
                     {data: 'name'},

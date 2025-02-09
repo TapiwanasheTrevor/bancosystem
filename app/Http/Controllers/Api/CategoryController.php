@@ -46,7 +46,7 @@ class CategoryController extends Controller
                         'id' => $product->id,
                         'name' => $product->name,
                         'base_price' => $product->base_price,
-                        'image' => $product->image ? asset('storage/' . $product->image) : null,
+                        'image' => $product->image ? asset('images/products/' . $product->image) : null,
                         'credit_options' => $product->creditPricings->map(function ($credit) {
                             return [
                                 'months' => $credit->months,

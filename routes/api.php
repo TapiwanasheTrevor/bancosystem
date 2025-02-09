@@ -18,3 +18,4 @@ Route::get('/categories/{id}', [CategoryController::class, 'show']); // Get subc
 
 // Product details API
 Route::get('/products/{id}', [ProductController::class, 'show']); // Get product details
+

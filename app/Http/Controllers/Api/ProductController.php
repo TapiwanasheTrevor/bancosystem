@@ -30,7 +30,7 @@ class ProductController extends Controller
                 'description' => $product->description,
                 'category' => $product->category->name ?? 'Uncategorized',
                 'base_price' => $product->base_price,
-                'image' => $product->image ? asset('storage/' . $product->image) : null,
+                'image' => $product->image ? asset('images/products/' . $product->image) : null,
                 'credit_options' => $product->creditPricings->map(function ($credit) {
                     return [
                         'months' => $credit->months,

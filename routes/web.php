@@ -53,7 +53,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/products/update/{id}', [AdminProductController::class, 'update']);
     Route::post('/products/delete/{id}', [AdminProductController::class, 'destroy']);
 
-
 });
 
 require __DIR__ . '/auth.php';

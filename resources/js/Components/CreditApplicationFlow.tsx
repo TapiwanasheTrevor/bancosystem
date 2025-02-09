@@ -1,4 +1,20 @@
 import React, {useState, useEffect} from 'react';
+import {
+    ArrowLeft,
+    ChevronRight,
+    Languages,
+    Building2,
+    Briefcase,
+    CreditCard,
+    Box,
+    Truck,
+    CheckCircle2,
+    XCircle
+} from 'lucide-react';
+
+interface CreditApplicationFlowProps {
+    onComplete: (formData: any) => void;
+}
 
 type CreditOption = {
     months: number;
@@ -52,8 +68,9 @@ type FormData = {
     };
 };
 
-const CreditApplicationFlow = ({onComplete}) => {
-    const [step, setStep] = useState(1);
+const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
+    const [step, setStep] = useState<number | 'final' | 'terminate'>(1);
+    const [formProgress, setFormProgress] = useState<number>(0);
     const [formData, setFormData] = useState<FormData>({
         language: '',
         intent: '',
@@ -75,7 +92,28 @@ const CreditApplicationFlow = ({onComplete}) => {
     const [error, setError] = useState<string | null>(null);
     const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
 
-    // Fetch initial categories or category details
+    useEffect(() => {
+        let progress = 0;
+        const fields = [
+            formData.language,
+            formData.intent,
+            formData.employer,
+            formData.selectedProduct,
+            formData.hasAccount,
+            formData.wantsAccount
+        ];
+
+        const totalFields = fields.length;
+        const filledFields = fields.filter(field => {
+            if (typeof field === 'string') return field !== '';
+            if (field === null) return false;
+            return true;
+        }).length;
+
+        progress = (filledFields / totalFields) * 100;
+        setFormProgress(progress);
+    }, [formData]);
+
     const fetchCategories = async (categoryId?: number) => {
         setLoading(true);
         setError(null);
@@ -85,23 +123,19 @@ const CreditApplicationFlow = ({onComplete}) => {
                 : `${import.meta.env.VITE_API_BASE_URL}/api/categories`;
 
             const response = await fetch(apiUrl);
-            if (!response.ok) {
-                throw new Error('Failed to fetch categories');
-            }
+            if (!response.ok) throw new Error('Failed to fetch categories');
 
             const responseData = await response.json();
 
             if (categoryId) {
-                // Single category response
                 const categoryData = responseData as CategoryResponse;
                 setCurrentCategory(categoryData.data);
                 if (categoryData.data.products?.length) {
-                    setCategories([]); // Clear categories when showing products
+                    setCategories([]);
                 } else if (categoryData.data.subcategories?.length) {
                     setCategories(categoryData.data.subcategories);
                 }
             } else {
-                // Multiple categories response
                 const categoriesData = responseData as CategoriesResponse;
                 setCategories(categoriesData.data);
                 setCurrentCategory(null);
@@ -143,351 +177,451 @@ const CreditApplicationFlow = ({onComplete}) => {
         }
     };
 
-    const renderCreditOptions = (product: Product) => (
-        <div className="mt-4 space-y-3">
-            <h4 className="font-medium text-gray-700">Credit Options:</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {product.credit_options.map((option) => (
-                    <button
-                        key={option.months}
-                        onClick={() => {
-                            setFormData(prev => ({
-                                ...prev,
-                                selectedProduct: {
-                                    product,
-                                    selectedCreditOption: option,
-                                    category: currentCategory?.name || ''
-                                }
-                            }));
-                            setStep(5);
-                        }}
-                        className={`p-3 rounded-lg border transition-all ${
-                            formData.selectedProduct?.selectedCreditOption === option
-                                ? 'border-blue-500 bg-blue-50'
-                                : 'border-gray-200 hover:border-blue-300'
-                        }`}
-                    >
-                        <div className="text-sm font-medium">{option.months} Months</div>
-                        <div className="text-xs text-gray-500">Interest: {option.interest}%</div>
-                        <div className="text-sm font-semibold">${option.final_price}</div>
-                    </button>
-                ))}
+    const renderStepIndicator = () => {
+        return (
+            <div className="space-y-2">
+                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                    <div
+                        className="h-full bg-gradient-to-r from-emerald-500 to-orange-400 transition-all duration-500"
+                        style={{width: `${formProgress}%`}}
+                    />
+                </div>
+                <div className="text-sm text-gray-600 text-right">
+                    Progress: {Math.round(formProgress)}%
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
-    // Modified Product Selection Step
-    const renderProductSelection = () => (
-        <div className="space-y-8">
-            {loading ? (
-                <div className="text-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading...</p>
-                </div>
-            ) : error ? (
-                <div className="text-center py-12">
-                    <p className="text-red-500">{error}</p>
-                    <button
-                        onClick={() => currentCategory ? fetchCategories(currentCategory.id) : fetchCategories()}
-                        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                    >
-                        Retry
-                    </button>
-                </div>
-            ) : (
-                <div className="space-y-6">
-                    {/* Breadcrumb Navigation */}
-                    {categoryHistory.length > 0 && (
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <button
-                                onClick={handleBackClick}
-                                className="hover:text-blue-600"
-                            >
-                                ← Back
-                            </button>
-                            <span className="mx-2">|</span>
-                            {categoryHistory.map((cat, index) => (
-                                <React.Fragment key={cat.id}>
-                                    <span>{cat.name}</span>
-                                    {index < categoryHistory.length - 1 && (
-                                        <span className="mx-2">/</span>
-                                    )}
-                                </React.Fragment>
-                            ))}
-                        </div>
+    const StepContainer = ({children, title, subtitle}) => (
+        <div className="flex-1 overflow-auto">
+            <div className="min-h-full p-4 md:p-6">
+                <div className="max-w-4xl mx-auto space-y-6">
+                    {step !== 1 && (
+                        <button
+                            onClick={() => setStep(prev => {
+                                if (typeof prev === 'number') return prev - 1;
+                                return 1;
+                            })}
+                            className="flex items-center text-emerald-600 hover:text-emerald-700 transition-colors"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-2"/>
+                            Back
+                        </button>
                     )}
-
-                    <div className="text-center">
-                        <h2 className="text-2xl font-semibold">
-                            {currentCategory ? currentCategory.name : 'Select a Category'}
-                        </h2>
-                    </div>
-
-                    {/* Display Categories or Products */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {categories.length > 0 ? (
-                            // Render Categories
-                            categories.map((category) => (
-                                <button
-                                    key={category.id}
-                                    onClick={() => handleCategoryClick(category)}
-                                    className="group relative bg-white p-4 border rounded-lg hover:border-blue-500 transition-all duration-300 shadow-sm hover:shadow-md"
-                                >
-                                    <div className="text-center">
-                                        <h3 className="font-semibold text-lg group-hover:text-blue-600 transition-colors">
-                                            {category.name}
-                                        </h3>
-                                    </div>
-                                </button>
-                            ))
-                        ) : currentCategory?.products?.length ? (
-                            // Render Products
-                            currentCategory.products.map((product) => (
-                                <div
-                                    key={product.id}
-                                    className="relative bg-white p-4 border rounded-lg transition-all duration-300 shadow-sm hover:shadow-md"
-                                >
-                                    <div className="aspect-w-16 aspect-h-9 mb-4">
-                                        <img
-                                            src={product.image}
-                                            alt={product.name}
-                                            className="w-full h-48 object-cover rounded-md"
-                                        />
-                                    </div>
-                                    <div className="text-center">
-                                        <h3 className="font-semibold text-lg">
-                                            {product.name}
-                                        </h3>
-                                        <p className="text-md font-semibold text-gray-700 mt-2">
-                                            Base Price: ${product.base_price}
-                                        </p>
-                                        {selectedProductId === product.id ? (
-                                            renderCreditOptions(product)
-                                        ) : (
-                                            <button
-                                                onClick={() => setSelectedProductId(product.id)}
-                                                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                                            >
-                                                Select Credit Option
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="col-span-3 text-center py-12 text-gray-500">
-                                No items found
+                    {renderStepIndicator()}
+                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                        {title && (
+                            <div className="p-6 md:p-8 text-center space-y-2">
+                                <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
+                                {subtitle && <p className="text-gray-600">{subtitle}</p>}
                             </div>
                         )}
+                        {children}
                     </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 
-    // Step 1: Language Selection
-    const renderLanguageSelection = () => (
-        <div className="space-y-6">
-            <div className="text-center space-y-4">
-                <img
-                    src="https://images.unsplash.com/photo-1531379410502-63bfe8cdaf6f?w=500&auto=format"
-                    alt="Adala Bot"
-                    className="mx-auto rounded-full w-20 h-20 object-cover"
-                />
-                <h2 className="text-xl font-semibold">Hi there! I am Adala, a smart assistant chatbot.</h2>
-                <p className="text-gray-600">Consider me your uncle from a different mother. My mission is to ensure you
-                    get the best online service experience possible for your next credit consideration.</p>
-            </div>
+    const Button = ({children, onClick, variant = 'default', icon: Icon}) => (
+        <button
+            onClick={onClick}
+            className={`w-full p-4 rounded-xl transition-all duration-300 flex items-center justify-between
+                ${variant === 'primary'
+                ? 'bg-gradient-to-r from-emerald-500 to-orange-400 text-white hover:from-emerald-600 hover:to-orange-500'
+                : 'border border-gray-200 hover:border-emerald-500 hover:bg-emerald-50'}`}
+        >
+            <span className="flex-1 text-left">{children}</span>
+            {Icon && <Icon className="w-5 h-5 ml-2 flex-shrink-0"/>}
+        </button>
+    );
 
-            <div className="space-y-4">
-                <h3 className="text-lg font-medium text-center">Select a Language to Proceed</h3>
-                <div className="flex justify-center gap-4">
+    const renderLanguageSelection = () => (
+        <StepContainer
+            title="Welcome to ZB Credit Application"
+            subtitle="I am Adala, your personal credit assistant"
+        >
+            <div className="p-6 md:p-8 space-y-8">
+                <div className="flex justify-center">
+                    <img
+                        src="https://images.unsplash.com/photo-1531379410502-63bfe8cdaf6f?w=500&auto=format"
+                        alt="Adala Bot"
+                        className="w-24 h-24 rounded-full object-cover ring-4 ring-emerald-500/20"
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {['English', 'Shona', 'Ndebele'].map((lang) => (
-                        <button
+                        <Button
                             key={lang}
                             onClick={() => {
                                 setFormData(prev => ({...prev, language: lang}));
                                 setStep(2);
                             }}
-                            className="px-6 py-3 rounded-md border hover:bg-blue-50 transition-colors"
+                            icon={Languages}
                         >
                             {lang}
-                        </button>
+                        </Button>
                     ))}
                 </div>
             </div>
-        </div>
+        </StepContainer>
     );
 
-    // Step 2: Intent Selection
     const renderIntentSelection = () => (
-        <div className="space-y-6">
-            <div className="text-center">
-                <h2 className="text-xl font-semibold">What would you like to do?</h2>
-                <p className="text-gray-600">I would love to help you unlock the maximum benefit of your credit, so
-                    please be patient as I ask a few questions.</p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 max-w-xl mx-auto">
+        <StepContainer
+            title="What would you like to do?"
+            subtitle="Select an option to proceed with your application"
+        >
+            <div className="p-6 md:p-8 space-y-4">
                 {[
                     {
                         title: 'Apply for Hire Purchase Credit',
                         subtitle: 'Personal and Household Products',
-                        action: 'hirePurchase'
+                        action: 'hirePurchase',
+                        icon: CreditCard
                     },
                     {
                         title: 'Apply for Micro Biz',
                         subtitle: 'Ngwavha, Hustle, Spana Starter Pack',
-                        action: 'starterPack'
+                        action: 'starterPack',
+                        icon: Briefcase
                     },
                     {
                         title: 'Get an update on your application status',
                         subtitle: 'Check your existing application',
-                        action: 'checkStatus'
+                        action: 'checkStatus',
+                        icon: Box
                     },
                     {
                         title: 'Track the delivery of product/equipment',
                         subtitle: 'Track your order',
-                        action: 'trackDelivery'
+                        action: 'trackDelivery',
+                        icon: Truck
                     }
                 ].map((option) => (
-                    <button
+                    <Button
                         key={option.action}
                         onClick={() => {
                             setFormData(prev => ({...prev, intent: option.action}));
                             setStep(option.action === 'starterPack' ? 3 : 'final');
                         }}
-                        className="p-4 border rounded-lg text-left hover:bg-blue-50 transition-colors"
+                        icon={option.icon}
                     >
-                        <div className="font-semibold">{option.title}</div>
-                        <div className="text-sm text-gray-600">{option.subtitle}</div>
-                    </button>
+                        <div>
+                            <div className="font-medium">{option.title}</div>
+                            <div className="text-sm text-gray-500">{option.subtitle}</div>
+                        </div>
+                    </Button>
                 ))}
             </div>
-        </div>
+        </StepContainer>
     );
 
-    // Step 3: Employer Selection
     const renderEmployerSelection = () => (
-        <div className="space-y-6">
-            <div className="text-center">
-                <h2 className="text-xl font-semibold">Who is your employer?</h2>
-                <p className="text-gray-600">Before proceeding with your Micro Biz application, I need to verify your
-                    employment details.</p>
+        <StepContainer
+            title="Select Your Employer"
+            subtitle="This helps us tailor the best credit options for you"
+        >
+            <div className="p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {[
+                        {name: 'GOZ (Government of Zimbabwe) - SSB', form: 'ssb'},
+                        {name: 'GOZ - ZAPPA', form: 'zappa'},
+                        {name: 'GOZ - Pension', form: 'pension'},
+                        {name: 'Town Council', form: 'check-account'},
+                        {name: 'Parastatal', form: 'check-account'},
+                        {name: 'Corporate Company', form: 'check-account'},
+                        {name: 'Mission and Private Schools', form: 'check-account'},
+                        {name: 'SME (Small & Medium Enterprises)', form: 'sme'}
+                    ].map((employer) => (
+                        <Button
+                            key={employer.name}
+                            onClick={() => {
+                                setFormData(prev => ({...prev, employer: employer.name}));
+                                setStep(4);
+                            }}
+                            icon={Building2}
+                        >
+                            {employer.name}
+                        </Button>
+                    ))}
+                </div>
             </div>
+        </StepContainer>
+    );
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                {[
-                    {name: 'GOZ (Government of Zimbabwe) - SSB', form: 'ssb'},
-                    {name: 'GOZ - ZAPPA', form: 'zappa'},
-                    {name: 'GOZ - Pension', form: 'pension'},
-                    {name: 'Town Council', form: 'check-account'},
-                    {name: 'Parastatal', form: 'check-account'},
-                    {name: 'Corporate Company', form: 'check-account'},
-                    {name: 'Mission and Private Schools', form: 'check-account'},
-                    {name: 'SME (Small & Medium Enterprises)', form: 'sme'}
-                ].map((employer) => (
+    const renderProductSelection = () => (
+        <StepContainer
+            title={currentCategory ? currentCategory.name : 'Select a Category'}
+            subtitle="Browse our available products and credit options"
+        >
+            {loading ? (
+                <div className="p-6 md:p-8 text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading...</p>
+                </div>
+            ) : error ? (
+                <div className="p-6 md:p-8 text-center">
+                    <p className="text-red-500">{error}</p>
                     <button
-                        key={employer.name}
-                        onClick={() => {
-                            setFormData(prev => ({...prev, employer: employer.name}));
-                            setStep(4);
-                        }}
-                        className="p-4 border rounded-lg text-left hover:bg-blue-50 transition-colors"
+                        onClick={() => currentCategory ? fetchCategories(currentCategory.id) : fetchCategories()}
+                        className="mt-4 px-6 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600"
                     >
-                        {employer.name}
+                        Retry
                     </button>
-                ))}
-            </div>
-        </div>
-    );
+                </div>
+            ) : (
+                <div className="p-6 md:p-8 space-y-6">
+                    {categoryHistory.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
+                            <button
+                                onClick={handleBackClick}
+                                className="text-emerald-600 hover:text-emerald-700"
+                            >
+                                Back
+                            </button>
+                            {categoryHistory.map((cat, index) => (
+                                <React.Fragment key={cat.id}>
+                                    <ChevronRight className="w-4 h-4"/>
+                                    <span>{cat.name}</span>
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    )}
 
-    // Step 5: Account Check
-    const renderAccountCheck = () => (
-        <div className="space-y-6">
-            <div className="text-center">
-                <h2 className="text-xl font-semibold">Do you have a ZB Account?</h2>
-            </div>
-
-            <div className="flex justify-center gap-4">
-                <button
-                    onClick={() => {
-                        setFormData(prev => ({...prev, hasAccount: 'yes'}));
-                        setStep('final');
-                    }}
-                    className="px-6 py-3 rounded-md border hover:bg-blue-50 transition-colors"
-                >
-                    Yes
-                </button>
-                <button
-                    onClick={() => {
-                        setFormData(prev => ({...prev, hasAccount: 'no'}));
-                        setStep(6);
-                    }}
-                    className="px-6 py-3 rounded-md border hover:bg-blue-50 transition-colors"
-                >
-                    No
-                </button>
-            </div>
-        </div>
-    );
-
-    // Step 6: Want Account
-    const renderWantAccount = () => (
-        <div className="space-y-6">
-            <div className="text-center">
-                <h2 className="text-xl font-semibold">Would you like to open an account with ZB?</h2>
-            </div>
-
-            <div className="flex justify-center gap-4">
-                <button
-                    onClick={() => {
-                        setFormData(prev => ({...prev, wantsAccount: 'yes'}));
-                        setStep('final');
-                    }}
-                    className="px-6 py-3 rounded-md border hover:bg-blue-50 transition-colors"
-                >
-                    Yes
-                </button>
-                <button
-                    onClick={() => {
-                        setFormData(prev => ({...prev, wantsAccount: 'no'}));
-                        setStep('terminate');
-                    }}
-                    className="px-6 py-3 rounded-md border hover:bg-blue-50 transition-colors"
-                >
-                    No
-                </button>
-            </div>
-        </div>
-    );
-
-    // Final Step / Termination
-    const renderFinal = () => (
-        <div className="space-y-6 text-center">
-            <h2 className="text-xl font-semibold">
-                {step === 'terminate'
-                    ? "Thank you for your interest"
-                    : "Great! Let's proceed with your application"}
-            </h2>
-            <p className="text-gray-600">
-                {step === 'terminate'
-                    ? "Unfortunately, we cannot proceed without a ZB Bank account. We hope to serve you in the future."
-                    : "We'll now redirect you to the appropriate application form based on your selections."}
-            </p>
-            {step !== 'terminate' && (
-                <button
-                    onClick={() => onComplete(formData)}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                    Continue to Application
-                </button>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {categories.length > 0 ? (
+                            categories.map((category) => (
+                                <Button
+                                    key={category.id}
+                                    onClick={() => handleCategoryClick(category)}
+                                    icon={ChevronRight}
+                                >
+                                    {category.name}
+                                </Button>
+                            ))
+                        ) : currentCategory?.products?.length ? (
+                            currentCategory.products.map((product) => (
+                                <div
+                                    key={product.id}
+                                    className="bg-white rounded-xl overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg"
+                                >
+                                    <img
+                                        src={product.image}
+                                        alt={product.name}
+                                        className="w-full h-48 object-cover"
+                                    />
+                                    <div className="p-4 space-y-4">
+                                        <h3 className="font-semibold text-lg">{product.name}</h3>
+                                        <p className="text-emerald-600 font-medium">
+                                            Base Price: ${product.base_price}
+                                        </p>
+                                        {selectedProductId === product.id ? (
+                                            <div className="space-y-3">
+                                                <h4 className="font-medium text-gray-700">Credit Options:</h4>
+                                                <div className="grid grid-cols-1 gap-2">
+                                                    {product.credit_options.map((option) => (
+                                                        <button
+                                                            key={option.months}
+                                                            onClick={() => {
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    selectedProduct: {
+                                                                        product,
+                                                                        selectedCreditOption: option,
+                                                                        category: currentCategory?.name || ''
+                                                                    }
+                                                                }));
+                                                                setStep(5);
+                                                            }}
+                                                            className="p-3 rounded-xl border transition-all hover:border-emerald-500 hover:bg-emerald-50"
+                                                        >
+                                                            <div className="flex justify-between items-center">
+                                                                <div>
+                                                                    <div
+                                                                        className="font-medium">{option.months} Months
+                                                                    </div>
+                                                                    <div
+                                                                        className="text-sm text-gray-500">Interest: {option.interest}%
+                                                                    </div>
+                                                                </div>
+                                                                <div
+                                                                    className="text-emerald-600 font-semibold">${option.final_price}</div>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <Button
+                                                onClick={() => setSelectedProductId(product.id)}
+                                                variant="primary"
+                                            >
+                                                View Credit Options
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-12 text-gray-500">
+                                No items found in this category
+                            </div>
+                        )}
+                    </div>
+                </div>
             )}
-        </div>
+        </StepContainer>
     );
+
+    const renderAccountCheck = () => (
+        <StepContainer
+            title="Do you have a ZB Account?"
+            subtitle="This information helps us process your application faster"
+        >
+            <div className="p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button
+                        onClick={() => {
+                            setFormData(prev => ({...prev, hasAccount: 'yes'}));
+                            setStep('final');
+                        }}
+                        icon={CheckCircle2}
+                    >
+                        Yes, I have an account
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            setFormData(prev => ({...prev, hasAccount: 'no'}));
+                            setStep(6);
+                        }}
+                        icon={XCircle}
+                    >
+                        No, I don't have an account
+                    </Button>
+                </div>
+            </div>
+        </StepContainer>
+    );
+
+    const renderWantAccount = () => (
+        <StepContainer
+            title="Would you like to open a ZB Account?"
+            subtitle="Having a ZB account gives you access to exclusive benefits"
+        >
+            <div className="p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button
+                        onClick={() => {
+                            setFormData(prev => ({...prev, wantsAccount: 'yes'}));
+                            setStep('final');
+                        }}
+                        variant="primary"
+                    >
+                        Yes, I'd like to open an account
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            setFormData(prev => ({...prev, wantsAccount: 'no'}));
+                            setStep('terminate');
+                        }}
+                    >
+                        No, not at this time
+                    </Button>
+                </div>
+            </div>
+        </StepContainer>
+    );
+
+    const renderFinal = () => (
+        <StepContainer
+            title={step === 'terminate' ? "Thank you for your interest" : "Application Summary"}
+            subtitle={
+                step === 'terminate'
+                    ? "Unfortunately, we cannot proceed without a ZB Bank account"
+                    : "Please review your selections before proceeding"
+            }
+        >
+            {step !== 'terminate' && (
+                <div className="p-6 md:p-8 space-y-6">
+                    <div className="bg-gray-50 p-4 rounded-xl space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <h4 className="text-sm text-gray-500">Language</h4>
+                                <p className="font-medium">{formData.language}</p>
+                            </div>
+                            <div>
+                                <h4 className="text-sm text-gray-500">Application Type</h4>
+                                <p className="font-medium">{formData.intent}</p>
+                            </div>
+                            {formData.employer && (
+                                <div>
+                                    <h4 className="text-sm text-gray-500">Employer</h4>
+                                    <p className="font-medium">{formData.employer}</p>
+                                </div>
+                            )}
+                            {formData.selectedProduct && (
+                                <>
+                                    <div className="col-span-2">
+                                        <h4 className="text-sm text-gray-500">Selected Product</h4>
+                                        <p className="font-medium">{formData.selectedProduct.product.name}</p>
+                                        <p className="text-sm text-gray-500">
+                                            Category: {formData.selectedProduct.category}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm text-gray-500">Credit Terms</h4>
+                                        <p className="font-medium">
+                                            {formData.selectedProduct.selectedCreditOption.months} Months
+                                        </p>
+                                        <p className="text-sm text-gray-500">
+                                            Interest: {formData.selectedProduct.selectedCreditOption.interest}%
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm text-gray-500">Final Price</h4>
+                                        <p className="font-medium text-emerald-600">
+                                            ${formData.selectedProduct.selectedCreditOption.final_price}
+                                        </p>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                    <Button
+                        onClick={() => onComplete(formData)}
+                        variant="primary"
+                    >
+                        Continue to Application
+                    </Button>
+                </div>
+            )}
+        </StepContainer>
+    );
+
+    if (loading) {
+        return (
+            <div
+                className="fixed inset-0 bg-gradient-to-b from-emerald-50 to-orange-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div
+                className="fixed inset-0 bg-gradient-to-b from-emerald-50 to-orange-50 flex items-center justify-center p-4">
+                <div className="w-full max-w-2xl bg-red-50 p-4 rounded-xl border border-red-200 text-red-700">
+                    Error: {error}
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="max-w-4xl mx-auto p-6 space-y-8">
+        <div className="fixed inset-0 bg-gradient-to-b from-emerald-50 to-orange-50 flex flex-col">
             {step === 1 && renderLanguageSelection()}
             {step === 2 && renderIntentSelection()}
             {step === 3 && renderEmployerSelection()}

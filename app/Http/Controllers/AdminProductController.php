@@ -31,7 +31,7 @@ class AdminProductController extends Controller
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->move(public_path('products'), $imageName);
+            $image->move(public_path('images/products'), $imageName);
         }
 
         $product = Product::create([
@@ -75,7 +75,7 @@ class AdminProductController extends Controller
 
             return DataTables::of($query)
                 ->addColumn('image', function ($product) {
-                    return $product->image ?: 'No Image';
+                    return asset('images/products/' . $product->image) ?: 'No Image';
                 })
                 ->addColumn('actions', function ($product) {
                     return '

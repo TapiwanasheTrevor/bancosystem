@@ -26,9 +26,6 @@
                         <option value="">No Parent (Main Category)</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}">{{ $category->name }}</option>
-                            @foreach($category->children as $child)
-                                <option value="{{ $child->id }}">-- {{ $child->name }}</option>
-                            @endforeach
                         @endforeach
                     </select>
                 </div>
@@ -43,31 +40,51 @@
         <!-- Existing Categories -->
         <div class="mt-8 bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-lg font-semibold mb-4">Existing Categories</h3>
-            <ul class="space-y-3">
+            <div class="space-y-3">
                 @foreach($categories as $category)
-                    <li class="flex justify-between items-center p-3 bg-gray-100 rounded-lg shadow">
-                        <span class="text-gray-700 font-medium">{{ $category->name }}</span>
-                        <form action="/categories/delete/{{ $category->id }}" method="POST">
-                            @csrf
-                            <button type="submit"
-                                    onclick="return confirm('Are you sure you want to delete this category?')"
-                                    class="bg-red-600 text-white px-4 py-1 rounded-lg hover:bg-red-700 transition">
-                                Delete
-                            </button>
-                        </form>
-                    </li>
+                    <div class="border border-gray-200 rounded-lg overflow-hidden">
+                        <div class="flex justify-between items-center bg-gray-100 p-3 cursor-pointer"
+                             onclick="toggleAccordion('{{ $category->id }}')">
+                            <span class="font-medium text-gray-700">{{ $category->name }}</span>
+                            <div class="flex items-center">
+                                <form action="/categories/delete/{{ $category->id }}" method="POST" class="mr-4">
+                                    @csrf
+                                    <button type="submit"
+                                            onclick="return confirm('Are you sure you want to delete this category?')"
+                                            class="bg-red-600 text-white px-4 py-1 rounded-lg hover:bg-red-700 transition">
+                                        Delete
+                                    </button>
+                                </form>
+                                <span class="text-gray-500">▼</span>
+                            </div>
+                        </div>
 
-                    @if($category->children->count())
-                        <ul class="pl-6 mt-2 space-y-2">
-                            @foreach($category->children as $child)
-                                <li class="flex justify-between items-center p-3 bg-gray-200 rounded-lg shadow">
-                                    <span class="text-gray-600 font-medium">{{ $child->name }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
+                        <div id="accordion-{{ $category->id }}" class="hidden bg-gray-50 p-4">
+                            @if($category->children->count())
+                                <ul class="space-y-2">
+                                    @foreach($category->children as $child)
+                                        <li class="flex justify-between items-center p-2 bg-gray-200 rounded-lg">
+                                            <span class="text-gray-600">{{ $child->name }}</span>
+                                            <a href="/categories/delete/{{ $child->id }}"
+                                               class="text-red-600 hover:underline"
+                                               onclick="return confirm('Are you sure you want to delete this subcategory?')">
+                                                Delete
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
+                        </div>
+                    </div>
                 @endforeach
-            </ul>
+            </div>
         </div>
     </div>
+
+    <script>
+        function toggleAccordion(id) {
+            const element = document.getElementById(`accordion-${id}`);
+            element.classList.toggle('hidden');
+        }
+    </script>
 @endsection
