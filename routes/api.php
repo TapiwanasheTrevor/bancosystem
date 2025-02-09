@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\FormController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -9,3 +11,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::get('/forms/{formType}', [FormController::class, 'show']);
+
+// Category navigation API
+Route::get('/categories', [CategoryController::class, 'index']); // Get all top categories
+Route::get('/categories/{id}', [CategoryController::class, 'show']); // Get subcategories & products
+
+// Product details API
+Route::get('/products/{id}', [ProductController::class, 'show']); // Get product details

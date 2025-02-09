@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('credit_pricing', function (Blueprint $table) {
+        Schema::create('credit_pricings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id');
             $table->integer('months'); // 3, 6, 9, 12
