@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
+import {createRoot} from 'react-dom/client';
 import CreditApplicationFlow from './Components/CreditApplicationFlow';
 import DynamicFormWizard from './Components/DynamicFormWizard';
+import KYCUpload from './Components/KYCUpload';
 
-function App() {
+// Define the shape of form data
+interface FormData {
+    employer: string;
+    hasAccount: string;
+    wantsAccount: string;
+}
+
+const App: React.FC = () => {
     const [showDynamicForm, setShowDynamicForm] = useState(false);
-    const [selectedFormId, setSelectedFormId] = useState('');
-    const [questionnaireData, setQuestionnaireData] = useState(null);
+    const [showKYCUpload, setShowKYCUpload] = useState(false);
+    const [selectedFormId, setSelectedFormId] = useState<string>('');
+    const [questionnaireData, setQuestionnaireData] = useState<FormData | null>(null);
+    const [insertId, setInsertId] = useState<string>('');
 
-    const determineFormId = (formData) => {
-        const { employer, hasAccount, wantsAccount } = formData;
+    const determineFormId = (formData: FormData): string => {
+        const {employer, hasAccount, wantsAccount} = formData;
 
         if (wantsAccount === 'yes' || (hasAccount === 'no' && wantsAccount === 'yes')) {
             switch (employer) {
@@ -29,25 +40,53 @@ function App() {
         return 'individual_account_opening';
     };
 
-    const handleQuestionnaireComplete = (formData) => {
+    const handleQuestionnaireComplete = (formData: FormData) => {
         const formId = determineFormId(formData);
         setQuestionnaireData(formData);
         setSelectedFormId(formId);
         setShowDynamicForm(true);
     };
 
+    const handleFormSubmit = (insertId: string) => {
+        setInsertId(insertId);
+        setShowDynamicForm(false);
+        setShowKYCUpload(true);
+    };
+
+    const handleKYCComplete = (kycData: any) => {
+        // Handle KYC completion logic here
+        console.log('KYC completed:', kycData);
+        setShowKYCUpload(false);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
-            {!showDynamicForm ? (
-                <CreditApplicationFlow onComplete={handleQuestionnaireComplete} />
-            ) : (
-                <DynamicFormWizard
-                    formId={selectedFormId}
-                    initialData={questionnaireData}
-                />
+            {!showDynamicForm && !showKYCUpload && (
+                <CreditApplicationFlow onComplete={handleQuestionnaireComplete}/>
+            )}
+            {showDynamicForm && !showKYCUpload && (
+                <DynamicFormWizard formId={selectedFormId} initialData={questionnaireData}
+                                   onComplete={handleFormSubmit}/>
+            )}
+            {showKYCUpload && (
+                <KYCUpload onComplete={handleKYCComplete} onBack={() => setShowKYCUpload(false)} insertId={insertId}/>
             )}
         </div>
     );
+};
+
+// Ensure the root element exists in the HTML file
+const container = document.getElementById('react-root');
+if (!container) {
+    throw new Error('Failed to find the root element. Make sure there is an element with id "react-root" in your HTML');
 }
+
+// Create a root and render the app
+const root = createRoot(container);
+root.render(
+    <React.StrictMode>
+        <App/>
+    </React.StrictMode>
+);
 
 export default App;

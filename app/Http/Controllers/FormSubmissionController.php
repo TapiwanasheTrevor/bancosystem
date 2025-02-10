@@ -23,13 +23,13 @@ class FormSubmissionController extends Controller
         $formSubmission->form_values = json_encode($validatedData['formValues']);
         $formSubmission->questionnaire_data = json_encode($validatedData['questionnaireData']);
         $formSubmission->agent_id = $validatedData['agent_id'] ?? null;
-        $formSubmission->status = 'pending';
         $formSubmission->save();
 
         // Return a response
         return response()->json([
             'message' => 'Form submitted successfully',
             'data' => $formSubmission,
+            'insertId' => $formSubmission->id
         ], 200);
     }
 
@@ -57,12 +57,15 @@ class FormSubmissionController extends Controller
         $query = $query->get()->map(function ($item) {
             $item->form_values = json_decode($item->form_values);
             $item->questionnaire_data = json_decode($item->questionnaire_data);
-
-            //set the name of the applicant from the form_values
             $item->name = '';
+            $item->agent = '';
+            $item->product = $data['selectedProduct']['product']['name'] ?? null;
+            $item->duration = '';
+            $item->installment = '';
             return $item;
         });
 
-        return datatables()->of($query)->make(true);
+        return response()->json($query);
+
     }
 }

@@ -7,7 +7,7 @@
     <!-- Include any CSS files here -->
     @viteReactRefresh
     @vite(['resources/css/app.css'])
-    @vite(['resources/js/index.tsx'])
+    @vite(['resources/js/app.tsx'])
 </head>
 <body>
 <div class="container mx-auto p-6">

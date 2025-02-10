@@ -6,6 +6,7 @@ import completeAnimation from './complete.json';
 interface DynamicFormWizardProps {
     formId: string;
     initialData?: any;
+    onComplete: (insertId: string) => void;
 }
 
 interface Field {
@@ -25,23 +26,21 @@ interface FormDataType {
     title: string;
     description: string;
     sections: Section[];
-    formType: string;  // Add formType to the FormDataType interface
+    fileName: string;
 }
 
-const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
+const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardProps) => {
     const [formData, setFormData] = useState<FormDataType | null>(null);
     const [currentSection, setCurrentSection] = useState(0);
     const [formValues, setFormValues] = useState<Record<string, any>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);
+    const [success, setSuccess] = useState(false);  // Ensure success state is defined
     const [agentId, setAgentId] = useState<string | null>(null);
 
     useEffect(() => {
-        // Fetch form data
         fetchFormData();
 
-        // Prepopulate form values if initialData is provided
         if (initialData) {
             const prepopulatedData = {
                 'personal-details': {
@@ -61,7 +60,6 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
             setFormValues(prepopulatedData);
         }
 
-        // Get agent ID from query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const referral = urlParams.get('referral');
         if (referral) {
@@ -76,7 +74,7 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
             const response = await fetch(`/api/forms/${formId}`);
             if (!response.ok) throw new Error('Failed to fetch form data');
             const data = await response.json();
-            setFormData({...data.form, formType: data.formType});
+            setFormData(data.form);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -91,21 +89,19 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
         }));
     };
 
-    const renderStepIndicator = () => {
-        return (
-            <div className="space-y-2">
-                <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                    <div
-                        className="h-full bg-gradient-to-r from-emerald-500 to-orange-400 transition-all duration-500"
-                        style={{width: `${((currentSection + 1) / (formData?.sections?.length || 1)) * 100}%`}}
-                    />
-                </div>
-                <div className="text-sm text-gray-600 text-right">
-                    Step {currentSection + 1} of {formData?.sections?.length}
-                </div>
+    const renderStepIndicator = () => (
+        <div className="space-y-2">
+            <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-orange-400 transition-all duration-500"
+                    style={{width: `${((currentSection + 1) / (formData?.sections?.length || 1)) * 100}%`}}
+                />
             </div>
-        );
-    };
+            <div className="text-sm text-gray-600 text-right">
+                Step {currentSection + 1} of {formData?.sections?.length}
+            </div>
+        </div>
+    );
 
     const renderField = (field: Field) => {
         const fieldId = `${field.label.toLowerCase().replace(/\s+/g, '-')}`;
@@ -262,12 +258,14 @@ const DynamicFormWizard = ({formId, initialData}: DynamicFormWizardProps) => {
                     formValues,
                     questionnaireData: initialData,
                     agent_id: agentId,
-                    formType: formData?.formType, // Include the form type
+                    formName: formData?.fileName,
                 }),
             });
 
             if (!response.ok) throw new Error('Failed to submit form');
-            setSuccess(true);
+            const {insertId} = await response.json();
+            setSuccess(true);  // Set success state to true
+            onComplete(insertId);
         } catch (err) {
             console.error('Error submitting form:', err);
             setError('Failed to submit form. Please try again.');

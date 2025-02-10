@@ -47,11 +47,36 @@
                 <nav class="flex -mb-px">
                     @php
                         $tabs = [
-                            'account_holder_loan_application' => ['label' => 'Account Holder Form', 'count' => 12],
-                            'individual_account_opening' => ['label' => 'Individual Account Form', 'count' => 5],
-                            'pensioners_loan_account' => ['label' => 'Pensioners Form', 'count' => 3],
-                            'smes_business_account_opening' => ['label' => 'SMEs Form', 'count' => 8],
-                            'ssb_account_opening_form' => ['label' => 'SSB Account Form', 'count' => 2],
+                            'account_holder_loan_application' => [
+                                'label' => 'Account Holder Form',
+                                'count' => \App\Models\Form::where('form_name', 'account_holder_loan_application')
+                                    ->whereNull('status')
+                                    ->count()
+                                ],
+                            'individual_account_opening' => [
+                                'label' => 'Individual Account Form',
+                                'count' => \App\Models\Form::where('form_name', 'individual_account_opening')
+                                    ->whereNull('status')
+                                    ->count()
+                                ],
+                            'pensioners_loan_account' => [
+                                'label' => 'Pensioners Form',
+                                 'count' => \App\Models\Form::where('form_name', 'pensioners_loan_account')
+                                    ->whereNull('status')
+                                    ->count()
+                                ],
+                            'smes_business_account_opening' => [
+                                'label' => 'SMEs Form',
+                                 'count' => \App\Models\Form::where('form_name', 'smes_business_account_opening')
+                                    ->whereNull('status')
+                                    ->count()
+                                ],
+                            'ssb_account_opening_form' => [
+                                'label' => 'SSB Account Form',
+                                'count' => \App\Models\Form::where('form_name', 'ssb_account_opening_form')
+                                    ->whereNull('status')
+                                    ->count()
+                                ],
                         ];
                     @endphp
 
@@ -60,7 +85,8 @@
                             @click="activeTab = '{{ $id }}'; loadDataTable('{{ $id }}')"
                             :class="{ 'border-indigo-500 text-indigo-600': activeTab === '{{ $id }}',
                             'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== '{{ $id }}' }"
-                            class="w-1/5 py-4 px-1 text-center border-b-2 font-medium text-sm focus:outline-none relative">
+                            class="w-1/5 py-4 px-2 text-left border-b-2 font-medium text-sm focus:outline-none relative"
+                            id="{{ $id }}">
                             {{ $tab['label'] }}
                             @if($tab['count'] > 0)
                                 <span
@@ -81,7 +107,7 @@
                     <table class="min-w-full divide-y divide-gray-200" id="applications-table">
                         <thead class="bg-gray-100">
                         <tr>
-                            <th class="p-2 w-12">
+                            <th class="p-2 w-6">
                                 <input type="checkbox"
                                        class="select-all rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
                             </th>
@@ -118,7 +144,10 @@
 
     @push('scripts')
         <script>
+            // Initialize DataTable
             const initializeDataTable = (tableId, formName) => {
+                console.log(`Initializing DataTable for form: ${formName}`); // Debug log
+
                 if ($.fn.dataTable.isDataTable(`#${tableId}`)) {
                     $(`#${tableId}`).DataTable().destroy();
                 }
@@ -126,13 +155,25 @@
                 $(`#${tableId}`).DataTable({
                     processing: true,
                     serverSide: true,
+                    paging: false, // Disable pagination
                     ajax: {
                         url: `/api/applications/${formName}`,
                         data: function (d) {
                             d.status = $('#status-filter').val();
                             d.search = $('#search').val();
+                        },
+                        error: function (xhr, error, thrown) {
+                            console.error('DataTables Ajax Error:', error, thrown);
+                        },
+                        dataSrc: function (json) {
+                            console.log('Server Response:', json);
+                            if (Array.isArray(json)) {
+                                return json;
+                            }
+                            return json.data || [];
                         }
                     },
+                    debug: true,
                     columns: [
                         {
                             data: null,
@@ -141,22 +182,63 @@
                                 return `<input type="checkbox" class="row-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" value="${row.id}">`;
                             }
                         },
-                        {data: 'name'},
-                        {data: 'agent'},
-                        {data: 'product'},
-                        {data: 'duration'},
-                        {data: 'installment'},
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                const name = row.questionnaire_data?.applicationDetails?.name ||
+                                    row.form_values?.['title'] + '&nbsp;' + row.form_values?.['surname'] ||
+                                    'N/A';
+                                return name;
+                            }
+                        },
+                        {
+                            data: 'agent_id',
+                            render: function (data, type, row) {
+                                return data || 'Nil';
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                return row.questionnaire_data?.selectedProduct?.product?.name ||
+                                    row.form_values?.['product-details']?.['selected-product'] ||
+                                    'N/A';
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                const months = row.questionnaire_data?.selectedProduct?.selectedCreditOption?.months ||
+                                    row.form_values?.['product-details']?.['credit-option']?.months;
+                                return months ? `${months} months` : 'N/A';
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                const finalPrice = row.questionnaire_data?.selectedProduct?.selectedCreditOption?.final_price ||
+                                    row.form_values?.['product-details']?.['credit-option']?.final_price;
+                                return finalPrice ? `$${finalPrice}` : 'N/A';
+                            }
+                        },
                         {
                             data: 'status',
                             render: function (data, type, row) {
                                 const colors = {
                                     pending: 'bg-yellow-100 text-yellow-800',
                                     approved: 'bg-green-100 text-green-800',
-                                    rejected: 'bg-red-100 text-red-800'
+                                    rejected: 'bg-red-100 text-red-800',
+                                    new: 'bg-red-100 text-red-800'
                                 };
-                                return `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${colors[data.toLowerCase()]}">
-                            ${data}
-                        </span>`;
+                                if (data === null) {
+                                    return `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${colors['new']}">
+                                    NEW
+                                </span>`;
+                                } else {
+                                    return `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${colors[data.toLowerCase()]}">
+                                    ${data}
+                                </span>`;
+                                }
                             }
                         },
                         {
@@ -164,40 +246,91 @@
                             orderable: false,
                             render: function (data, type, row) {
                                 return `
-                            <div class="flex justify-center space-x-2">
-                                <button class="text-gray-400 hover:text-gray-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                                    </svg>
-                                </button>
-                            </div>
-                        `;
+        <div class="flex justify-center space-x-2">
+        <button
+            class="text-gray-400 hover:text-gray-500 focus:outline-none"
+            onclick="toggleDropdown(event, 'dropdown-${row.id}')"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+            </svg>
+        </button>
+
+        <!-- Dropdown Menu -->
+        <div id="dropdown-${row.id}"
+             class="hidden absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50"
+             style="top: 2rem;"
+        >
+            <div class="py-1" role="menu" aria-orientation="vertical">
+                <button
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center space-x-2"
+                    role="menuitem"
+                    onclick="handleAction('update', ${row.id})"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Update Status</span>
+                </button>
+
+                <button
+                    class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center space-x-2"
+                    role="menuitem"
+                    onclick="handleAction('download', ${row.id})"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Download</span>
+                </button>
+
+                <button
+                    class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 hover:text-red-700 flex items-center space-x-2"
+                    role="menuitem"
+                    onclick="handleAction('delete', ${row.id})"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>Delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+                    `;
                             }
                         }
                     ]
                 });
             };
 
+            // Load DataTable with the specified form name
             const loadDataTable = (formName) => {
+                console.log(`Loading DataTable for form: ${formName}`); // Debug log
                 initializeDataTable('applications-table', formName);
             };
 
             $(document).ready(function () {
+                // Initialize with the default form
                 let currentFormName = 'account_holder_loan_application';
                 loadDataTable(currentFormName);
 
+                // Handle tab clicks
                 $('[x-data]').on('click', 'button', function () {
                     const formName = $(this).attr('id');
+                    console.log(`Tab clicked. Current form: ${currentFormName}, New form: ${formName}`); // Debug log
                     if (currentFormName !== formName) {
                         currentFormName = formName;
                         loadDataTable(currentFormName);
                     }
                 });
 
+                // Handle status filter change
                 $('#status-filter').change(function () {
                     $('#applications-table').DataTable().ajax.reload();
                 });
 
+                // Handle search input
                 let searchTimeout;
                 $('#search').on('keyup', function () {
                     clearTimeout(searchTimeout);
@@ -206,6 +339,7 @@
                     }, 500);
                 });
 
+                // Handle mark as read button click
                 $('#mark-read').click(function () {
                     const selectedIds = $('.row-checkbox:checked').map(function () {
                         return $(this).val();
@@ -223,6 +357,54 @@
                     }
                 });
             });
+
+            // Handle dropdown toggle
+            let activeDropdown = null;
+
+            function toggleDropdown(event, dropdownId) {
+                event.stopPropagation();
+
+                if (activeDropdown && activeDropdown !== dropdownId) {
+                    document.getElementById(activeDropdown).classList.add('hidden');
+                }
+
+                const dropdown = document.getElementById(dropdownId);
+                const isHidden = dropdown.classList.contains('hidden');
+
+                dropdown.classList.toggle('hidden');
+                activeDropdown = isHidden ? dropdownId : null;
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (event) {
+                if (activeDropdown) {
+                    const dropdown = document.getElementById(activeDropdown);
+                    if (!dropdown.contains(event.target)) {
+                        dropdown.classList.add('hidden');
+                        activeDropdown = null;
+                    }
+                }
+            });
+
+            // Handle action buttons in the dropdown
+            function handleAction(action, rowId) {
+                switch (action) {
+                    case 'update':
+                        console.log('Update status for row:', rowId);
+                        break;
+                    case 'download':
+                        console.log('Download for row:', rowId);
+                        break;
+                    case 'delete':
+                        console.log('Delete row:', rowId);
+                        break;
+                }
+
+                if (activeDropdown) {
+                    document.getElementById(activeDropdown).classList.add('hidden');
+                    activeDropdown = null;
+                }
+            }
         </script>
     @endpush
 @endsection

@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Password;
 
 class AdminAgentController extends Controller
 {
+    public function index()
+    {
+        return view('agents');
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

@@ -3,9 +3,12 @@
 use App\Http\Controllers\AdminAgentController;
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\LoanApplicationController;
 use App\Http\Controllers\ProfileController;
+use App\Models\CreditPricing;
 use App\Models\Document;
 use App\Models\Form;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -14,9 +17,91 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    // Fetch base statistics
+    $totalUsers = User::count();
+    $activeApplications = Form::where('status', 'active')->count();
 
+    // Calculate product stats from JSON data
+    $forms = Form::whereNotNull('questionnaire_data')->get();
+    $productStats = $forms->map(function ($form) {
+        $data = json_decode($form->questionnaire_data, true);
+        return [
+            'product_name' => $data['selectedProduct']['product']['name'] ?? null,
+            'credit_value' => $data['selectedProduct']['selectedCreditOption']['final_price'] ?? 0,
+            'months' => $data['selectedProduct']['selectedCreditOption']['months'] ?? 0,
+            'created_at' => $form->created_at
+        ];
+    })->filter(function ($stat) {
+        return !is_null($stat['product_name']);
+    });
+
+    // Calculate totals
+    $totalProducts = $productStats->pluck('product_name')->unique()->count();
+    $totalCreditValue = $productStats->sum('credit_value');
+
+    // Monthly applications data
+    $monthlyApplications = $forms
+        ->groupBy(function ($form) {
+            return $form->created_at->format('n'); // Get month number
+        })
+        ->map(function ($monthForms) {
+            return $monthForms->count();
+        })
+        ->sortKeys();
+
+    $monthlyApplicationsLabels = $monthlyApplications->keys()->map(function ($month) {
+        return date('F', mktime(0, 0, 0, $month, 1));
+    });
+    $monthlyApplicationsData = $monthlyApplications->values();
+
+    // Product distribution data
+    $productDistribution = $productStats
+        ->groupBy('product_name')
+        ->map(function ($products) {
+            return $products->count();
+        });
+
+    $productDistributionLabels = $productDistribution->keys();
+    $productDistributionData = $productDistribution->values();
+
+    // Recent applications with decoded data
+    $recentApplications = Form::latest()
+        ->take(4)
+        ->get()
+        ->map(function ($form) {
+            $data = json_decode($form->questionnaire_data, true);
+            return (object)[
+                'id' => $form->id,
+                'form_name' => $data['selectedProduct']['product']['name'] ?? 'Unknown Product',
+                'status' => $form->status,
+                'status_color' => \App\Http\Controllers\AdminController::getStatusColor($form->status),
+                'credit_value' => $data['selectedProduct']['selectedCreditOption']['final_price'] ?? 0,
+                'months' => $data['selectedProduct']['selectedCreditOption']['months'] ?? 0
+            ];
+        });
+
+    // Add additional analytics
+    $averageCreditTerm = round($productStats->avg('months'), 1);
+    $averageCreditValue = round($productStats->avg('credit_value'), 2);
+
+    // System alerts with credit-specific checks
+    $systemAlerts = \App\Http\Controllers\AdminController::generateSystemAlerts($productStats);
+
+    return view('dashboard', compact(
+        'totalUsers',
+        'activeApplications',
+        'totalProducts',
+        'totalCreditValue',
+        'monthlyApplicationsLabels',
+        'monthlyApplicationsData',
+        'productDistributionLabels',
+        'productDistributionData',
+        'recentApplications',
+        'systemAlerts',
+        'averageCreditTerm',
+        'averageCreditValue'
+    ));
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/products', [AdminProductController::class, 'index'])
     ->middleware('auth')
@@ -63,6 +148,14 @@ Route::middleware('auth')->group(function () {
 
     // Agents controller
     Route::get('/agents', [AdminAgentController::class, 'index']);
+
+
+    //PDF Generation links for forms
+    Route::get('/download/account_holder_loan_application/{id}', [LoanApplicationController::class, 'accountHolderApplication']);
+    Route::get('/download/individual_account_opening_form/{id}', [LoanApplicationController::class, 'accountOpeningForm']);
+    Route::get('/download/pensioners_loan_application/{id}', [LoanApplicationController::class, 'pensionersLoanApplication']);
+    Route::get('/download/smes_business_account_application_form/{id}', [LoanApplicationController::class, 'smesBusinessApplicationForm']);
+    Route::get('/download/ssb_loan_application_form/{id}', [LoanApplicationController::class, 'ssbLoanApplicationForm']);
 });
 
 require __DIR__ . '/auth.php';
