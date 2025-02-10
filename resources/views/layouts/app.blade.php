@@ -9,10 +9,8 @@
 
     <!-- jQuery (Required for DataTables) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
     <!-- Alpine.js via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
     <!-- DataTables CSS & JS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -115,11 +113,30 @@
                     <span>Forms</span>
                 </a>
 
-                <a href="/agents" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-800"
-                   id="agentsLink">
-                    <i class="fas fa-users"></i>
-                    <span>Agents</span>
-                </a>
+                <div class="space-y-1">
+                    <button class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-indigo-800"
+                            onclick="toggleSubmenu('agentsSubmenu')" id="agentsMenu">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-users"></i>
+                            <span>Agents</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-sm transition-transform duration-200"></i>
+                    </button>
+                    <div id="agentsSubmenu" class="sub-menu">
+                        <a href="/agents"
+                           class="flex items-center space-x-3 p-3 sub-menu-item rounded-lg hover:bg-indigo-800"
+                           id="addAgentLink">
+                            <i class="fa fa-angle-right"></i>
+                            <span>Add Agent</span>
+                        </a>
+                        <a href="/agents/list"
+                           class="flex items-center space-x-3 p-3 sub-menu-item rounded-lg hover:bg-indigo-800"
+                           id="viewAgentsLink">
+                            <i class="fa fa-angle-right"></i>
+                            <span>View Agents</span>
+                        </a>
+                    </div>
+                </div>
 
                 <a href="/settings" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-800"
                    id="settingsLink">
@@ -139,11 +156,6 @@
                     <button id="sidebarToggle" class="text-gray-500 hover:text-gray-600 focus:outline-none">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div class="relative">
-                        <input type="text" placeholder="Search..."
-                               class="w-64 pl-10 pr-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                    </div>
                 </div>
 
                 <!-- Profile Dropdown -->
@@ -240,6 +252,16 @@
                 document.getElementById('viewProductsLink').classList.add('bg-indigo-800');
             } else {
                 document.getElementById('addProductLink').classList.add('bg-indigo-800');
+            }
+        }
+        if (path.includes('/agents')) {
+            document.getElementById('agentsMenu').classList.add('bg-indigo-800', 'border-l-4', 'border-white');
+            document.getElementById('agentsSubmenu').classList.add('active');
+
+            if (path.includes('/agents')) {
+                document.getElementById('addAgentLink').classList.add('bg-indigo-800');
+            } else if (path.includes('/agents/list')) {
+                document.getElementById('viewAgentsLink').classList.add('bg-indigo-800');
             }
         }
         if (path.includes('/categories')) {

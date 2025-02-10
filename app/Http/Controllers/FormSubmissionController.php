@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class FormSubmissionController extends Controller
 {
@@ -34,11 +35,34 @@ class FormSubmissionController extends Controller
 
 
     //list all form with the same form name
-    public function listFormSubmissions($formName)
+    public function listFormSubmissions($formName, Request $request)
     {
-        //return all forms where form_name = $formName
-        $formSubmissions = Form::where('form_name', $formName)->get();
-        //return json response
-        return response()->json($formSubmissions);
+        $status = $request->input('status');
+        $search = $request->input('search');
+
+        $query = DB::table('forms')->where('form_name', $formName);
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('questionnaire_data', 'LIKE', "%{$search}%")
+                    ->orWhere('form_values', 'LIKE', "%{$search}%");
+            });
+        }
+
+        //loop through collection and json decode the form_values and questionnaire_data
+        $query = $query->get()->map(function ($item) {
+            $item->form_values = json_decode($item->form_values);
+            $item->questionnaire_data = json_decode($item->questionnaire_data);
+
+            //set the name of the applicant from the form_values
+            $item->name = '';
+            return $item;
+        });
+
+        return datatables()->of($query)->make(true);
     }
 }
