@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Form;
 use Illuminate\Http\Request;
 use setasign\Fpdi\Fpdi;
 
@@ -10,7 +11,6 @@ class LoanApplicationController extends Controller
     public function accountHolderApplication($id)
     {
         //use the id to get the actual Form and use that as the jsonData
-
 
         // Paths to the existing PDF and JSON
         $pdfPath = storage_path('app/public/account_holder_loan_application.pdf');
@@ -72,14 +72,21 @@ class LoanApplicationController extends Controller
             ->header('Content-Disposition', 'attachment; filename="loan_application_filled.pdf"');
     }
 
-    public function accountOpeningForm($id)
+    public function downloadForm($form, $id)
     {
-        // Paths to the existing PDF and JSON
-        $pdfPath = storage_path('app/public/individual_account_opening_form.pdf');
-        $jsonPath = storage_path('app/public/individual_account_opening.json');
+        $form = Form::findOrFail($id);
 
-        // Load the JSON data
-        $jsonData = json_decode(file_get_contents($jsonPath), true);
+        // Load JSON files (assuming they are stored in Laravel's public folder)
+        $dbJson = $form->form_values;
+        $templateJson = file_get_contents(public_path('templates/json/' . $form . '.json'));
+
+        // Execute function
+        $jsonData = json_decode($this->mapAndMergeJson($dbJson, $templateJson), true);
+
+        //load pdf document
+        $pdfPath = public_path('templates/pdf/' . $form . '.pdf');
+
+        return $jsonData;
 
         // Create a new FPDI instance
         $pdf = new Fpdi();
@@ -116,17 +123,20 @@ class LoanApplicationController extends Controller
 
         // **Fill in the fields with JSON data**
         foreach ($fields as $field) {
-            $value = "";
-            foreach ($jsonData['form']['sections'] as $section) {
-                foreach ($section['fields'] as $input) {
-                    if ($input['label'] == $field['title']) {
-                        $value = $input['default'] ?? "__________"; // Placeholder if empty
-                        break;
+            $value = "__________"; // Default placeholder
+
+            foreach ($jsonData as $sectionTitle => $sectionData) {
+                // Ensure section exists
+                if (isset($jsonData[$sectionTitle]) && is_array($sectionData)) {
+                    // Check if the field exists in the section
+                    if (isset($sectionData[$field['title']])) {
+                        $value = $sectionData[$field['title']] ?? "__________";
+                        break; // Stop searching once found
                     }
                 }
             }
 
-            // Place the text into the PDF
+            // Write the value into the PDF at the specified coordinates
             $pdf->SetXY($field['x'], $field['y']);
             $pdf->Write(10, utf8_decode($value));
         }
@@ -134,17 +144,22 @@ class LoanApplicationController extends Controller
         // Output the completed PDF for download
         return response($pdf->Output('S'), 200)
             ->header('Content-Type', 'application/pdf')
-            ->header('Content-Disposition', 'attachment; filename="individual_account_opening_filled.pdf"');
+            ->header('Content-Disposition', 'attachment; filename="document.pdf"');
     }
 
     public function pensionersLoanApplication($id)
     {
-        // Paths to the existing PDF and JSON
-        $pdfPath = storage_path('app/public/pensioners_loan_application.pdf');
-        $jsonPath = storage_path('app/public/pensioners_loan_account.json');
+        $form = Form::findOrFail($id);
 
-        // Load the JSON data
-        $jsonData = json_decode(file_get_contents($jsonPath), true);
+        // Load JSON files (assuming they are stored in Laravel's public folder)
+        $dbJson = $form->form_values;
+        $templateJson = file_get_contents(public_path('templates/json/pensioners_loan_application.json'));
+
+        // Execute function
+        $jsonData = json_decode($this->mapAndMergeJson($dbJson, $templateJson), true);
+
+        //load pdf document
+        $pdfPath = public_path('templates/pdf/pensioners_loan_application.pdf');
 
         // Create a new FPDI instance
         $pdf = new Fpdi();
@@ -181,17 +196,20 @@ class LoanApplicationController extends Controller
 
         // **Fill in the fields with JSON data**
         foreach ($fields as $field) {
-            $value = "";
-            foreach ($jsonData['form']['sections'] as $section) {
-                foreach ($section['fields'] as $input) {
-                    if ($input['label'] == $field['title']) {
-                        $value = $input['default'] ?? "__________"; // Placeholder if empty
-                        break;
+            $value = "__________"; // Default placeholder
+
+            foreach ($jsonData as $sectionTitle => $sectionData) {
+                // Ensure section exists
+                if (isset($jsonData[$sectionTitle]) && is_array($sectionData)) {
+                    // Check if the field exists in the section
+                    if (isset($sectionData[$field['title']])) {
+                        $value = $sectionData[$field['title']] ?? "__________";
+                        break; // Stop searching once found
                     }
                 }
             }
 
-            // Place the text into the PDF
+            // Write the value into the PDF at the specified coordinates
             $pdf->SetXY($field['x'], $field['y']);
             $pdf->Write(10, utf8_decode($value));
         }
@@ -205,8 +223,8 @@ class LoanApplicationController extends Controller
     public function smesBusinessApplicationForm($id)
     {
         // Paths to the existing PDF and JSON
-        $pdfPath = storage_path('app/public/smes_business_account_application_form.pdf');
-        $jsonPath = storage_path('app/public/smes_business_account_opening.json');
+        $pdfPath = storage_path('app/public/smes_business_account_application.pdf');
+        $jsonPath = storage_path('app/public/smes_business_account_application.json');
 
         // Load the JSON data
         $jsonData = json_decode(file_get_contents($jsonPath), true);
@@ -278,8 +296,8 @@ class LoanApplicationController extends Controller
     public function ssbLoanApplicationForm($id)
     {
         // Paths to the existing PDF and JSON
-        $pdfPath = storage_path('app/public/ssb_loan_application_form.pdf');
-        $jsonPath = storage_path('app/public/ssb_account_opening_form.json');
+        $pdfPath = storage_path('app/public/ssb_account_application_form.pdf');
+        $jsonPath = storage_path('app/public/ssb_account_application_form.json');
 
         // Load the JSON data
         $jsonData = json_decode(file_get_contents($jsonPath), true);
@@ -345,5 +363,34 @@ class LoanApplicationController extends Controller
         return response($pdf->Output('S'), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="ssb_loan_application_filled.pdf"');
+    }
+
+    function mapAndMergeJson($dbJson, $templateJson)
+    {
+        // Decode JSON data
+        $dbData = json_decode($dbJson, true);
+        $templateData = json_decode($templateJson, true);
+
+        // Initialize the mapped response
+        $mappedData = [];
+
+        // Iterate through template sections
+        foreach ($templateData['form']['sections'] as $section) {
+            $sectionTitle = $section['title'];
+            $mappedData[$sectionTitle] = [];
+
+            // Iterate through fields in each section
+            foreach ($section['fields'] as $field) {
+                $fieldLabel = $field['label'];
+
+                // Convert label to a compatible key format (lowercase, dashes)
+                $formattedKey = strtolower(str_replace([' ', '(', ')', '’', '–'], ['-', '', '', '', '-'], $fieldLabel));
+
+                // Check if the key exists in DB response and assign it
+                $mappedData[$sectionTitle][$fieldLabel] = $dbData[$formattedKey] ?? null;
+            }
+        }
+
+        return json_encode($mappedData, JSON_PRETTY_PRINT);
     }
 }

@@ -458,7 +458,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                                 onClick={() => setSelectedProductId(product.id)}
                                                 variant="primary"
                                             >
-                                                View Credit Options
+                                                Select Instalment/Period:
                                             </Button>
                                         )}
                                     </div>
@@ -593,7 +593,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                         onClick={() => onComplete(formData)}
                         variant="primary"
                     >
-                        Continue to Application
+                        Click to Confirm Details and Proceed to Application Form
                     </Button>
                 </div>
             )}

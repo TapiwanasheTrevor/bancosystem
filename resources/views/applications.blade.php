@@ -53,27 +53,27 @@
                                     ->whereNull('status')
                                     ->count()
                                 ],
-                            'individual_account_opening' => [
+                            'individual_account_opening_form' => [
                                 'label' => 'Individual Account Form',
-                                'count' => \App\Models\Form::where('form_name', 'individual_account_opening')
+                                'count' => \App\Models\Form::where('form_name', 'individual_account_opening_form')
                                     ->whereNull('status')
                                     ->count()
                                 ],
-                            'pensioners_loan_account' => [
+                            'pensioners_loan_application' => [
                                 'label' => 'Pensioners Form',
-                                 'count' => \App\Models\Form::where('form_name', 'pensioners_loan_account')
+                                 'count' => \App\Models\Form::where('form_name', 'pensioners_loan_application')
                                     ->whereNull('status')
                                     ->count()
                                 ],
-                            'smes_business_account_opening' => [
+                            'smes_business_account_application' => [
                                 'label' => 'SMEs Form',
-                                 'count' => \App\Models\Form::where('form_name', 'smes_business_account_opening')
+                                 'count' => \App\Models\Form::where('form_name', 'smes_business_account_application')
                                     ->whereNull('status')
                                     ->count()
                                 ],
-                            'ssb_account_opening_form' => [
+                            'ssb_account_application_form' => [
                                 'label' => 'SSB Account Form',
-                                'count' => \App\Models\Form::where('form_name', 'ssb_account_opening_form')
+                                'count' => \App\Models\Form::where('form_name', 'ssb_account_application_form')
                                     ->whereNull('status')
                                     ->count()
                                 ],
@@ -276,7 +276,7 @@
                 <button
                     class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 flex items-center space-x-2"
                     role="menuitem"
-                    onclick="handleAction('download', ${row.id})"
+                    onclick="handleAction('download', '/download/${row.form_name}/${row.id}')"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

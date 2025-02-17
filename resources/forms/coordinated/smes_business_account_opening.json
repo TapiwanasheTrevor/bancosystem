@@ -1,0 +1,859 @@
+{
+    "form": {
+        "sections": [
+            {
+                "title": "Business Information",
+                "fields": [
+                    {
+                        "label": "Registered Name",
+                        "name": "registered_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 235,
+                            "left": 66,
+                            "width": 64,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Trading Name",
+                        "name": "trading_name",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 235,
+                            "left": 130,
+                            "width": 64,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Certificate of Incorporation Number",
+                        "name": "certificate_of_incorporation_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 235,
+                            "left": 200,
+                            "width": 150,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Business Type",
+                        "name": "business_type",
+                        "type": "select",
+                        "options": [
+                            "Company",
+                            "PBC",
+                            "Informal Body"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 235,
+                            "left": 370,
+                            "width": 150,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Business Address",
+                        "name": "business_address",
+                        "type": "textarea",
+                        "required": true,
+                        "coordinates": {
+                            "top": 235,
+                            "left": 530,
+                            "width": 200,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Contact Phone Number",
+                        "name": "contact_phone_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 235,
+                            "left": 740,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Email Address",
+                        "name": "email_address",
+                        "type": "email",
+                        "required": true,
+                        "coordinates": {
+                            "top": 235,
+                            "left": 850,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Period at Current Business Location (Years)",
+                        "name": "period_at_current_business_location",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 270,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Number of Employees (Full-time & Owner)",
+                        "name": "number_of_employees_full_time",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 270,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Number of Employees (Part-time)",
+                        "name": "number_of_employees_part_time",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 270,
+                            "left": 330,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Number of Employees (Non-paid Family)",
+                        "name": "number_of_employees_non_paid_family",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 270,
+                            "left": 460,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Main Products/Services",
+                        "name": "main_products_services",
+                        "type": "textarea",
+                        "required": true,
+                        "coordinates": {
+                            "top": 270,
+                            "left": 590,
+                            "width": 200,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Main Problems Faced by Business",
+                        "name": "main_problems_faced",
+                        "type": "textarea",
+                        "required": true,
+                        "coordinates": {
+                            "top": 270,
+                            "left": 800,
+                            "width": 200,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Sources of Capital",
+                        "name": "sources_of_capital",
+                        "type": "checkbox_list",
+                        "options": [
+                            "Own Savings",
+                            "Family Gift",
+                            "Loan",
+                            "Other"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 310,
+                            "left": 66,
+                            "width": 200,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Who are your main customers?",
+                        "name": "main_customers",
+                        "type": "checkbox_list",
+                        "options": [
+                            "Individuals",
+                            "Other Businesses",
+                            "Other"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 310,
+                            "left": 300,
+                            "width": 200,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Where are your customers from?",
+                        "name": "customer_location",
+                        "type": "checkbox_list",
+                        "options": [
+                            "Neighborhood",
+                            "This Town",
+                            "Other"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 310,
+                            "left": 600,
+                            "width": 200,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Estimated Annual Sales (USD)",
+                        "name": "estimated_annual_sales",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 350,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Net Profit (USD)",
+                        "name": "net_profit",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 350,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Total Liabilities (USD)",
+                        "name": "total_liabilities",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 350,
+                            "left": 330,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Net Cash Flow (USD)",
+                        "name": "net_cash_flow",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 350,
+                            "left": 460,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Incorporation Date",
+                        "name": "incorporation_date",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 350,
+                            "left": 590,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "BP Number",
+                        "name": "bp_number",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 350,
+                            "left": 700,
+                            "width": 100,
+                            "height": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Loan Information",
+                "fields": [
+                    {
+                        "label": "Loan Amount (USD)",
+                        "name": "loan_amount",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 400,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Repayment Period (Months)",
+                        "name": "repayment_period",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 400,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Purpose of Loan",
+                        "name": "purpose_of_loan",
+                        "type": "textarea",
+                        "required": true,
+                        "coordinates": {
+                            "top": 400,
+                            "left": 330,
+                            "width": 200,
+                            "height": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "References",
+                "fields": [
+                    {
+                        "label": "Reference 1 Name",
+                        "name": "reference_1_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 450,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Reference 1 Phone Number",
+                        "name": "reference_1_phone_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 450,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Reference 2 Name",
+                        "name": "reference_2_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 450,
+                            "left": 330,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Reference 2 Phone Number",
+                        "name": "reference_2_phone_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 450,
+                            "left": 460,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Reference 3 Name",
+                        "name": "reference_3_name",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 450,
+                            "left": 590,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Reference 3 Phone Number",
+                        "name": "reference_3_phone_number",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 450,
+                            "left": 700,
+                            "width": 100,
+                            "height": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Security (Assets Pledged)",
+                "fields": [
+                    {
+                        "label": "Asset 1 Description",
+                        "name": "asset_1_description",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Asset 1 Serial/Reg Number",
+                        "name": "asset_1_serial_reg_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Asset 1 Estimated Value (USD)",
+                        "name": "asset_1_estimated_value",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 330,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Asset 2 Description",
+                        "name": "asset_2_description",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 460,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Asset 2 Serial/Reg Number",
+                        "name": "asset_2_serial_reg_number",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 590,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Asset 2 Estimated Value (USD)",
+                        "name": "asset_2_estimated_value",
+                        "type": "number",
+                        "required": false,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 700,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Asset 3 Description",
+                        "name": "asset_3_description",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 830,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Asset 3 Serial/Reg Number",
+                        "name": "asset_3_serial_reg_number",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 960,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Asset 3 Estimated Value (USD)",
+                        "name": "asset_3_estimated_value",
+                        "type": "number",
+                        "required": false,
+                        "coordinates": {
+                            "top": 500,
+                            "left": 1090,
+                            "width": 100,
+                            "height": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Directors' Personal Details",
+                "fields": [
+                    {
+                        "label": "First Name",
+                        "name": "director_first_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Surname",
+                        "name": "director_surname",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Title",
+                        "name": "director_title",
+                        "type": "select",
+                        "options": [
+                            "Mr",
+                            "Mrs",
+                            "Dr",
+                            "Prof"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 330,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Gender",
+                        "name": "director_gender",
+                        "type": "radio",
+                        "options": [
+                            "Male",
+                            "Female"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 460,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Date of Birth",
+                        "name": "director_date_of_birth",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 590,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Nationality",
+                        "name": "director_nationality",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 720,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "ID Number",
+                        "name": "director_id_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 850,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Marital Status",
+                        "name": "director_marital_status",
+                        "type": "select",
+                        "options": [
+                            "Single",
+                            "Married",
+                            "Divorced",
+                            "Widowed"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 980,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Cell Number",
+                        "name": "director_cell_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 1110,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Email Address",
+                        "name": "director_email_address",
+                        "type": "email",
+                        "required": true,
+                        "coordinates": {
+                            "top": 550,
+                            "left": 1240,
+                            "width": 100,
+                            "height": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Banking/Mobile Account Details",
+                "fields": [
+                    {
+                        "label": "Bank",
+                        "name": "bank_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 600,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Branch",
+                        "name": "bank_branch",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 600,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Account Number",
+                        "name": "bank_account_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 600,
+                            "left": 330,
+                            "width": 100,
+                            "height": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Declaration",
+                "fields": [
+                    {
+                        "label": "Full Name",
+                        "name": "declaration_full_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 650,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Signature",
+                        "name": "declaration_signature",
+                        "type": "signature",
+                        "required": true,
+                        "coordinates": {
+                            "top": 650,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Date",
+                        "name": "declaration_date",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 650,
+                            "left": 330,
+                            "width": 100,
+                            "height": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "For Official Use Only",
+                "fields": [
+                    {
+                        "label": "Received & Checked By",
+                        "name": "official_received_checked_by",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 700,
+                            "left": 66,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Signature",
+                        "name": "official_signature",
+                        "type": "signature",
+                        "required": true,
+                        "coordinates": {
+                            "top": 700,
+                            "left": 200,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Date",
+                        "name": "official_date",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 700,
+                            "left": 330,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Approved By",
+                        "name": "official_approved_by",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 700,
+                            "left": 460,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Signature",
+                        "name": "official_approved_signature",
+                        "type": "signature",
+                        "required": true,
+                        "coordinates": {
+                            "top": 700,
+                            "left": 590,
+                            "width": 100,
+                            "height": 30
+                        }
+                    },
+                    {
+                        "label": "Date",
+                        "name": "official_approved_date",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 700,
+                            "left": 720,
+                            "width": 100,
+                            "height": 30
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "KYC Checklist",
+                "fields": [
+                    {
+                        "label": "Required Documents",
+                        "name": "kyc_required_documents",
+                        "type": "checkbox_list",
+                        "options": [
+                            "Copy of ID, License, Valid Passport",
+                            "Financial Statement",
+                            "Articles of Association/PBC",
+                            "Certificate of Incorporation",
+                            "CR11",
+                            "Stamped 3 Months’ Bank Statement",
+                            "Ecocash Statements (if applicable)",
+                            "CR6",
+                            "Group Constitution",
+                            "Resolution to Borrow",
+                            "CR5",
+                            "Proof of Residence/Confirmation Letter",
+                            "Company Documents: MOA"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 750,
+                            "left": 66,
+                            "width": 200,
+                            "height": 30
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}

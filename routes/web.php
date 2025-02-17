@@ -149,13 +149,8 @@ Route::middleware('auth')->group(function () {
     // Agents controller
     Route::get('/agents', [AdminAgentController::class, 'index']);
 
-
-    //PDF Generation links for forms
-    Route::get('/download/account_holder_loan_application/{id}', [LoanApplicationController::class, 'accountHolderApplication']);
-    Route::get('/download/individual_account_opening_form/{id}', [LoanApplicationController::class, 'accountOpeningForm']);
-    Route::get('/download/pensioners_loan_application/{id}', [LoanApplicationController::class, 'pensionersLoanApplication']);
-    Route::get('/download/smes_business_account_application_form/{id}', [LoanApplicationController::class, 'smesBusinessApplicationForm']);
-    Route::get('/download/ssb_loan_application_form/{id}', [LoanApplicationController::class, 'ssbLoanApplicationForm']);
+    //one link for them all
+    Route::get('/download/{form}/{id}', [LoanApplicationController::class, 'downloadForm']);
 });
 
 require __DIR__ . '/auth.php';

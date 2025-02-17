@@ -1,0 +1,400 @@
+{
+    "form": {
+        "sections": [
+            {
+                "title": "Customer Personal Details",
+                "fields": [
+                    {
+                        "label": "Title",
+                        "type": "select",
+                        "options": [
+                            "Mr",
+                            "Mrs",
+                            "Miss"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Surname",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "First Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Gender",
+                        "type": "radio",
+                        "options": [
+                            "Male",
+                            "Female"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Date of Birth",
+                        "type": "date",
+                        "required": true
+                    },
+                    {
+                        "label": "Marital Status",
+                        "type": "select",
+                        "options": [
+                            "Single",
+                            "Married",
+                            "Divorced",
+                            "Widowed"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Nationality",
+                        "type": "text",
+                        "default": "Zimbabwean",
+                        "required": true
+                    },
+                    {
+                        "label": "ID Number",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Cell Number",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "WhatsApp",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Email Address",
+                        "type": "email",
+                        "required": true
+                    },
+                    {
+                        "label": "Name of Responsible Ministry",
+                        "type": "select",
+                        "options": [
+                            "Education",
+                            "Health",
+                            "Home Affairs",
+                            "Justice",
+                            "Other"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Name of Employer",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Employer Address",
+                        "type": "textarea",
+                        "required": true
+                    },
+                    {
+                        "label": "Permanent Address",
+                        "type": "textarea",
+                        "required": true
+                    },
+                    {
+                        "label": "Property Ownership",
+                        "type": "radio",
+                        "options": [
+                            "Owned",
+                            "Employer Owned",
+                            "Rented",
+                            "Mortgaged",
+                            "Parents Owned"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Period at Current Address",
+                        "type": "select",
+                        "options": [
+                            "Less than One Year",
+                            "Between 1–2 years",
+                            "Between 2-5 years",
+                            "More than 5 years"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Status of Employment",
+                        "type": "radio",
+                        "options": [
+                            "Permanent",
+                            "Contract",
+                            "Part-time"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Job Title",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Date of Employment",
+                        "type": "date",
+                        "required": true
+                    },
+                    {
+                        "label": "Name of Head of Institution",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Cell No of Head of Institution",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Employment Number",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Current Net Salary (USD)",
+                        "type": "number",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "Spouse and Next of Kin Details",
+                "fields": [
+                    {
+                        "label": "Full Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Relationship",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Phone Numbers",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Residential Address",
+                        "type": "textarea",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "Banking/Mobile Account Details",
+                "fields": [
+                    {
+                        "label": "Bank",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Branch",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Account Number",
+                        "type": "text",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "Loans with Other Institutions",
+                "fields": [
+                    {
+                        "label": "Institution",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Monthly Instalment (USD)",
+                        "type": "number",
+                        "required": true
+                    },
+                    {
+                        "label": "Current Loan Balance (USD)",
+                        "type": "number",
+                        "required": true
+                    },
+                    {
+                        "label": "Maturity Date",
+                        "type": "date",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "Credit Facility Application Details",
+                "fields": [
+                    {
+                        "label": "Applied Amount (USD)",
+                        "type": "number",
+                        "required": true
+                    },
+                    {
+                        "label": "Loan Duration",
+                        "type": "radio",
+                        "options": [
+                            "3 months",
+                            "6 months",
+                            "9 months",
+                            "12 months",
+                            "Other"
+                        ],
+                        "required": true
+                    },
+                    {
+                        "label": "Purpose/Asset Applied For",
+                        "type": "textarea",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "Deduction Order Form",
+                "fields": [
+                    {
+                        "label": "First Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Surname",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "ID Number",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Ministry",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Province",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Employee Code Number",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Check Letter",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Department Code",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Station Code",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Payee Code",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Monthly Rate (Installment Amount)",
+                        "type": "number",
+                        "required": true
+                    },
+                    {
+                        "label": "From Date",
+                        "type": "date",
+                        "required": true
+                    },
+                    {
+                        "label": "To Date",
+                        "type": "date",
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "title": "Declaration",
+                "fields": [
+                    {
+                        "label": "Full Name",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Applicant's Signature",
+                        "type": "signature",
+                        "required": true
+                    },
+                    {
+                        "label": "Date",
+                        "type": "date",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "For Official Use Only",
+                "fields": [
+                    {
+                        "label": "Received & Checked By",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Approved By",
+                        "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Signature",
+                        "type": "signature",
+                        "required": true
+                    },
+                    {
+                        "label": "Date",
+                        "type": "date",
+                        "required": true
+                    }
+                ]
+            },
+            {
+                "title": "KYC Checklist",
+                "fields": [
+                    {
+                        "label": "Required Documents",
+                        "type": "checkbox_list",
+                        "options": [
+                            "Copy of ID or Valid Passport",
+                            "Current Pay Slip/Business Records",
+                            "Confirmation Letter from Employer"
+                        ],
+                        "required": true
+                    }
+                ]
+            }
+        ],
+        "fileName": "ssb_account_opening_form"
+    }
+}

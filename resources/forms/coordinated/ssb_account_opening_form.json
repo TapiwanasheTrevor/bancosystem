@@ -1,0 +1,812 @@
+{
+    "form": {
+        "sections": [
+            {
+                "title": "Customer Personal Details",
+                "fields": [
+                    {
+                        "label": "Title",
+                        "name": "title",
+                        "type": "select",
+                        "options": [
+                            "Mr",
+                            "Mrs",
+                            "Miss"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 416,
+                            "left": 87,
+                            "width": 19,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Surname",
+                        "name": "surname",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 416,
+                            "left": 240,
+                            "width": 48,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "First Name",
+                        "name": "first_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 416,
+                            "left": 361,
+                            "width": 26,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Gender",
+                        "name": "gender",
+                        "type": "radio",
+                        "options": [
+                            "Male",
+                            "Female"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 416,
+                            "left": 481,
+                            "width": 48,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Date of Birth",
+                        "name": "date_of_birth",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 416,
+                            "left": 759,
+                            "width": 31,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Marital Status",
+                        "name": "marital_status",
+                        "type": "select",
+                        "options": [
+                            "Single",
+                            "Married",
+                            "Divorced",
+                            "Widowed"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 441,
+                            "left": 144,
+                            "width": 40,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Nationality",
+                        "name": "nationality",
+                        "type": "text",
+                        "default": "Zimbabwean",
+                        "required": true,
+                        "coordinates": {
+                            "top": 441,
+                            "left": 339,
+                            "width": 76,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "ID Number",
+                        "name": "id_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 441,
+                            "left": 559,
+                            "width": 51,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Cell Number",
+                        "name": "cell_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 479,
+                            "left": 84,
+                            "width": 51,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "WhatsApp",
+                        "name": "whatsapp",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 479,
+                            "left": 274,
+                            "width": 65,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Email Address",
+                        "name": "email_address",
+                        "type": "email",
+                        "required": true,
+                        "coordinates": {
+                            "top": 479,
+                            "left": 481,
+                            "width": 52,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Name of Responsible Ministry",
+                        "name": "name_of_responsible_ministry",
+                        "type": "select",
+                        "options": [
+                            "Education",
+                            "Health",
+                            "Home Affairs",
+                            "Justice",
+                            "Other"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 505,
+                            "left": 96,
+                            "width": 11,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Name of Employer",
+                        "name": "name_of_employer",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 530,
+                            "left": 185,
+                            "width": 4,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Employer Address",
+                        "name": "employer_address",
+                        "type": "textarea",
+                        "required": true,
+                        "coordinates": {
+                            "top": 530,
+                            "left": 492,
+                            "width": 63,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Permanent Address",
+                        "name": "permanent_address",
+                        "type": "textarea",
+                        "required": true,
+                        "coordinates": {
+                            "top": 555,
+                            "left": 58,
+                            "width": 108,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Property Ownership",
+                        "name": "property_ownership",
+                        "type": "radio",
+                        "options": [
+                            "Owned",
+                            "Employer Owned",
+                            "Rented",
+                            "Mortgaged",
+                            "Parents Owned"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 581,
+                            "left": 187,
+                            "width": 42,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Period at Current Address",
+                        "name": "period_at_current_address",
+                        "type": "select",
+                        "options": [
+                            "Less than One Year",
+                            "Between 1–2 years",
+                            "Between 2-5 years",
+                            "More than 5 years"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 606,
+                            "left": 269,
+                            "width": 56,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Status of Employment",
+                        "name": "status_of_employment",
+                        "type": "radio",
+                        "options": [
+                            "Permanent",
+                            "Contract",
+                            "Part-time"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 629,
+                            "left": 269,
+                            "width": 50,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Job Title",
+                        "name": "job_title",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 650,
+                            "left": 117,
+                            "width": 20,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Date of Employment",
+                        "name": "date_of_employment",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 650,
+                            "left": 282,
+                            "width": 88,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Name of Head of Institution",
+                        "name": "name_of_head_of_institution",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 650,
+                            "left": 504,
+                            "width": 35,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Cell No of Head of Institution",
+                        "name": "cell_no_of_head_of_institution",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 670,
+                            "left": 528,
+                            "width": 39,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Employment Number",
+                        "name": "employment_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 693,
+                            "left": 312,
+                            "width": 4,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Current Net Salary (USD)",
+                        "name": "current_net_salary",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 693,
+                            "left": 605,
+                            "width": 43,
+                            "height": 12
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Spouse and Next of Kin Details",
+                "fields": [
+                    {
+                        "label": "Full Name",
+                        "name": "spouse_full_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 774,
+                            "left": 57,
+                            "width": 3,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Relationship",
+                        "name": "spouse_relationship",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 774,
+                            "left": 292,
+                            "width": 3,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Phone Numbers",
+                        "name": "spouse_phone_numbers",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 774,
+                            "left": 441,
+                            "width": 3,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Residential Address",
+                        "name": "spouse_residential_address",
+                        "type": "textarea",
+                        "required": true,
+                        "coordinates": {
+                            "top": 774,
+                            "left": 568,
+                            "width": 3,
+                            "height": 12
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Banking/Mobile Account Details",
+                "fields": [
+                    {
+                        "label": "Bank",
+                        "name": "bank",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 876,
+                            "left": 54,
+                            "width": 34,
+                            "height": 10
+                        }
+                    },
+                    {
+                        "label": "Branch",
+                        "name": "branch",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 876,
+                            "left": 331,
+                            "width": 51,
+                            "height": 10
+                        }
+                    },
+                    {
+                        "label": "Account Number",
+                        "name": "account_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 876,
+                            "left": 580,
+                            "width": 59,
+                            "height": 12
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Loans with Other Institutions",
+                "fields": [
+                    {
+                        "label": "Institution",
+                        "name": "institution",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 999,
+                            "left": 54,
+                            "width": 9,
+                            "height": 11
+                        }
+                    },
+                    {
+                        "label": "Monthly Instalment (USD)",
+                        "name": "monthly_instalment",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 999,
+                            "left": 191,
+                            "width": 3,
+                            "height": 11
+                        }
+                    },
+                    {
+                        "label": "Current Loan Balance (USD)",
+                        "name": "current_loan_balance",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 999,
+                            "left": 430,
+                            "width": 65,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Maturity Date",
+                        "name": "maturity_date",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 999,
+                            "left": 685,
+                            "width": 36,
+                            "height": 12
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Credit Facility Application Details",
+                "fields": [
+                    {
+                        "label": "Applied Amount (USD)",
+                        "name": "applied_amount",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 1105,
+                            "left": 190,
+                            "width": 56,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Loan Duration",
+                        "name": "loan_duration",
+                        "type": "radio",
+                        "options": [
+                            "3 months",
+                            "6 months",
+                            "9 months",
+                            "12 months",
+                            "Other"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 1138,
+                            "left": 252,
+                            "width": 581,
+                            "height": 15
+                        }
+                    },
+                    {
+                        "label": "Purpose/Asset Applied For",
+                        "name": "purpose_asset_applied_for",
+                        "type": "textarea",
+                        "required": true,
+                        "coordinates": {
+                            "top": 1151,
+                            "left": 252,
+                            "width": 584,
+                            "height": 15
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Deduction Order Form",
+                "fields": [
+                    {
+                        "label": "First Name",
+                        "name": "deduction_first_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 228,
+                            "left": 103,
+                            "width": 4,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Surname",
+                        "name": "deduction_surname",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 228,
+                            "left": 152,
+                            "width": 4,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "ID Number",
+                        "name": "deduction_id_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 228,
+                            "left": 613,
+                            "width": 17,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Ministry",
+                        "name": "deduction_ministry",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 352,
+                            "left": 83,
+                            "width": 49,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Province",
+                        "name": "deduction_province",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 352,
+                            "left": 673,
+                            "width": 55,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Employee Code Number",
+                        "name": "deduction_employee_code_number",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 381,
+                            "left": 179,
+                            "width": 51,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Check Letter",
+                        "name": "deduction_check_letter",
+                        "type": "text",
+                        "required": false,
+                        "coordinates": {
+                            "top": 381,
+                            "left": 655,
+                            "width": 38,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Department Code",
+                        "name": "deduction_department_code",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 412,
+                            "left": 191,
+                            "width": 35,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Station Code",
+                        "name": "deduction_station_code",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 412,
+                            "left": 430,
+                            "width": 35,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Payee Code",
+                        "name": "deduction_payee_code",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 412,
+                            "left": 709,
+                            "width": 35,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Monthly Rate (Installment Amount)",
+                        "name": "deduction_monthly_rate",
+                        "type": "number",
+                        "required": true,
+                        "coordinates": {
+                            "top": 442,
+                            "left": 289,
+                            "width": 4,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "From Date",
+                        "name": "deduction_from_date",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 442,
+                            "left": 461,
+                            "width": 4,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "To Date",
+                        "name": "deduction_to_date",
+                        "type": "date",
+                        "required": false,
+                        "coordinates": {
+                            "top": 442,
+                            "left": 693,
+                            "width": 4,
+                            "height": 12
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "Declaration",
+                "fields": [
+                    {
+                        "label": "Full Name",
+                        "name": "declaration_full_name",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 651,
+                            "left": 80,
+                            "width": 39,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Applicant's Signature",
+                        "name": "declaration_signature",
+                        "type": "signature",
+                        "required": true,
+                        "coordinates": {
+                            "top": 651,
+                            "left": 507,
+                            "width": 60,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Date",
+                        "name": "declaration_date",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 651,
+                            "left": 693,
+                            "width": 32,
+                            "height": 12
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "For Official Use Only",
+                "fields": [
+                    {
+                        "label": "Received & Checked By",
+                        "name": "official_received_checked_by",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 838,
+                            "left": 83,
+                            "width": 56,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Approved By",
+                        "name": "official_approved_by",
+                        "type": "text",
+                        "required": true,
+                        "coordinates": {
+                            "top": 863,
+                            "left": 83,
+                            "width": 56,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Signature",
+                        "name": "official_signature",
+                        "type": "signature",
+                        "required": true,
+                        "coordinates": {
+                            "top": 838,
+                            "left": 486,
+                            "width": 60,
+                            "height": 12
+                        }
+                    },
+                    {
+                        "label": "Date",
+                        "name": "official_date",
+                        "type": "date",
+                        "required": true,
+                        "coordinates": {
+                            "top": 838,
+                            "left": 686,
+                            "width": 31,
+                            "height": 12
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "KYC Checklist",
+                "fields": [
+                    {
+                        "label": "Required Documents",
+                        "name": "kyc_required_documents",
+                        "type": "checkbox_list",
+                        "options": [
+                            "Copy of ID or Valid Passport",
+                            "Current Pay Slip/Business Records",
+                            "Confirmation Letter from Employer"
+                        ],
+                        "required": true,
+                        "coordinates": {
+                            "top": 1023,
+                            "left": 857,
+                            "width": 4,
+                            "height": 14
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+}
