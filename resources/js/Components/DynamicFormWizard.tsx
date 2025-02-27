@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {ChevronLeft, ChevronRight} from 'lucide-react';
+import {ChevronLeft, ChevronRight, Search} from 'lucide-react';
 import Lottie from 'react-lottie';
 import completeAnimation from './complete.json';
 
@@ -10,10 +10,14 @@ interface DynamicFormWizardProps {
 }
 
 interface Field {
-    type: 'text' | 'email' | 'number' | 'select' | 'radio' | 'checkbox_list' | 'textarea';
+    type: 'text' | 'email' | 'number' | 'select' | 'radio' | 'checkbox_list' | 'textarea' | 'fieldset' | 'html' | 'checkbox' | 'select2';
     label: string;
-    required: boolean;
+    required?: boolean;
     options?: string[];
+    legend?: string;
+    children?: Field[];
+    html?: string;
+    placeholder?: string;
 }
 
 interface Section {
@@ -35,7 +39,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
     const [formValues, setFormValues] = useState<Record<string, any>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [success, setSuccess] = useState(false);  // Ensure success state is defined
+    const [success, setSuccess] = useState(false);
     const [agentId, setAgentId] = useState<string | null>(null);
 
     useEffect(() => {
@@ -149,6 +153,23 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                     </div>
                 );
 
+            case 'select2':
+                return (
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium mb-2 text-gray-700">
+                            {field.label} {field.required && <span className="text-emerald-500">*</span>}
+                        </label>
+                        <Select2
+                            fieldId={fieldId}
+                            options={field.options || []}
+                            required={field.required}
+                            onChange={(value) => handleInputChange(fieldId, value)}
+                            value={formValues[fieldId] || ''}
+                            placeholder={field.placeholder || `Select ${field.label}`}
+                        />
+                    </div>
+                );
+
             case 'radio':
                 return (
                     <div className="mb-6">
@@ -241,6 +262,49 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                     </div>
                 );
 
+            case 'fieldset':
+                return (
+                    <fieldset className="mb-6 border rounded-xl p-6 bg-gray-50">
+                        {field.legend && (
+                            <legend className="text-lg font-medium text-gray-800 px-2">
+                                {field.legend}
+                            </legend>
+                        )}
+                        <div className="space-y-4">
+                            {field.children?.map((childField, idx) => (
+                                <div key={idx}>
+                                    {renderField(childField)}
+                                </div>
+                            ))}
+                        </div>
+                    </fieldset>
+                );
+
+            case 'html':
+                return (
+                    <div className="mb-6 prose prose-sm max-w-none leading-relaxed text-gray-700">
+                        {field.html?.split('\n').map((paragraph, idx) => (
+                            <p key={idx} className="mb-4" dangerouslySetInnerHTML={{__html: paragraph}}/>
+                        ))}
+                    </div>
+                );
+
+            case 'checkbox':
+                return (
+                    <div className="mb-6">
+                        <label className="flex items-start space-x-3">
+                            <input
+                                type="checkbox"
+                                className="mt-1 text-emerald-500 focus:ring-emerald-400 h-4 w-4 rounded"
+                                required={field.required}
+                                checked={formValues[fieldId] || false}
+                                onChange={(e) => handleInputChange(fieldId, e.target.checked)}
+                            />
+                            <span className="text-sm text-gray-700">{field.label}</span>
+                        </label>
+                    </div>
+                );
+
             default:
                 return null;
         }
@@ -264,7 +328,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
 
             if (!response.ok) throw new Error('Failed to submit form');
             const {insertId} = await response.json();
-            setSuccess(true);  // Set success state to true
+            setSuccess(true);
             onComplete(insertId);
         } catch (err) {
             console.error('Error submitting form:', err);
@@ -379,6 +443,64 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                     </div>
                 </div>
             </div>
+        </div>
+    );
+};
+
+const Select2 = ({fieldId, options, required, onChange, value, placeholder}) => {
+    const [query, setQuery] = useState('');
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+
+    const filteredOptions = options.filter(option =>
+        option.toLowerCase().includes(query.toLowerCase())
+    );
+
+    const handleSelect = (option) => {
+        onChange(option);
+        setDropdownOpen(false);
+        setQuery('');
+    };
+
+    return (
+        <div className="relative">
+            <div
+                className="flex items-center border rounded-md shadow-sm focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500">
+                <div className="pl-3 text-gray-400">
+                    <Search size={18}/>
+                </div>
+                <input
+                    type="text"
+                    value={value || query}
+                    onChange={(e) => {
+                        setQuery(e.target.value);
+                        if (value) onChange('');
+                        setDropdownOpen(true);
+                    }}
+                    onClick={() => setDropdownOpen(true)}
+                    placeholder={placeholder}
+                    className="w-full p-2 outline-none"
+                    required={required}
+                />
+            </div>
+
+            {dropdownOpen && (
+                <div
+                    className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                    {filteredOptions.length > 0 ? (
+                        filteredOptions.map((option, index) => (
+                            <div
+                                key={index}
+                                className="px-4 py-2 cursor-pointer hover:bg-emerald-50"
+                                onClick={() => handleSelect(option)}
+                            >
+                                {option}
+                            </div>
+                        ))
+                    ) : (
+                        <div className="px-4 py-2 text-gray-500">No options found</div>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

@@ -76,18 +76,18 @@
                         "required": true
                     },
                     {
-                        "label": "Name of Responsible Paymaster",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Church Affiliation",
+                        "label": "Name of Former Government Ministry Employer",
                         "type": "text",
                         "required": false
                     },
                     {
-                        "label": "Other Paymaster",
+                        "label": "Name of Employer (If Applicable)",
                         "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Employer Address",
+                        "type": "textarea",
                         "required": false
                     },
                     {
@@ -117,6 +117,46 @@
                             "More than 5 years"
                         ],
                         "required": true
+                    },
+                    {
+                        "label": "Employment Status",
+                        "type": "radio",
+                        "options": [
+                            "Permanent",
+                            "Contract",
+                            "Part-time"
+                        ],
+                        "required": false
+                    },
+                    {
+                        "label": "Job Title",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Date of Employment",
+                        "type": "date",
+                        "required": false
+                    },
+                    {
+                        "label": "Name of Head of Institution",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Cell No of Head of Institution",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Employment Number",
+                        "type": "text",
+                        "required": false
+                    },
+                    {
+                        "label": "Current Net Salary (USD)",
+                        "type": "number",
+                        "required": false
                     }
                 ]
             },
@@ -124,7 +164,7 @@
                 "title": "Spouse and Next of Kin Details",
                 "fields": [
                     {
-                        "label": "Full Names",
+                        "label": "Full Name",
                         "type": "text",
                         "required": true
                     },
@@ -194,7 +234,7 @@
                 "title": "Credit Facility Application Details",
                 "fields": [
                     {
-                        "label": "Applied Loan Amount (USD)",
+                        "label": "Applied Amount (USD)",
                         "type": "number",
                         "required": true
                     },
@@ -213,131 +253,6 @@
                     {
                         "label": "Purpose/Asset Applied For",
                         "type": "textarea",
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "title": "External Deductions Form",
-                "fields": [
-                    {
-                        "label": "Surname",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "First Name",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Transaction Type",
-                        "type": "radio",
-                        "options": [
-                            "New",
-                            "Change",
-                            "Delete"
-                        ],
-                        "required": true
-                    },
-                    {
-                        "label": "Code",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Monthly Deduction Amount (USD)",
-                        "type": "number",
-                        "required": true
-                    },
-                    {
-                        "label": "Start Date",
-                        "type": "date",
-                        "required": true
-                    },
-                    {
-                        "label": "End Date",
-                        "type": "date",
-                        "required": false
-                    },
-                    {
-                        "label": "Reference Number",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "National ID Number",
-                        "type": "text",
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "title": "Debit Order Authorization",
-                "fields": [
-                    {
-                        "label": "Surname",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Forename(s)",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Address",
-                        "type": "textarea",
-                        "required": true
-                    },
-                    {
-                        "label": "Cell Number",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Work Contact",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "label": "Email Address",
-                        "type": "email",
-                        "required": false
-                    },
-                    {
-                        "label": "National ID",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Monthly Repayment Amount (USD)",
-                        "type": "number",
-                        "required": true
-                    },
-                    {
-                        "label": "Loan Tenure (Months)",
-                        "type": "number",
-                        "required": true
-                    },
-                    {
-                        "label": "ZB Bank Account Number",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Branch",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Due Date of Payments",
-                        "type": "date",
-                        "required": true
-                    },
-                    {
-                        "label": "ZB Qupa Account Number to be Credited",
-                        "type": "text",
                         "required": true
                     }
                 ]
@@ -394,15 +309,34 @@
                         "label": "Required Documents",
                         "type": "checkbox_list",
                         "options": [
-                            "Copy of ID/Passport",
+                            "Copy of ID or Valid Passport",
                             "Current Pay Slip",
-                            "Confirmation & Commitment Letter from Employer"
+                            "Confirmation and Commitment Letter from Employer"
                         ],
                         "required": true
                     }
                 ]
+            },
+            {
+                "title": "Early Contract Termination",
+                "fields": [
+                    {
+                        "label": "Agreement",
+                        "type": "paragraph",
+                        "content": "The Borrower has the Option to pay up the credit earlier than the maturity date. The Borrower shall, however, pay Qupa Microfinance early termination administration fees if the cancellation is voluntarily requested by the Borrower."
+                    }
+                ]
+            },
+            {
+                "title": "Credit Cession and Collateral",
+                "fields": [
+                    {
+                        "label": "Agreement",
+                        "type": "paragraph",
+                        "content": "1. The Borrower hereby conclusively and unconditionally cedes the credit to Bancozim. 2. The Borrower hereby cedes the purchased item(s) as collateral for the credit and further authorises Qupa Microfinance through the Merchant to repossess or deny the use of the pledged asset in the event of a default."
+                    }
+                ]
             }
-        ],
-        "fileName": "pensioners_loan_account"
+        ]
     }
 }

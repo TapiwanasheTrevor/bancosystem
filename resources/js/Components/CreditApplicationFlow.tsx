@@ -414,12 +414,10 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                     />
                                     <div className="p-4 space-y-4">
                                         <h3 className="font-semibold text-lg">{product.name}</h3>
-                                        <p className="text-emerald-600 font-medium">
-                                            Base Price: ${product.base_price}
-                                        </p>
+
                                         {selectedProductId === product.id ? (
                                             <div className="space-y-3">
-                                                <h4 className="font-medium text-gray-700">Credit Options:</h4>
+                                                <h4 className="font-medium text-gray-700">Select Credit Options:</h4>
                                                 <div className="grid grid-cols-1 gap-2">
                                                     {product.credit_options.map((option) => (
                                                         <button
@@ -443,7 +441,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                                                         className="font-medium">{option.months} Months
                                                                     </div>
                                                                     <div
-                                                                        className="text-sm text-gray-500">Interest: {option.interest}%
+                                                                        className="text-sm text-gray-500">Installment
                                                                     </div>
                                                                 </div>
                                                                 <div

@@ -342,49 +342,21 @@
                         "required": true
                     },
                     {
-                        "label": "Signature",
-                        "type": "signature",
-                        "required": true
-                    },
-                    {
-                        "label": "Date",
-                        "type": "date",
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "title": "For Official Use Only",
-                "fields": [
-                    {
-                        "label": "Received & Checked By",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Signature",
-                        "type": "signature",
-                        "required": true
-                    },
-                    {
-                        "label": "Date",
-                        "type": "date",
-                        "required": true
-                    },
-                    {
-                        "label": "Approved By",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Signature",
-                        "type": "signature",
-                        "required": true
-                    },
-                    {
-                        "label": "Date",
-                        "type": "date",
-                        "required": true
+                        "label": "Legal Declaration",
+                        "type": "fieldset",
+                        "legend": "Binding Legal Declaration",
+                        "children": [
+                            {
+                                "label": "",
+                                "type": "html",
+                                "html": "<div style='text-align: justify; font-size: 14px;'><p>I, the undersigned applicant, hereby declare and affirm that all information provided in this digital loan application is true, accurate, and complete to the best of my knowledge and belief.</p><p>I understand that providing false information constitutes fraud, which may result in criminal prosecution under Section 136 of the Criminal Law (Codification and Reform) Act [Chapter 9:23] of Zimbabwe, and similar provisions under the Fraud Act 2006 (UK).</p><p>I acknowledge that this electronic submission constitutes a valid and binding legal agreement in accordance with the Electronic Communications and Transactions Act 25 of 2002 (South Africa), specifically Section 22 which provides that agreements concluded electronically are legally enforceable; the Electronic Signatures Regulations 2002 (UK); the E-SIGN Act, 15 U.S.C. § 7001 (US); and Regulation (EU) No 910/2014 (eIDAS Regulation).</p><p>I understand that clicking the checkbox below constitutes an electronic signature as defined in Section 13 of the Electronic Transactions and Electronic Commerce Act (Zimbabwe), Section 7 of the Electronic Communications and Transactions Act (South Africa), Section 7 of the Electronic Communications Act 2000 (UK), and 15 U.S.C. § 7006(5) (US).</p><p>I consent to the collection and processing of my personal information in accordance with applicable data protection legislation including the Data Protection Act (Zimbabwe), POPIA (South Africa), GDPR (EU), and the Data Protection Act 2018 (UK).</p><p>I understand that digital records of this transaction are admissible as evidence under relevant civil evidence legislation in case of legal proceedings.</p></div>"
+                            },
+                            {
+                                "label": "I confirm that I have read, understood, and agree to be bound by this declaration, and I acknowledge that my electronic signature shall have the same legal effect, validity, and enforceability as a manually executed signature",
+                                "type": "checkbox",
+                                "required": true
+                            }
+                        ]
                     }
                 ]
             },
