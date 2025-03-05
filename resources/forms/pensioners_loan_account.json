@@ -31,7 +31,17 @@
                             "Male",
                             "Female"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "updateNextOfKin",
+                            "dependency": "Marital Status",
+                            "values": {
+                                "Married": {
+                                    "Male": "WIFE",
+                                    "Female": "HUSBAND"
+                                }
+                            }
+                        }
                     },
                     {
                         "label": "Date of Birth",
@@ -47,7 +57,14 @@
                             "Divorced",
                             "Widowed"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "updateNextOfKinSection",
+                            "values": {
+                                "Married": "showSpousePlusOne",
+                                "default": "showTwoNextOfKin"
+                            }
+                        }
                     },
                     {
                         "label": "Nationality",
@@ -157,33 +174,129 @@
                         "label": "Current Net Salary (USD)",
                         "type": "number",
                         "required": false
+                    },
+                    {
+                        "label": "Account Type",
+                        "type": "select",
+                        "options": [
+                            "USD Account",
+                            "ZWL Account",
+                            "Both USD and ZWL Accounts"
+                        ],
+                        "default": "USD Account",
+                        "required": true
                     }
                 ]
             },
             {
                 "title": "Spouse and Next of Kin Details",
-                "fields": [
-                    {
-                        "label": "Full Name",
-                        "type": "text",
-                        "required": true
+                "id": "nextOfKinSection",
+                "dynamicSection": true,
+                "variants": {
+                    "showSpousePlusOne": {
+                        "fields": [
+                            {
+                                "label": "Spouse's Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true,
+                                "value": "",
+                                "readOnly": true,
+                                "bindTo": "spouseRelationship"
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "Additional Next of Kin Details",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            }
+                        ]
                     },
-                    {
-                        "label": "Relationship",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Phone Numbers",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Residential Address",
-                        "type": "textarea",
-                        "required": true
+                    "showTwoNextOfKin": {
+                        "fields": [
+                            {
+                                "label": "Next of Kin 1",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "Next of Kin 2",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            }
+                        ]
                     }
-                ]
+                }
             },
             {
                 "title": "Banking/Mobile Account Details",
@@ -195,7 +308,8 @@
                     },
                     {
                         "label": "Branch",
-                        "type": "text",
+                        "type": "component",
+                        "component": "BranchLocator",
                         "required": true
                     },
                     {
@@ -239,6 +353,13 @@
                         "required": true
                     },
                     {
+                        "label": "Monthly Installment Amount (USD)",
+                        "type": "number",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "productInstallment"
+                    },
+                    {
                         "label": "Loan Duration",
                         "type": "radio",
                         "options": [
@@ -248,12 +369,59 @@
                             "12 months",
                             "Other"
                         ],
-                        "required": true
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "productLoanPeriod"
+                    },
+                    {
+                        "label": "Start Date",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanStartDate"
+                    },
+                    {
+                        "label": "End Date",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanEndDate"
                     },
                     {
                         "label": "Purpose/Asset Applied For",
                         "type": "textarea",
-                        "required": true
+                        "required": true,
+                        "bindTo": "productDescription"
+                    }
+                ]
+            },
+            {
+                "title": "Terms and Conditions",
+                "fields": [
+                    {
+                        "label": "Early Contract Termination",
+                        "type": "paragraph",
+                        "content": "The Borrower has the Option to pay up the credit earlier than the maturity date. The Borrower shall, however, pay Qupa Microfinance early termination administration fees if the cancellation is voluntarily requested by the Borrower."
+                    },
+                    {
+                        "label": "Credit Cession and Collateral",
+                        "type": "paragraph",
+                        "content": "1. The Borrower hereby conclusively and unconditionally cedes the credit to Bancozim. 2. The Borrower hereby cedes the purchased item(s) as collateral for the credit and further authorises Qupa Microfinance through the Merchant to repossess or deny the use of the pledged asset in the event of a default."
+                    },
+                    {
+                        "label": "Do you agree with these terms",
+                        "type": "radio",
+                        "options": [
+                            "Yes",
+                            "No"
+                        ],
+                        "required": true,
+                        "onChange": {
+                            "action": "confirmProceed",
+                            "values": {
+                                "No": "showConfirmation"
+                            }
+                        }
                     }
                 ]
             },
@@ -263,7 +431,25 @@
                     {
                         "label": "Full Name",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerFullName"
+                    },
+                    {
+                        "label": "Legal Declaration",
+                        "type": "fieldset",
+                        "legend": "Binding Legal Declaration",
+                        "children": [
+                            {
+                                "label": "",
+                                "type": "html",
+                                "html": "<div style='text-align: justify; font-size: 14px;'><p>I, the undersigned applicant, hereby declare and affirm that all information provided in this digital loan application is true, accurate, and complete to the best of my knowledge and belief.</p><p>I understand that providing false information constitutes fraud, which may result in criminal prosecution under Section 136 of the Criminal Law (Codification and Reform) Act [Chapter 9:23] of Zimbabwe, and similar provisions under the Fraud Act 2006 (UK).</p><p>I acknowledge that this electronic submission constitutes a valid and binding legal agreement in accordance with the Electronic Communications and Transactions Act 25 of 2002 (South Africa), specifically Section 22 which provides that agreements concluded electronically are legally enforceable; the Electronic Signatures Regulations 2002 (UK); the E-SIGN Act, 15 U.S.C. § 7001 (US); and Regulation (EU) No 910/2014 (eIDAS Regulation).</p><p>I understand that clicking the checkbox below constitutes an electronic signature as defined in Section 13 of the Electronic Transactions and Electronic Commerce Act (Zimbabwe), Section 7 of the Electronic Communications and Transactions Act (South Africa), Section 7 of the Electronic Communications Act 2000 (UK), and 15 U.S.C. § 7006(5) (US).</p><p>I consent to the collection and processing of my personal information in accordance with applicable data protection legislation including the Data Protection Act (Zimbabwe), POPIA (South Africa), GDPR (EU), and the Data Protection Act 2018 (UK).</p><p>I understand that digital records of this transaction are admissible as evidence under relevant civil evidence legislation in case of legal proceedings.</p></div>"
+                            },
+                            {
+                                "label": "I confirm that I have read, understood, and agree to be bound by this declaration, and I acknowledge that my electronic signature shall have the same legal effect, validity, and enforceability as a manually executed signature",
+                                "type": "checkbox",
+                                "required": true
+                            }
+                        ]
                     },
                     {
                         "label": "Applicant's Signature",
@@ -274,6 +460,41 @@
                         "label": "Date",
                         "type": "date",
                         "required": true
+                    }
+                ]
+            },
+            {
+                "title": "KYC Checklist",
+                "fields": [
+                    {
+                        "label": "National ID (Front & Back)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Pensioner Card/Proof of Pension",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Current Pay Slip (if applicable)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": false
+                    },
+                    {
+                        "label": "Proof of Residence",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Confirmation and Commitment Letter from Employer (if applicable)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": false
                     }
                 ]
             },
@@ -299,41 +520,6 @@
                         "label": "Date",
                         "type": "date",
                         "required": true
-                    }
-                ]
-            },
-            {
-                "title": "KYC Checklist",
-                "fields": [
-                    {
-                        "label": "Required Documents",
-                        "type": "checkbox_list",
-                        "options": [
-                            "Copy of ID or Valid Passport",
-                            "Current Pay Slip",
-                            "Confirmation and Commitment Letter from Employer"
-                        ],
-                        "required": true
-                    }
-                ]
-            },
-            {
-                "title": "Early Contract Termination",
-                "fields": [
-                    {
-                        "label": "Agreement",
-                        "type": "paragraph",
-                        "content": "The Borrower has the Option to pay up the credit earlier than the maturity date. The Borrower shall, however, pay Qupa Microfinance early termination administration fees if the cancellation is voluntarily requested by the Borrower."
-                    }
-                ]
-            },
-            {
-                "title": "Credit Cession and Collateral",
-                "fields": [
-                    {
-                        "label": "Agreement",
-                        "type": "paragraph",
-                        "content": "1. The Borrower hereby conclusively and unconditionally cedes the credit to Bancozim. 2. The Borrower hereby cedes the purchased item(s) as collateral for the credit and further authorises Qupa Microfinance through the Merchant to repossess or deny the use of the pledged asset in the event of a default."
                     }
                 ]
             }

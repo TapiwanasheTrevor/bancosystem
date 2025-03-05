@@ -17,8 +17,13 @@
             <select id="categoryFilter" class="p-2 border rounded">
                 <option value="">All Categories</option>
                 @foreach ($categories as $category)
-                    <option value="{{ $category->name }}">{{ $category->name }}</option>
+                    <option value="{{ $category->name }}">{{ $category->name }} ({{ $category->catalog_type == 'hirepurchase' ? 'Hire Purchase' : 'MicroBiz' }})</option>
                 @endforeach
+            </select>
+            <select id="catalogTypeFilter" class="p-2 border rounded">
+                <option value="">All Catalog Types</option>
+                <option value="microbiz">MicroBiz</option>
+                <option value="hirepurchase">Hire Purchase</option>
             </select>
             <button onclick="reloadTable()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
                 Apply Filters
@@ -34,6 +39,7 @@
                 <th>Name</th>
                 <th>Category</th>
                 <th>Base Price</th>
+                <th>Catalog Type</th>
                 <th>Actions</th>
             </tr>
             </thead>
@@ -53,10 +59,19 @@
                     <input type="text" id="productName" class="w-full p-2 border rounded" required>
                 </div>
                 <div class="mb-4">
+                    <label>Catalog Type:</label>
+                    <select id="productCatalogType" class="w-full p-2 border rounded" required>
+                        <option value="microbiz">MicroBiz</option>
+                        <option value="hirepurchase">Hire Purchase</option>
+                    </select>
+                </div>
+                <div class="mb-4">
                     <label>Category:</label>
                     <select id="productCategory" class="w-full p-2 border rounded">
                         @foreach ($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                            <option value="{{ $category->id }}" data-catalog-type="{{ $category->catalog_type }}">
+                                {{ $category->name }} ({{ $category->catalog_type == 'hirepurchase' ? 'Hire Purchase' : 'MicroBiz' }})
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -82,6 +97,29 @@
     <!-- JavaScript -->
     <script>
         $(document).ready(function () {
+            // Filter categories based on catalog type
+            $('#productCatalogType').on('change', function() {
+                const selectedCatalogType = $(this).val();
+                
+                // Hide/show categories based on catalog type
+                $('#productCategory option').each(function() {
+                    if ($(this).data('catalog-type') !== selectedCatalogType) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
+                
+                // Select the first visible option
+                const firstVisible = $('#productCategory option:visible:first').val();
+                if (firstVisible) {
+                    $('#productCategory').val(firstVisible);
+                }
+            });
+
+            // Trigger catalog type filter on load
+            $('#productCatalogType').trigger('change');
+            
             // Initialize Datatable
             $('#productTable').DataTable({
                 processing: true,
@@ -91,6 +129,7 @@
                     data: function (d) {
                         d.search = $('#searchBox').val();
                         d.category = $('#categoryFilter').val();
+                        d.catalog_type = $('#catalogTypeFilter').val();
                     }
                 },
                 columns: [
@@ -103,6 +142,15 @@
                     {data: 'name'},
                     {data: 'category.name'},
                     {data: 'base_price'},
+                    {
+                        data: 'catalog_type', render: function (data) {
+                            if (data === 'hirepurchase') {
+                                return '<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs">Hire Purchase</span>';
+                            } else {
+                                return '<span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs">MicroBiz</span>';
+                            }
+                        }
+                    },
                     {data: 'actions', orderable: false, searchable: false}
                 ]
             });

@@ -10,11 +10,28 @@ use Yajra\DataTables\Facades\DataTables;
 
 class AdminProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::with('children')->whereNull('parent_id')->get();
-        $products = Product::with('category', 'creditPricings')->get();
-        return view('admin.products.index', compact('categories', 'products'));
+        $catalogType = $request->query('type', 'microbiz');
+        
+        // Get categories based on catalog type if provided, otherwise get all
+        if ($request->has('type')) {
+            $categories = Category::with(['children' => function($query) use ($catalogType) {
+                $query->where('catalog_type', $catalogType);
+            }])
+            ->whereNull('parent_id')
+            ->where('catalog_type', $catalogType)
+            ->get();
+            
+            $products = Product::with('category', 'creditPricings')
+                ->where('catalog_type', $catalogType)
+                ->get();
+        } else {
+            $categories = Category::with('children')->whereNull('parent_id')->get();
+            $products = Product::with('category', 'creditPricings')->get();
+        }
+        
+        return view('admin.products.index', compact('categories', 'products', 'catalogType'));
     }
 
     public function store(Request $request)
@@ -25,6 +42,7 @@ class AdminProductController extends Controller
             'category_id' => 'required|exists:categories,id',
             'base_price' => 'required|numeric',
             'image' => 'nullable|image|max:2048',
+            'catalog_type' => 'required|in:microbiz,hirepurchase',
         ]);
 
         // Handle image upload to `public/products`
@@ -34,12 +52,16 @@ class AdminProductController extends Controller
             $image->move(public_path('images/products'), $imageName);
         }
 
+        // Get the category to determine catalog type if not explicitly provided
+        $category = Category::find($request->category_id);
+        
         $product = Product::create([
             'name' => $request->name,
             'description' => $request->description,
             'category_id' => $request->category_id,
             'base_price' => $request->base_price,
             'image' => $imageName ?? null,
+            'catalog_type' => $request->catalog_type ?? $category->catalog_type ?? 'microbiz',
         ]);
 
         // Save credit pricing for different months
@@ -74,6 +96,10 @@ class AdminProductController extends Controller
                 $query->whereHas('category', function ($q) use ($request) {
                     $q->where('name', $request->category);
                 });
+            }
+
+            if (!empty($request->catalog_type)) {
+                $query->where('catalog_type', $request->catalog_type);
             }
 
             return DataTables::of($query)

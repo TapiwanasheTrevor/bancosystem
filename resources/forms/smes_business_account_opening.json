@@ -134,6 +134,34 @@
                         "label": "BP Number",
                         "type": "text",
                         "required": false
+                    },
+                    {
+                        "label": "Account Type",
+                        "type": "select",
+                        "options": [
+                            "USD Account",
+                            "ZWL Account",
+                            "Both USD and ZWL Accounts"
+                        ],
+                        "default": "USD Account",
+                        "required": true
+                    },
+                    {
+                        "label": "Number of Directors",
+                        "type": "select",
+                        "options": [
+                            "1",
+                            "2",
+                            "3",
+                            "4",
+                            "5",
+                            "More than 5"
+                        ],
+                        "required": true,
+                        "onChange": {
+                            "action": "generateDirectorSections",
+                            "targetSection": "directorsDetailsSection"
+                        }
                     }
                 ]
             },
@@ -148,12 +176,36 @@
                     {
                         "label": "Repayment Period (Months)",
                         "type": "number",
-                        "required": true
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "productLoanPeriod"
+                    },
+                    {
+                        "label": "Monthly Installment (USD)",
+                        "type": "number",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "productInstallment"
+                    },
+                    {
+                        "label": "Start Date",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanStartDate"
+                    },
+                    {
+                        "label": "End Date",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanEndDate"
                     },
                     {
                         "label": "Purpose of Loan",
                         "type": "textarea",
-                        "required": true
+                        "required": true,
+                        "bindTo": "productDescription"
                     }
                 ]
             },
@@ -244,74 +296,147 @@
             },
             {
                 "title": "Directors' Personal Details",
-                "fields": [
-                    {
-                        "label": "First Name",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Surname",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Title",
-                        "type": "select",
-                        "options": [
-                            "Mr",
-                            "Mrs",
-                            "Dr",
-                            "Prof"
-                        ],
-                        "required": true
-                    },
-                    {
-                        "label": "Gender",
-                        "type": "radio",
-                        "options": [
-                            "Male",
-                            "Female"
-                        ],
-                        "required": true
-                    },
-                    {
-                        "label": "Date of Birth",
-                        "type": "date",
-                        "required": true
-                    },
-                    {
-                        "label": "Nationality",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "ID Number",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Marital Status",
-                        "type": "select",
-                        "options": [
-                            "Single",
-                            "Married",
-                            "Divorced",
-                            "Widowed"
-                        ],
-                        "required": true
-                    },
-                    {
-                        "label": "Cell Number",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Email Address",
-                        "type": "email",
-                        "required": true
+                "id": "directorsDetailsSection",
+                "dynamicSection": true,
+                "generateFromCount": true,
+                "templates": {
+                    "director": {
+                        "title": "Director {index} Details",
+                        "fields": [
+                            {
+                                "label": "First Name",
+                                "type": "text",
+                                "required": true,
+                                "id": "director{index}_firstName"
+                            },
+                            {
+                                "label": "Surname",
+                                "type": "text",
+                                "required": true,
+                                "id": "director{index}_surname"
+                            },
+                            {
+                                "label": "Title",
+                                "type": "select",
+                                "options": [
+                                    "Mr",
+                                    "Mrs",
+                                    "Dr",
+                                    "Prof"
+                                ],
+                                "required": true,
+                                "id": "director{index}_title"
+                            },
+                            {
+                                "label": "Gender",
+                                "type": "radio",
+                                "options": [
+                                    "Male",
+                                    "Female"
+                                ],
+                                "required": true,
+                                "id": "director{index}_gender"
+                            },
+                            {
+                                "label": "Date of Birth",
+                                "type": "date",
+                                "required": true,
+                                "id": "director{index}_dob"
+                            },
+                            {
+                                "label": "Nationality",
+                                "type": "text",
+                                "required": true,
+                                "id": "director{index}_nationality"
+                            },
+                            {
+                                "label": "ID Number",
+                                "type": "text",
+                                "required": true,
+                                "id": "director{index}_idNumber"
+                            },
+                            {
+                                "label": "Marital Status",
+                                "type": "select",
+                                "options": [
+                                    "Single",
+                                    "Married",
+                                    "Divorced",
+                                    "Widowed"
+                                ],
+                                "required": true,
+                                "id": "director{index}_maritalStatus",
+                                "onChange": {
+                                    "action": "updateNextOfKin",
+                                    "dependency": "director{index}_gender",
+                                    "values": {
+                                        "Married": {
+                                            "Male": "WIFE",
+                                            "Female": "HUSBAND"
+                                        }
+                                    },
+                                    "target": "director{index}_nextOfKinRelationship"
+                                }
+                            },
+                            {
+                                "label": "Cell Number",
+                                "type": "text",
+                                "required": true,
+                                "id": "director{index}_cellNumber"
+                            },
+                            {
+                                "label": "Email Address",
+                                "type": "email",
+                                "required": true,
+                                "id": "director{index}_email"
+                            },
+                            {
+                                "label": "Next of Kin Details",
+                                "type": "subtitle",
+                                "id": "director{index}_nextOfKinSubtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true,
+                                "id": "director{index}_nextOfKinName"
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true,
+                                "id": "director{index}_nextOfKinRelationship"
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true,
+                                "id": "director{index}_nextOfKinPhone"
+                            },
+                            {
+                                "label": "ID Documentation",
+                                "type": "file",
+                                "accept": "image/*,.pdf",
+                                "required": true,
+                                "id": "director{index}_idDoc"
+                            },
+                            {
+                                "label": "Proof of Residence",
+                                "type": "file",
+                                "accept": "image/*,.pdf",
+                                "required": true,
+                                "id": "director{index}_proofOfResidence"
+                            },
+                            {
+                                "label": "Signature",
+                                "type": "signature",
+                                "required": true,
+                                "id": "director{index}_signature",
+                                "generateLink": true
+                            }
+                        ]
                     }
-                ]
+                }
             },
             {
                 "title": "Banking/Mobile Account Details",
@@ -323,7 +448,8 @@
                     },
                     {
                         "label": "Branch",
-                        "type": "text",
+                        "type": "component",
+                        "component": "BranchLocator",
                         "required": true
                     },
                     {
@@ -357,31 +483,6 @@
                                 "required": true
                             }
                         ]
-                    }
-                ]
-            },
-            {
-                "title": "KYC Checklist",
-                "fields": [
-                    {
-                        "label": "Required Documents",
-                        "type": "checkbox_list",
-                        "options": [
-                            "Copy of ID, License, Valid Passport",
-                            "Financial Statement",
-                            "Articles of Association/PBC",
-                            "Certificate of Incorporation",
-                            "CR11",
-                            "Stamped 3 Months’ Bank Statement",
-                            "Ecocash Statements (if applicable)",
-                            "CR6",
-                            "Group Constitution",
-                            "Resolution to Borrow",
-                            "CR5",
-                            "Proof of Residence/Confirmation Letter",
-                            "Company Documents: MOA"
-                        ],
-                        "required": true
                     }
                 ]
             }

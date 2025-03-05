@@ -15,6 +15,21 @@
                             "EURO",
                             "Other"
                         ],
+                        "default": "USD",
+                        "required": true
+                    },
+                    {
+                        "label": "Account Type",
+                        "type": "select",
+                        "options": [
+                            "Individual Transactional Account",
+                            "Senior Citizen Transactional Account",
+                            "Informal Trader Transactional Account",
+                            "Individual Current Account",
+                            "Sta$h Transactional Account",
+                            "Other"
+                        ],
+                        "default": "Individual Transactional Account",
                         "required": true
                     }
                 ]
@@ -61,7 +76,17 @@
                             "Male",
                             "Female"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "updateNextOfKin",
+                            "dependency": "Marital Status",
+                            "values": {
+                                "Married": {
+                                    "Male": "WIFE",
+                                    "Female": "HUSBAND"
+                                }
+                            }
+                        }
                     },
                     {
                         "label": "Date of Birth",
@@ -84,9 +109,17 @@
                         "options": [
                             "Single",
                             "Married",
-                            "Other"
+                            "Divorced",
+                            "Widowed"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "updateNextOfKinSection",
+                            "values": {
+                                "Married": "showSpousePlusOne",
+                                "default": "showTwoNextOfKin"
+                            }
+                        }
                     },
                     {
                         "label": "Citizenship",
@@ -104,7 +137,7 @@
                         "required": true
                     },
                     {
-                        "label": "Driver’s License No",
+                        "label": "Driver's License No",
                         "type": "text",
                         "required": false
                     },
@@ -231,59 +264,241 @@
             },
             {
                 "title": "Spouse/Next of Kin",
-                "fields": [
-                    {
-                        "label": "Title",
-                        "type": "select",
-                        "options": [
-                            "Mr",
-                            "Mrs",
-                            "Ms",
-                            "Dr",
-                            "Prof"
-                        ],
-                        "required": true
+                "id": "nextOfKinSection",
+                "dynamicSection": true,
+                "variants": {
+                    "showSpousePlusOne": {
+                        "fields": [
+                            {
+                                "label": "Spouse's Details",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Title",
+                                "type": "select",
+                                "options": [
+                                    "Mr",
+                                    "Mrs",
+                                    "Ms",
+                                    "Dr",
+                                    "Prof"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true,
+                                "value": "",
+                                "readOnly": true,
+                                "bindTo": "spouseRelationship"
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "National ID No",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Contact Number",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Gender",
+                                "type": "radio",
+                                "options": [
+                                    "Male",
+                                    "Female"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Email Address",
+                                "type": "email",
+                                "required": false
+                            },
+                            {
+                                "label": "Additional Next of Kin",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Title",
+                                "type": "select",
+                                "options": [
+                                    "Mr",
+                                    "Mrs",
+                                    "Ms",
+                                    "Dr",
+                                    "Prof"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "National ID No",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Contact Number",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Gender",
+                                "type": "radio",
+                                "options": [
+                                    "Male",
+                                    "Female"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Email Address",
+                                "type": "email",
+                                "required": false
+                            }
+                        ]
                     },
-                    {
-                        "label": "Full Name",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Residential Address",
-                        "type": "textarea",
-                        "required": true
-                    },
-                    {
-                        "label": "National ID No",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Contact Number",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Nature of Relationship",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Gender",
-                        "type": "radio",
-                        "options": [
-                            "Male",
-                            "Female"
-                        ],
-                        "required": true
-                    },
-                    {
-                        "label": "Email Address",
-                        "type": "email",
-                        "required": false
+                    "showTwoNextOfKin": {
+                        "fields": [
+                            {
+                                "label": "Next of Kin 1",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Title",
+                                "type": "select",
+                                "options": [
+                                    "Mr",
+                                    "Mrs",
+                                    "Ms",
+                                    "Dr",
+                                    "Prof"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "National ID No",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Contact Number",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Gender",
+                                "type": "radio",
+                                "options": [
+                                    "Male",
+                                    "Female"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Email Address",
+                                "type": "email",
+                                "required": false
+                            },
+                            {
+                                "label": "Next of Kin 2",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Title",
+                                "type": "select",
+                                "options": [
+                                    "Mr",
+                                    "Mrs",
+                                    "Ms",
+                                    "Dr",
+                                    "Prof"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "National ID No",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Contact Number",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Gender",
+                                "type": "radio",
+                                "options": [
+                                    "Male",
+                                    "Female"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Email Address",
+                                "type": "email",
+                                "required": false
+                            }
+                        ]
                     }
-                ]
+                }
             },
             {
                 "title": "Other Services",
@@ -346,8 +561,50 @@
                 ]
             },
             {
+                "title": "Terms and Conditions",
+                "fields": [
+                    {
+                        "label": "",
+                        "type": "html",
+                        "html": "<div style='text-align: justify; font-size: 14px;'><h3>Terms and Conditions for Individual Account Holders</h3><p>1. <strong>Account Operation:</strong> The account holder agrees to operate the account in accordance with the Bank's rules and regulations which may be subject to amendment from time to time.</p><p>2. <strong>Account Maintenance:</strong> The Bank reserves the right to levy charges for the maintenance of the account as per its standard schedule of charges which may be revised periodically.</p><p>3. <strong>Disclosure of Information:</strong> The Bank may disclose information about the account holder to credit reference bureaus or in response to legal obligations.</p><p>4. <strong>Dormant Accounts:</strong> Accounts with no transactions for a period of 12 months may be classified as dormant and subject to dormancy fees.</p><p>5. <strong>Closing of Account:</strong> The Bank reserves the right to close the account without notice if it is not operated satisfactorily or for any other reason it deems necessary.</p><p>6. <strong>Digital Services:</strong> The account holder who opts for digital banking services accepts the additional terms and conditions specific to these services.</p><p>7. <strong>Statement of Account:</strong> The account holder agrees to examine all statements furnished by the Bank and notify the Bank of any errors within 30 days from receipt, failing which the statement shall be deemed correct.</p><p>8. <strong>Change of Address:</strong> The account holder undertakes to inform the Bank in writing of any change in address or contact details.</p><p>9. <strong>Foreign Currency Accounts:</strong> Operation of foreign currency accounts shall be subject to foreign exchange regulations of the Reserve Bank of Zimbabwe.</p><p>10. <strong>Governing Law:</strong> These terms and conditions shall be governed by and construed in accordance with the laws of Zimbabwe.</p></div>"
+                    },
+                    {
+                        "label": "Do you agree with these terms and conditions?",
+                        "type": "radio",
+                        "options": [
+                            "Yes",
+                            "No"
+                        ],
+                        "required": true,
+                        "onChange": {
+                            "action": "confirmProceed",
+                            "values": {
+                                "No": "showConfirmation"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
                 "title": "Declaration",
                 "fields": [
+                    {
+                        "label": "Legal Declaration",
+                        "type": "fieldset",
+                        "legend": "Binding Legal Declaration",
+                        "children": [
+                            {
+                                "label": "",
+                                "type": "html",
+                                "html": "<div style='text-align: justify; font-size: 14px;'><p>I, the undersigned applicant, hereby declare and affirm that all information provided in this account opening application is true, accurate, and complete to the best of my knowledge and belief.</p><p>I understand that providing false information constitutes fraud, which may result in criminal prosecution under Section 136 of the Criminal Law (Codification and Reform) Act [Chapter 9:23] of Zimbabwe.</p><p>I acknowledge that this electronic submission constitutes a valid and binding legal agreement in accordance with the Electronic Transactions and Electronic Commerce Act (Zimbabwe).</p><p>I consent to the collection and processing of my personal information in accordance with applicable data protection legislation including the Data Protection Act (Zimbabwe).</p><p>I confirm that I have read, understood, and agree to be bound by the Bank's terms and conditions governing the operation of accounts.</p></div>"
+                            },
+                            {
+                                "label": "I confirm that I have read, understood, and agree to be bound by this declaration, and I acknowledge that my electronic signature shall have the same legal effect, validity, and enforceability as a manually executed signature",
+                                "type": "checkbox",
+                                "required": true
+                            }
+                        ]
+                    },
                     {
                         "label": "Full Name",
                         "type": "text",
@@ -366,34 +623,49 @@
                 ]
             },
             {
-                "title": "For Official Use Only",
+                "title": "KYC Documents",
                 "fields": [
                     {
-                        "label": "Type of Account",
-                        "type": "select",
-                        "options": [
-                            "Individual Transactional Account",
-                            "Senior Citizen Transactional Account",
-                            "Informal Trader Transactional Account",
-                            "Individual Current Account",
-                            "Sta$h Transactional Account",
-                            "Other"
-                        ],
+                        "label": "National ID (Front & Back)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
                         "required": true
                     },
                     {
-                        "label": "Supporting KYC Documents",
-                        "type": "checkbox_list",
-                        "options": [
-                            "Two Passport Photos",
-                            "Proof of Residence",
-                            "Payslip",
-                            "National ID",
-                            "Passport",
-                            "Driver’s License"
-                        ],
+                        "label": "Passport Photo",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
                         "required": true
                     },
+                    {
+                        "label": "Proof of Residence",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Payslip/Proof of Income",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": false
+                    },
+                    {
+                        "label": "Driver's License (if applicable)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": false
+                    },
+                    {
+                        "label": "Passport (if applicable)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": false
+                    }
+                ]
+            },
+            {
+                "title": "For Official Use Only",
+                "fields": [
                     {
                         "label": "Service Center Name",
                         "type": "text",
@@ -402,6 +674,12 @@
                     {
                         "label": "Domicile Service Center Code",
                         "type": "text",
+                        "required": true
+                    },
+                    {
+                        "label": "Branch",
+                        "type": "component",
+                        "component": "BranchLocator",
                         "required": true
                     },
                     {

@@ -11,10 +11,21 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('forms', function (Blueprint $table) {
-            $table->string('id_document')->nullable();
-            $table->string('passport_photo')->nullable();
-            $table->string('payslip')->nullable();
-            $table->text('signature')->nullable();
+            if (!Schema::hasColumn('forms', 'id_document')) {
+                $table->string('id_document')->nullable();
+            }
+            
+            if (!Schema::hasColumn('forms', 'passport_photo')) {
+                $table->string('passport_photo')->nullable();
+            }
+            
+            if (!Schema::hasColumn('forms', 'payslip')) {
+                $table->string('payslip')->nullable();
+            }
+            
+            if (!Schema::hasColumn('forms', 'signature')) {
+                $table->text('signature')->nullable();
+            }
         });
     }
 

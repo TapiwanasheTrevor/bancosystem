@@ -11,7 +11,8 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('forms', function (Blueprint $table) {
-            $table->longText('signature')->change();
+            // Make signature nullable first to handle any existing data issues
+            $table->longText('signature')->nullable()->change();
         });
     }
 

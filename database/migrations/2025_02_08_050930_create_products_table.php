@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('category_id');
             $table->decimal('base_price', 10, 2);
             $table->string('image')->nullable();
+            $table->enum('catalog_type', ['microbiz', 'hirepurchase'])->default('microbiz');
             $table->timestamps();
         });
     }

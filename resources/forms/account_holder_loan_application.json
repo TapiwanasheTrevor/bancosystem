@@ -31,7 +31,17 @@
                             "Male",
                             "Female"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "updateNextOfKin",
+                            "dependency": "Marital Status",
+                            "values": {
+                                "Married": {
+                                    "Male": "WIFE",
+                                    "Female": "HUSBAND"
+                                }
+                            }
+                        }
                     },
                     {
                         "label": "Date of Birth",
@@ -47,7 +57,14 @@
                             "Divorced",
                             "Widowed"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "updateNextOfKinSection",
+                            "values": {
+                                "Married": "showSpousePlusOne",
+                                "default": "showTwoNextOfKin"
+                            }
+                        }
                     },
                     {
                         "label": "Nationality",
@@ -157,33 +174,129 @@
                         "label": "Current Net Salary (USD)",
                         "type": "number",
                         "required": true
+                    },
+                    {
+                        "label": "Account Type",
+                        "type": "select",
+                        "options": [
+                            "USD Account",
+                            "ZWL Account",
+                            "Both USD and ZWL Accounts"
+                        ],
+                        "default": "USD Account",
+                        "required": true
                     }
                 ]
             },
             {
                 "title": "Spouse and Next of Kin Details",
-                "fields": [
-                    {
-                        "label": "Full Name",
-                        "type": "text",
-                        "required": true
+                "id": "nextOfKinSection",
+                "dynamicSection": true,
+                "variants": {
+                    "showSpousePlusOne": {
+                        "fields": [
+                            {
+                                "label": "Spouse's Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true,
+                                "value": "",
+                                "readOnly": true,
+                                "bindTo": "spouseRelationship"
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "Additional Next of Kin Details",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            }
+                        ]
                     },
-                    {
-                        "label": "Relationship",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Phone Numbers",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Residential Address",
-                        "type": "textarea",
-                        "required": true
+                    "showTwoNextOfKin": {
+                        "fields": [
+                            {
+                                "label": "Next of Kin 1",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "Next of Kin 2",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            }
+                        ]
                     }
-                ]
+                }
             },
             {
                 "title": "Loans with Other Institutions",
@@ -216,7 +329,9 @@
                     {
                         "label": "Monthly Installment (USD)",
                         "type": "number",
-                        "required": true
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "productInstallment"
                     },
                     {
                         "label": "Loan Duration",
@@ -228,12 +343,29 @@
                             "12 months",
                             "Other"
                         ],
-                        "required": true
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "productLoanPeriod"
+                    },
+                    {
+                        "label": "Start Date",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanStartDate"
+                    },
+                    {
+                        "label": "End Date",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanEndDate"
                     },
                     {
                         "label": "Purpose/Asset Applied For",
                         "type": "textarea",
-                        "required": true
+                        "required": true,
+                        "bindTo": "productDescription"
                     }
                 ]
             },
@@ -243,22 +375,26 @@
                     {
                         "label": "Surname",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerSurname"
                     },
                     {
                         "label": "Forename(s)",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerFirstName"
                     },
                     {
                         "label": "Address",
                         "type": "textarea",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerAddress"
                     },
                     {
                         "label": "Cell Number",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerCellNumber"
                     },
                     {
                         "label": "Work Contact",
@@ -268,22 +404,26 @@
                     {
                         "label": "Email Address",
                         "type": "email",
-                        "required": false
+                        "required": false,
+                        "bindTo": "customerEmail"
                     },
                     {
                         "label": "National ID",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerIdNumber"
                     },
                     {
                         "label": "Monthly Repayment Amount (USD)",
                         "type": "number",
-                        "required": true
+                        "required": true,
+                        "bindTo": "productInstallment"
                     },
                     {
                         "label": "Loan Tenure (Months)",
                         "type": "number",
-                        "required": true
+                        "required": true,
+                        "bindTo": "productLoanPeriodMonths"
                     },
                     {
                         "label": "ZB Bank Account Number",
@@ -292,57 +432,80 @@
                     },
                     {
                         "label": "ZB Bank Branch",
-                        "type": "select2",
-                        "options": [
-                            "21 Natal Branch",
-                            "Avondale Branch",
-                            "Beitbridge Branch",
-                            "Bindura Branch",
-                            "Chinhoyi Branch",
-                            "Chiredzi Branch",
-                            "Chisipite Branch",
-                            "Douglas Road Branch",
-                            "Fife Street Branch",
-                            "Graniteside Branch",
-                            "Gutu Branch",
-                            "Gwanda Branch",
-                            "Gweru Branch",
-                            "Hwange Branch",
-                            "Jason Moyo Branch",
-                            "Kadoma Branch",
-                            "Kariba Branch",
-                            "Karoi Branch",
-                            "Kwekwe Branch",
-                            "Long Chen Branch",
-                            "Masvingo Branch",
-                            "Msasa Branch",
-                            "Mt Darwin Branch",
-                            "Murombedzi Branch",
-                            "Mutare Branch",
-                            "Ngezi Branch",
-                            "Nyanga Branch",
-                            "Plumtree Branch",
-                            "Rotten Row Branch",
-                            "Rusape Branch",
-                            "Shurugwi Branch",
-                            "Triangle Branch",
-                            "Victoria Falls Branch",
-                            "Westend Branch",
-                            "Zvishavane Branch"
-                        ],
-                        "required": true,
-                        "placeholder": "Select a ZB Bank branch"
+                        "type": "component",
+                        "component": "BranchLocator",
+                        "required": true
                     },
                     {
-                        "label": "Due Date of Payments",
+                        "label": "Start Date of Payments",
                         "type": "date",
-                        "required": true
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanStartDate"
+                    },
+                    {
+                        "label": "End Date of Payments",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanEndDate"
                     },
                     {
                         "label": "ZB Qupa Account Number to be Credited",
                         "type": "text",
                         "required": true,
-                        "default": 415800504882405
+                        "default": "415800504882405",
+                        "readOnly": true
+                    },
+                    {
+                        "label": "Do you agree with these terms",
+                        "type": "radio",
+                        "options": [
+                            "Yes",
+                            "No"
+                        ],
+                        "required": true,
+                        "onChange": {
+                            "action": "confirmProceed",
+                            "values": {
+                                "No": "showConfirmation"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "KYC Documents",
+                "fields": [
+                    {
+                        "label": "National ID (Front & Back)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Latest Payslip",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Proof of Residence",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Employee ID/Work ID",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Bank Statement (if applicable)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": false
                     }
                 ]
             },
@@ -352,7 +515,8 @@
                     {
                         "label": "Full Name",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerFullName"
                     },
                     {
                         "label": "Legal Declaration",

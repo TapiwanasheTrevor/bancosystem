@@ -4,12 +4,14 @@ use App\Http\Controllers\AdminAgentController;
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminProductController;
 use App\Http\Controllers\LoanApplicationController;
+use App\Http\Controllers\ProductDeliveryController;
 use App\Http\Controllers\ProfileController;
 use App\Models\CreditPricing;
 use App\Models\Document;
 use App\Models\Form;
 use App\Models\Product;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -119,9 +121,7 @@ Route::get('/forms', function () {
     return view('forms', compact('agents', 'newDocuments', 'processedDocuments'));
 })->middleware(['auth', 'verified'])->name('forms');
 
-Route::get('/agents', function () {
-    return view('agents');
-})->middleware(['auth', 'verified'])->name('agents');
+// Removed duplicate route - using agents.index instead
 
 Route::get('/settings', function () {
     return view('settings');
@@ -132,8 +132,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Category Management
+    // Category Management - General route (legacy)
     Route::get('/categories', [AdminCategoryController::class, 'index']);
+    
+    // Category Management - MicroBiz
+    Route::get('/microbiz/categories', [AdminCategoryController::class, 'microbizCategories']);
+    
+    // Category Management - Hire Purchase
+    Route::get('/hirepurchase/categories', [AdminCategoryController::class, 'hirePurchaseCategories']);
+    
+    // Common category operations
     Route::post('/categories', [AdminCategoryController::class, 'store']);
     Route::post('/categories/delete/{id}', [AdminCategoryController::class, 'destroy']);
 
@@ -146,11 +154,58 @@ Route::middleware('auth')->group(function () {
     Route::post('/products/update/{id}', [AdminProductController::class, 'update']);
     Route::post('/products/delete/{id}', [AdminProductController::class, 'destroy']);
 
-    // Agents controller
-    Route::get('/agents', [AdminAgentController::class, 'index']);
+    // Agents management
+    Route::get('/agents', [AdminAgentController::class, 'index'])->name('agents.index');
+    Route::get('/agents/create', [AdminAgentController::class, 'create'])->name('agents.create');
+    Route::post('/agents', [AdminAgentController::class, 'store'])->name('agents.store');
+    Route::get('/agents/{id}/edit', [AdminAgentController::class, 'edit'])->name('agents.edit');
+    Route::put('/agents/{id}', [AdminAgentController::class, 'update'])->name('agents.update');
+    Route::post('/agents/{id}/toggle-status', [AdminAgentController::class, 'toggleStatus'])->name('agents.toggle-status');
+    Route::get('/agents/{id}/dashboard', [AdminAgentController::class, 'dashboard'])->name('agents.dashboard');
+    Route::post('/agents/{id}/generate-link', [AdminAgentController::class, 'generateReferralLink'])->name('agents.generate-link');
+    
+    // Debug route for agent referrals
+    Route::get('/debug/agent-referrals/{id}', function($id) {
+        $agent = User::findOrFail($id);
+        
+        try {
+            // Method 1: Direct query to see if column exists
+            $referredUsers = DB::select('SELECT * FROM users WHERE referred_by = ?', [$agent->id]);
+            
+            // Method 2: Use Eloquent relationship
+            $referrals = $agent->referrals;
+            
+            // Method 3: Test the new relationship for referred forms
+            $referredForms = $agent->referredForms()->get();
+            
+            return [
+                'success' => true,
+                'agent' => $agent->only(['id', 'name', 'email', 'role']),
+                'referredUsers' => $referredUsers,
+                'userReferrals' => $referrals,
+                'referredForms' => $referredForms,
+                'referrals_count' => count($referredUsers)
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ];
+        }
+    });
 
     //one link for them all
     Route::get('/download/{form}/{id}', [LoanApplicationController::class, 'downloadForm']);
+    
+    // Product Delivery Management
+    Route::prefix('admin/deliveries')->name('admin.deliveries.')->group(function () {
+        Route::get('/', [ProductDeliveryController::class, 'index'])->name('index');
+        Route::get('/create', [ProductDeliveryController::class, 'create'])->name('create');
+        Route::post('/', [ProductDeliveryController::class, 'store'])->name('store');
+        Route::get('/{delivery}', [ProductDeliveryController::class, 'show'])->name('show');
+        Route::post('/{delivery}/update-status', [ProductDeliveryController::class, 'updateStatus'])->name('update-status');
+    });
 });
 
 require __DIR__ . '/auth.php';

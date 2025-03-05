@@ -31,7 +31,17 @@
                             "Male",
                             "Female"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "updateNextOfKin",
+                            "dependency": "Marital Status",
+                            "values": {
+                                "Married": {
+                                    "Male": "WIFE",
+                                    "Female": "HUSBAND"
+                                }
+                            }
+                        }
                     },
                     {
                         "label": "Date of Birth",
@@ -47,7 +57,14 @@
                             "Divorced",
                             "Widowed"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "updateNextOfKinSection",
+                            "values": {
+                                "Married": "showSpousePlusOne",
+                                "default": "showTwoNextOfKin"
+                            }
+                        }
                     },
                     {
                         "label": "Nationality",
@@ -186,28 +203,113 @@
             },
             {
                 "title": "Spouse and Next of Kin Details",
-                "fields": [
-                    {
-                        "label": "Full Name",
-                        "type": "text",
-                        "required": true
+                "id": "nextOfKinSection",
+                "dynamicSection": true,
+                "variants": {
+                    "showSpousePlusOne": {
+                        "fields": [
+                            {
+                                "label": "Spouse's Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true,
+                                "value": "",
+                                "readOnly": true,
+                                "bindTo": "spouseRelationship"
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "Additional Next of Kin Details",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            }
+                        ]
                     },
-                    {
-                        "label": "Relationship",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Phone Numbers",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "label": "Residential Address",
-                        "type": "textarea",
-                        "required": true
+                    "showTwoNextOfKin": {
+                        "fields": [
+                            {
+                                "label": "Next of Kin 1",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            },
+                            {
+                                "label": "Next of Kin 2",
+                                "type": "subtitle"
+                            },
+                            {
+                                "label": "Full Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Relationship",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Phone Numbers",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Residential Address",
+                                "type": "textarea",
+                                "required": true
+                            }
+                        ]
                     }
-                ]
+                }
             },
             {
                 "title": "Credit Facility Application Details",
@@ -215,7 +317,9 @@
                     {
                         "label": "Installment Amount (USD)",
                         "type": "number",
-                        "required": true
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "productInstallment"
                     },
                     {
                         "label": "Loan Duration",
@@ -227,12 +331,29 @@
                             "12 months",
                             "Other"
                         ],
-                        "required": true
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "productLoanPeriod"
+                    },
+                    {
+                        "label": "Start Date",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanStartDate"
+                    },
+                    {
+                        "label": "End Date",
+                        "type": "date",
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanEndDate"
                     },
                     {
                         "label": "Purpose/Asset Applied For",
                         "type": "textarea",
-                        "required": true
+                        "required": true,
+                        "bindTo": "productDescription"
                     }
                 ]
             },
@@ -242,22 +363,26 @@
                     {
                         "label": "First Name",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerFirstName"
                     },
                     {
                         "label": "Surname",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerSurname"
                     },
                     {
                         "label": "ID Number",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerIdNumber"
                     },
                     {
                         "label": "Ministry",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerMinistry"
                     },
                     {
                         "label": "Province",
@@ -274,6 +399,12 @@
                             "Bulawayo",
                             "Harare"
                         ],
+                        "required": true
+                    },
+                    {
+                        "label": "Bank Branch",
+                        "type": "component",
+                        "component": "BranchLocator",
                         "required": true
                     },
                     {
@@ -299,17 +430,22 @@
                     {
                         "label": "Monthly Rate (Installment Amount)",
                         "type": "number",
-                        "required": true
+                        "required": true,
+                        "bindTo": "productInstallment"
                     },
                     {
                         "label": "From Date",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanStartDateText"
                     },
                     {
                         "label": "To Date",
                         "type": "text",
-                        "required": false
+                        "required": true,
+                        "readOnly": true,
+                        "bindTo": "autoLoanEndDateText"
                     },
                     {
                         "label": "Do you agree with these terms",
@@ -318,6 +454,41 @@
                             "Yes",
                             "No"
                         ],
+                        "required": true,
+                        "onChange": {
+                            "action": "confirmProceed",
+                            "values": {
+                                "No": "showConfirmation"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "title": "KYC Documents",
+                "fields": [
+                    {
+                        "label": "National ID (Front & Back)",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Latest Payslip",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Proof of Residence",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
+                        "required": true
+                    },
+                    {
+                        "label": "Employee ID/Work ID",
+                        "type": "file",
+                        "accept": "image/*,.pdf",
                         "required": true
                     }
                 ]
@@ -328,7 +499,8 @@
                     {
                         "label": "Full Name",
                         "type": "text",
-                        "required": true
+                        "required": true,
+                        "bindTo": "customerFullName"
                     },
                     {
                         "label": "Legal Declaration",

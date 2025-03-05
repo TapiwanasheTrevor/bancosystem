@@ -29,6 +29,7 @@ class ProductController extends Controller
                 'name' => $product->name,
                 'description' => $product->description,
                 'category' => $product->category->name ?? 'Uncategorized',
+                'catalog_type' => $product->catalog_type,
                 'base_price' => $product->base_price,
                 'image' => $product->image ? asset('images/products/' . $product->image) : null,
                 'credit_options' => $product->creditPricings->map(function ($credit) {
@@ -36,6 +37,7 @@ class ProductController extends Controller
                         'months' => $credit->months,
                         'interest' => $credit->interest,
                         'final_price' => $credit->final_price,
+                        'installment_amount' => number_format($credit->final_price / $credit->months, 2),
                     ];
                 }),
             ],

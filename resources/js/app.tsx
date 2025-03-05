@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {createRoot} from 'react-dom/client';
 import CreditApplicationFlow from './Components/CreditApplicationFlow';
 import DynamicFormWizard from './Components/DynamicFormWizard';
@@ -9,6 +9,7 @@ interface FormData {
     employer: string;
     hasAccount: string;
     wantsAccount: string;
+    specificFormId?: string; // Optional parameter to explicitly specify form ID
 }
 
 const App: React.FC = () => {
@@ -17,6 +18,27 @@ const App: React.FC = () => {
     const [selectedFormId, setSelectedFormId] = useState<string>('');
     const [questionnaireData, setQuestionnaireData] = useState<FormData | null>(null);
     const [insertId, setInsertId] = useState<string>('');
+    const [referralCode, setReferralCode] = useState<string | null>(null);
+    
+    // Extract referral code from URL parameters when app loads
+    useEffect(() => {
+        const queryParams = new URLSearchParams(window.location.search);
+        const ref = queryParams.get('ref');
+        if (ref) {
+            setReferralCode(ref);
+            console.log('Referral code detected:', ref);
+            
+            // Optional: Save referral code to localStorage for persistence across sessions
+            localStorage.setItem('referralCode', ref);
+        } else {
+            // Check if there's a saved referral code in localStorage
+            const savedReferralCode = localStorage.getItem('referralCode');
+            if (savedReferralCode) {
+                setReferralCode(savedReferralCode);
+                console.log('Using saved referral code:', savedReferralCode);
+            }
+        }
+    }, []);
 
     const determineFormId = (formData: FormData): string => {
         const {employer, hasAccount, wantsAccount} = formData;
@@ -40,9 +62,13 @@ const App: React.FC = () => {
         return 'individual_account_opening';
     };
 
-    const handleQuestionnaireComplete = (formData: FormData) => {
-        const formId = determineFormId(formData);
+    const handleQuestionnaireComplete = (formData: any) => {
+        // Use specificFormId if provided, otherwise determine based on rules
+        const formId = formData.specificFormId || determineFormId(formData);
+        
+        // Pass through all form data
         setQuestionnaireData(formData);
+        
         setSelectedFormId(formId);
         setShowDynamicForm(true);
     };
@@ -51,6 +77,11 @@ const App: React.FC = () => {
         setInsertId(insertId);
         setShowDynamicForm(false);
         setShowKYCUpload(true);
+        
+        // Clear referral code from localStorage after successful form submission
+        // to prevent it from being used for future submissions
+        localStorage.removeItem('referralCode');
+        setReferralCode(null);
     };
 
     const handleKYCComplete = (kycData: any) => {

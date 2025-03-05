@@ -2,11 +2,32 @@
 
 @section('content')
     <div class="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Manage Products</h1>
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-800">Manage Products</h1>
+            <div class="flex space-x-4">
+                <a href="/products?type=microbiz" class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">
+                    MicroBiz Products
+                </a>
+                <a href="/products?type=hirepurchase" class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+                    Hire Purchase Products
+                </a>
+            </div>
+        </div>
 
         <form action="/products" method="POST" enctype="multipart/form-data"
               class="space-y-6">
             @csrf
+            
+            <!-- Catalog Type Selection -->
+            <div>
+                <label class="block text-gray-700 font-semibold">Catalog Type</label>
+                <select name="catalog_type" id="catalog_type" required
+                        class="w-full p-3 border rounded-lg bg-white focus:ring focus:ring-blue-300 outline-none">
+                    <option value="microbiz">MicroBiz</option>
+                    <option value="hirepurchase">Hire Purchase</option>
+                </select>
+                <p class="text-sm text-gray-500 mt-1">Select the catalog type to filter categories accordingly</p>
+            </div>
             <!-- Product Name -->
             <div>
                 <label class="block text-gray-700 font-semibold">Product Name</label>
@@ -35,9 +56,13 @@
                         class="w-full p-3 border rounded-lg bg-white focus:ring focus:ring-blue-300 outline-none">
                     <option value="" disabled selected>Choose a category</option>
                     @foreach($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                        <option value="{{ $category->id }}" data-catalog-type="{{ $category->catalog_type }}">
+                            {{ $category->name }} ({{ $category->catalog_type == 'hirepurchase' ? 'Hire Purchase' : 'MicroBiz' }})
+                        </option>
                         @foreach($category->children as $child)
-                            <option value="{{ $child->id }}" class="pl-4">-- {{ $child->name }}</option>
+                            <option value="{{ $child->id }}" data-catalog-type="{{ $child->catalog_type }}" class="pl-4">
+                                -- {{ $child->name }} ({{ $child->catalog_type == 'hirepurchase' ? 'Hire Purchase' : 'MicroBiz' }})
+                            </option>
                         @endforeach
                     @endforeach
                 </select>
@@ -75,3 +100,41 @@
         </form>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const catalogTypeSelector = document.getElementById('catalog_type');
+        const categorySelector = document.querySelector('select[name="category_id"]');
+        
+        // Filter categories based on selected catalog type
+        catalogTypeSelector.addEventListener('change', function() {
+            const selectedCatalogType = this.value;
+            
+            // Hide all options first
+            Array.from(categorySelector.options).forEach(option => {
+                if (option.dataset.catalogType !== selectedCatalogType && option.value !== "") {
+                    option.style.display = 'none';
+                } else {
+                    option.style.display = 'block';
+                }
+            });
+            
+            // Reset selection if current selection is now hidden
+            if (categorySelector.selectedOptions[0].style.display === 'none') {
+                categorySelector.value = "";
+            }
+        });
+        
+        // Initialize with URL parameter if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const typeParam = urlParams.get('type');
+        
+        if (typeParam) {
+            catalogTypeSelector.value = typeParam;
+            // Trigger change event to filter categories
+            catalogTypeSelector.dispatchEvent(new Event('change'));
+        }
+    });
+</script>
+@endpush

@@ -95,11 +95,31 @@
                     </div>
                 </div>
 
-                <a href="/categories" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-800"
-                   id="categoriesLink">
-                    <i class="fas fa-tags"></i>
-                    <span>Categories</span>
-                </a>
+                <!-- Categories with submenu -->
+                <div class="space-y-1">
+                    <button class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-indigo-800"
+                            onclick="toggleSubmenu('categoriesSubmenu')" id="categoriesMenu">
+                        <div class="flex items-center space-x-3">
+                            <i class="fas fa-tags"></i>
+                            <span>Categories</span>
+                        </div>
+                        <i class="fas fa-chevron-down text-sm transition-transform duration-200"></i>
+                    </button>
+                    <div id="categoriesSubmenu" class="sub-menu">
+                        <a href="/microbiz/categories"
+                           class="flex items-center space-x-3 p-3 sub-menu-item rounded-lg hover:bg-indigo-800"
+                           id="microbizCategoriesLink">
+                            <i class="fa fa-angle-right"></i>
+                            <span>MicroBiz</span>
+                        </a>
+                        <a href="/hirepurchase/categories"
+                           class="flex items-center space-x-3 p-3 sub-menu-item rounded-lg hover:bg-indigo-800"
+                           id="hirePurchaseCategoriesLink">
+                            <i class="fa fa-angle-right"></i>
+                            <span>Hire Purchase</span>
+                        </a>
+                    </div>
+                </div>
 
                 <a href="/applications" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-800"
                    id="applicationsLink">
@@ -112,6 +132,12 @@
                     <i class="fas fa-file-alt"></i>
                     <span>Forms</span>
                 </a>
+                
+                <a href="{{ route('admin.deliveries.index') }}" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-800"
+                   id="deliveriesLink">
+                    <i class="fas fa-truck"></i>
+                    <span>Deliveries</span>
+                </a>
 
                 <div class="space-y-1">
                     <button class="w-full flex items-center justify-between p-3 rounded-lg hover:bg-indigo-800"
@@ -123,17 +149,17 @@
                         <i class="fas fa-chevron-down text-sm transition-transform duration-200"></i>
                     </button>
                     <div id="agentsSubmenu" class="sub-menu">
-                        <a href="/agents"
-                           class="flex items-center space-x-3 p-3 sub-menu-item rounded-lg hover:bg-indigo-800"
-                           id="addAgentLink">
-                            <i class="fa fa-angle-right"></i>
-                            <span>Add Agent</span>
-                        </a>
-                        <a href="/agents/list"
+                        <a href="{{ route('agents.index') }}"
                            class="flex items-center space-x-3 p-3 sub-menu-item rounded-lg hover:bg-indigo-800"
                            id="viewAgentsLink">
                             <i class="fa fa-angle-right"></i>
                             <span>View Agents</span>
+                        </a>
+                        <a href="{{ route('agents.create') }}"
+                           class="flex items-center space-x-3 p-3 sub-menu-item rounded-lg hover:bg-indigo-800"
+                           id="addAgentLink">
+                            <i class="fa fa-angle-right"></i>
+                            <span>Add Agent</span>
                         </a>
                     </div>
                 </div>
@@ -174,7 +200,8 @@
                             <i class="fas fa-key mr-2"></i> Change Password
                         </a>
                         <div class="border-t border-gray-100"></div>
-                        <form method="POST" action="/logout">
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
                             <button type="submit"
                                     class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 <i class="fas fa-sign-out-alt mr-2"></i> Logout
@@ -258,14 +285,21 @@
             document.getElementById('agentsMenu').classList.add('bg-indigo-800', 'border-l-4', 'border-white');
             document.getElementById('agentsSubmenu').classList.add('active');
 
-            if (path.includes('/agents')) {
+            if (path.includes('/agents/create')) {
                 document.getElementById('addAgentLink').classList.add('bg-indigo-800');
-            } else if (path.includes('/agents/list')) {
+            } else {
                 document.getElementById('viewAgentsLink').classList.add('bg-indigo-800');
             }
         }
-        if (path.includes('/categories')) {
-            document.getElementById('categoriesLink').classList.add('bg-indigo-800', 'border-l-4', 'border-white');
+        if (path.includes('/categories') || path.includes('/microbiz/categories') || path.includes('/hirepurchase/categories')) {
+            document.getElementById('categoriesMenu').classList.add('bg-indigo-800', 'border-l-4', 'border-white');
+            document.getElementById('categoriesSubmenu').classList.add('active');
+
+            if (path.includes('/microbiz/categories')) {
+                document.getElementById('microbizCategoriesLink').classList.add('bg-indigo-800');
+            } else if (path.includes('/hirepurchase/categories')) {
+                document.getElementById('hirePurchaseCategoriesLink').classList.add('bg-indigo-800');
+            }
         }
         if (path.includes('/applications')) {
             document.getElementById('applicationsLink').classList.add('bg-indigo-800', 'border-l-4', 'border-white');
@@ -273,8 +307,8 @@
         if (path.includes('/forms')) {
             document.getElementById('formsLink').classList.add('bg-indigo-800', 'border-l-4', 'border-white');
         }
-        if (path.includes('/agents')) {
-            document.getElementById('agentsLink').classList.add('bg-indigo-800', 'border-l-4', 'border-white');
+        if (path.includes('/admin/deliveries')) {
+            document.getElementById('deliveriesLink').classList.add('bg-indigo-800', 'border-l-4', 'border-white');
         }
         if (path.includes('/settings')) {
             document.getElementById('settingsLink').classList.add('bg-indigo-800', 'border-l-4', 'border-white');

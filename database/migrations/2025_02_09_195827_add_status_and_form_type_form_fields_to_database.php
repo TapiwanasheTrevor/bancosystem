@@ -21,7 +21,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('database', function (Blueprint $table) {
+        Schema::table('forms', function (Blueprint $table) {
             $table->dropColumn('status');
             $table->dropColumn('form_name');
         });
