@@ -46,7 +46,7 @@
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-semibold text-gray-700">Manage Applications</h2>
             <div class="flex space-x-2">
-                <a href="#" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:ring focus:ring-emerald-400 flex items-center">
+                <a href="javascript:void(0)" id="export-data" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:ring focus:ring-emerald-400 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
@@ -79,24 +79,27 @@
                 </div>
 
                 <div>
-                    <label for="date-range" class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                    <div class="flex space-x-2">
-                        <input type="date" id="date-from" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-emerald-400 outline-none">
-                        <input type="date" id="date-to" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-emerald-400 outline-none">
-                    </div>
+                    <label for="date-from" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                    <input type="date" id="date-from" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-emerald-400 outline-none">
                 </div>
-
-                <div class="flex items-end">
-                    <button id="apply-filters" 
-                            class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:ring focus:ring-emerald-400">
-                        Apply Filters
-                    </button>
+                
+                <div>
+                    <label for="date-to" class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                    <input type="date" id="date-to" class="w-full px-4 py-2 border rounded-lg focus:ring focus:ring-emerald-400 outline-none">
                 </div>
+            </div>
+            
+            <div class="flex justify-end mt-4">
+                <button id="apply-filters" 
+                        class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:ring focus:ring-emerald-400">
+                    Apply Filters
+                </button>
+            </div>
             </div>
         </div>
 
         {{-- Batch Actions --}}
-        <div class="mb-4 flex justify-between items-center">
+        <div class="my-8 flex justify-between items-center bg-gray-50 p-4 rounded-lg border border-gray-200">
             <div id="batch-actions" class="flex space-x-2 opacity-50 pointer-events-none transition-all">
                 <button id="mark-approved"
                         class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring focus:ring-green-400 flex items-center">
@@ -121,7 +124,7 @@
                 </button>
             </div>
             <div>
-                <span id="selected-count" class="text-sm text-gray-600">0 items selected</span>
+                <span id="selected-count" class="text-sm text-gray-600 font-medium">0 items selected</span>
             </div>
         </div>
 
@@ -759,6 +762,34 @@
                 
                 // Store reference to DataTable instance for debugging
                 window.activeDataTable = dataTable;
+                
+                // Track the currently active tab/form type
+                let activeFormType = currentFormName;
+                
+                // Handle export button click
+                $('#export-data').on('click', function() {
+                    // Use the tracked active form type
+                    const activeTab = activeFormType;
+                    
+                    // Get filter values
+                    const status = $('#status-filter').val() || '';
+                    const search = $('#search').val() || '';
+                    const dateFrom = $('#date-from').val() || '';
+                    const dateTo = $('#date-to').val() || '';
+                    
+                    // Build export URL with query parameters
+                    let exportUrl = `/applications/export?type=${activeTab}`;
+                    
+                    if (status) exportUrl += `&status=${status}`;
+                    if (search) exportUrl += `&search=${search}`;
+                    if (dateFrom) exportUrl += `&date_from=${dateFrom}`;
+                    if (dateTo) exportUrl += `&date_to=${dateTo}`;
+                    
+                    console.log('Exporting data for form type:', activeTab);
+                    
+                    // Open export URL in new tab
+                    window.open(exportUrl, '_blank');
+                });
 
                 // Handle tab clicks
                 $('[x-data]').on('click', 'button[id]', function () {
@@ -777,6 +808,9 @@
                     
                     if (currentFormName !== formName) {
                         currentFormName = formName;
+                        // Update the tracked form type for exports
+                        activeFormType = formName;
+                        console.log('Updated active form type to:', activeFormType);
                         loadDataTable(currentFormName);
                     }
                 });

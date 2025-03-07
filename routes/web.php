@@ -113,6 +113,10 @@ Route::get('/applications', function () {
     return view('applications');
 })->middleware(['auth', 'verified'])->name('applications');
 
+Route::get('/applications/export', [App\Http\Controllers\FormSubmissionController::class, 'export'])
+    ->middleware(['auth', 'verified'])
+    ->name('applications.export');
+
 Route::get('/forms', function () {
     // Get agents who are user type 'agent'
     $agents = User::where('role', 'agent')->get();
@@ -264,12 +268,12 @@ Route::middleware(['auth'])->prefix('inventory')->name('inventory.')->group(func
     Route::get('/', [App\Http\Controllers\InventoryController::class, 'index'])->name('index');
     Route::get('/create', [App\Http\Controllers\InventoryController::class, 'create'])->name('create');
     Route::post('/', [App\Http\Controllers\InventoryController::class, 'store'])->name('store');
-    Route::get('/{id}', [App\Http\Controllers\InventoryController::class, 'show'])->name('show');
-    Route::get('/{id}/edit', [App\Http\Controllers\InventoryController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [App\Http\Controllers\InventoryController::class, 'update'])->name('update');
-    Route::get('/{id}/adjust', [App\Http\Controllers\InventoryController::class, 'showAdjustForm'])->name('adjust');
-    Route::post('/{id}/adjust', [App\Http\Controllers\InventoryController::class, 'processAdjustment'])->name('process-adjustment');
     Route::get('/search', [App\Http\Controllers\InventoryController::class, 'search'])->name('search');
+    Route::get('/{id}', [App\Http\Controllers\InventoryController::class, 'show'])->name('show')->where('id', '[0-9]+');
+    Route::get('/{id}/edit', [App\Http\Controllers\InventoryController::class, 'edit'])->name('edit')->where('id', '[0-9]+');
+    Route::put('/{id}', [App\Http\Controllers\InventoryController::class, 'update'])->name('update')->where('id', '[0-9]+');
+    Route::get('/{id}/adjust', [App\Http\Controllers\InventoryController::class, 'showAdjustForm'])->name('adjust')->where('id', '[0-9]+');
+    Route::post('/{id}/adjust', [App\Http\Controllers\InventoryController::class, 'processAdjustment'])->name('process-adjustment')->where('id', '[0-9]+');
     
     // Warehouse Management
     Route::get('/warehouses/manage', [App\Http\Controllers\InventoryController::class, 'manageWarehouses'])->name('warehouses.manage');

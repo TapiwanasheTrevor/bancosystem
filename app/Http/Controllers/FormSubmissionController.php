@@ -4,12 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\Form;
 use App\Models\User;
+use App\Exports\ApplicationsExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Response;
 
 class FormSubmissionController extends Controller
 {
+    /**
+     * Export applications data as CSV
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function export(Request $request)
+    {
+        return ApplicationsExport::generateCsv($request);
+    }
+
     public function submit(Request $request)
     {
         // Validate the request data

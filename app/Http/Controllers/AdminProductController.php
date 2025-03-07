@@ -45,11 +45,26 @@ class AdminProductController extends Controller
             'catalog_type' => 'required|in:microbiz,hirepurchase',
         ]);
 
-        // Handle image upload to `public/products`
+        // Initialize imageName as null
+        $imageName = null;
+        
+        // Handle image upload
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            $image->move(public_path('images/products'), $imageName);
+            try {
+                $image = $request->file('image');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                
+                // Ensure the directory exists
+                $uploadPath = public_path('images/products');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                
+                // Move the file
+                $image->move($uploadPath, $imageName);
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Error uploading image: ' . $e->getMessage())->withInput();
+            }
         }
 
         // Get the category to determine catalog type if not explicitly provided
@@ -60,28 +75,35 @@ class AdminProductController extends Controller
             'description' => $request->description,
             'category_id' => $request->category_id,
             'base_price' => $request->base_price,
-            'image' => $imageName ?? null,
+            'image' => $imageName,
             'catalog_type' => $request->catalog_type ?? $category->catalog_type ?? 'microbiz',
         ]);
 
-        // Save credit pricing for different months
-        foreach ($request->credit as $months => $data) {
-            $interest = isset($data['interest']) ? (float)$data['interest'] : 0;
-            $installmentAmount = isset($data['installment_amount']) ? (float)$data['installment_amount'] : null;
-            
-            // Only create entry if either interest or installment amount is provided
-            if ($interest > 0 || $installmentAmount > 0) {
-                // Calculate final price based on installment amount if provided
-                $finalPrice = $installmentAmount ? ($installmentAmount * (int)$months) : 
-                              ($request->base_price * (1 + ($interest / 100)));
+        // Check if credit data exists
+        if (isset($request->credit)) {
+            // Save credit pricing for different months
+            foreach ($request->credit as $months => $data) {
+                // Default to 0 if not provided or empty
+                $interest = !empty($data['interest']) ? (float)$data['interest'] : 0;
+                $installmentAmount = !empty($data['installment_amount']) ? (float)$data['installment_amount'] : null;
                 
-                CreditPricing::create([
-                    'product_id' => $product->id,
-                    'months' => (int)$months,
-                    'interest' => $interest,
-                    'installment_amount' => $installmentAmount,
-                    'final_price' => $finalPrice,
-                ]);
+                // Only create entry if either interest or installment amount is provided
+                if ($interest > 0 || $installmentAmount > 0) {
+                    // Calculate final price based on installment amount if provided
+                    if ($installmentAmount) {
+                        $finalPrice = $installmentAmount * (int)$months;
+                    } else {
+                        $finalPrice = $request->base_price * (1 + ($interest / 100));
+                    }
+                    
+                    CreditPricing::create([
+                        'product_id' => $product->id,
+                        'months' => (int)$months,
+                        'interest' => $interest,
+                        'installment_amount' => $installmentAmount,
+                        'final_price' => $finalPrice,
+                    ]);
+                }
             }
         }
 
@@ -125,5 +147,119 @@ class AdminProductController extends Controller
         }
 
         return view('admin.products.view')->with('categories', $categories);
+    }
+    
+    /**
+     * Show a product for editing
+     */
+    public function show($id)
+    {
+        $product = Product::with(['category', 'creditPricings'])->findOrFail($id);
+        return response()->json($product);
+    }
+    
+    /**
+     * Update a product
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'category_id' => 'required|exists:categories,id',
+            'base_price' => 'required|numeric',
+            'image' => 'nullable|image|max:2048',
+            'catalog_type' => 'required|in:microbiz,hirepurchase',
+        ]);
+
+        $product = Product::findOrFail($id);
+        
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            try {
+                // Delete old image if exists
+                if ($product->image && file_exists(public_path('images/products/' . $product->image))) {
+                    unlink(public_path('images/products/' . $product->image));
+                }
+                
+                $image = $request->file('image');
+                $imageName = time() . '_' . $image->getClientOriginalName();
+                
+                // Ensure the directory exists
+                $uploadPath = public_path('images/products');
+                if (!file_exists($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+                
+                // Move the file
+                $image->move($uploadPath, $imageName);
+                
+                // Update image name
+                $product->image = $imageName;
+            } catch (\Exception $e) {
+                return redirect()->back()->with('error', 'Error uploading image: ' . $e->getMessage())->withInput();
+            }
+        }
+        
+        // Update product details
+        $product->name = $request->name;
+        $product->description = $request->description;
+        $product->category_id = $request->category_id;
+        $product->base_price = $request->base_price;
+        $product->catalog_type = $request->catalog_type;
+        $product->save();
+        
+        // Update credit pricing
+        if (isset($request->credit)) {
+            // First delete existing pricing
+            CreditPricing::where('product_id', $product->id)->delete();
+            
+            // Then create new pricing
+            foreach ($request->credit as $months => $data) {
+                $interest = !empty($data['interest']) ? (float)$data['interest'] : 0;
+                $installmentAmount = !empty($data['installment_amount']) ? (float)$data['installment_amount'] : null;
+                
+                // Only create entry if either interest or installment amount is provided
+                if ($interest > 0 || $installmentAmount > 0) {
+                    // Calculate final price based on installment amount if provided
+                    if ($installmentAmount) {
+                        $finalPrice = $installmentAmount * (int)$months;
+                    } else {
+                        $finalPrice = $request->base_price * (1 + ($interest / 100));
+                    }
+                    
+                    CreditPricing::create([
+                        'product_id' => $product->id,
+                        'months' => (int)$months,
+                        'interest' => $interest,
+                        'installment_amount' => $installmentAmount,
+                        'final_price' => $finalPrice,
+                    ]);
+                }
+            }
+        }
+        
+        return redirect('/products')->with('success', 'Product updated successfully.');
+    }
+    
+    /**
+     * Delete a product
+     */
+    public function destroy($id)
+    {
+        $product = Product::findOrFail($id);
+        
+        // Delete image if exists
+        if ($product->image && file_exists(public_path('images/products/' . $product->image))) {
+            unlink(public_path('images/products/' . $product->image));
+        }
+        
+        // Delete credit pricing
+        CreditPricing::where('product_id', $product->id)->delete();
+        
+        // Delete product
+        $product->delete();
+        
+        return redirect('/products')->with('success', 'Product deleted successfully.');
     }
 }
