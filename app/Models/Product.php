@@ -25,4 +25,12 @@ class Product extends Model
     {
         return $this->hasMany(ProductDelivery::class);
     }
+    
+    /**
+     * Get all inventory items for this product
+     */
+    public function inventoryItems()
+    {
+        return $this->hasMany(InventoryItem::class);
+    }
 }

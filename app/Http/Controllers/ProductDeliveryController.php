@@ -75,12 +75,61 @@ class ProductDeliveryController extends Controller
                 $productId = $formValues['productId'];
             }
             
+            // First try to find product ID in questionnaire_data (most reliable source)
+            if (!$productId && !empty($form->questionnaire_data)) {
+                // Debug the questionnaire_data structure
+                \Log::info("Form {$form->id} questionnaire_data: " . json_encode($form->questionnaire_data));
+                
+                if (isset($form->questionnaire_data['selectedProduct']) && 
+                    isset($form->questionnaire_data['selectedProduct']['product']) && 
+                    isset($form->questionnaire_data['selectedProduct']['product']['id'])) {
+                    $productId = (int)$form->questionnaire_data['selectedProduct']['product']['id'];
+                    \Log::info("Found product ID {$productId} in questionnaire_data");
+                }
+            }
+            
             // If still no product ID found, try any field that might contain it
             if (!$productId) {
-                foreach ($formValues as $key => $value) {
-                    if (is_numeric($value) && strpos(strtolower($key), 'product') !== false) {
-                        $productId = $value;
+                // Log form_values for debugging
+                \Log::info("Form {$form->id} form_values: " . json_encode($formValues));
+                
+                // Try to find product by name in form values
+                $productName = null;
+                $possibleNameFields = [
+                    'purpose/asset-applied-for',
+                    'product-name',
+                    'product',
+                    'productDescription'
+                ];
+                
+                foreach ($possibleNameFields as $field) {
+                    if (isset($formValues[$field]) && !empty($formValues[$field])) {
+                        $productName = $formValues[$field];
+                        \Log::info("Found potential product name: {$productName} in field {$field}");
                         break;
+                    }
+                }
+                
+                // If we found a product name, try to find matching product
+                if ($productName) {
+                    $product = Product::where('name', $productName)->first();
+                    if ($product) {
+                        $productId = $product->id;
+                        \Log::info("Found product ID {$productId} by name {$productName}");
+                    }
+                }
+                
+                // If still no product ID, try to find it in any field with 'product' in name
+                if (!$productId) {
+                    foreach ($formValues as $key => $value) {
+                        if (is_numeric($value) && strpos(strtolower($key), 'product') !== false) {
+                            // Ensure it's an integer ID, not a decimal value like price
+                            if (is_int($value) || (is_string($value) && ctype_digit($value))) {
+                                $productId = (int)$value;
+                                \Log::info("Found potential product ID {$productId} in field {$key}");
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -90,8 +139,17 @@ class ProductDeliveryController extends Controller
                 throw new \Exception('Could not determine product for this application. Please select a product manually.');
             }
             
+            // Make sure product ID is an integer
+            $productId = (int)$productId;
+            
             // Verify the product exists
-            $product = Product::findOrFail($productId);
+            try {
+                $product = Product::findOrFail($productId);
+            } catch (\Exception $e) {
+                // Log the error for debugging
+                \Log::error("Product with ID {$productId} not found for form {$form->id}");
+                throw new \Exception("Product with ID {$productId} does not exist in the database. Please check product records.");
+            }
             
             // Add product_id to validated data
             $validated['product_id'] = $productId;

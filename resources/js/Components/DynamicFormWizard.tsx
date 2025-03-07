@@ -266,6 +266,93 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
         }
     }, [formData, initialData]);
     
+    // Handle SSB form special cases in an effect to avoid infinite render loops
+    useEffect(() => {
+        if (!formData || !formValues) return;
+        
+        const isSSBForm = formValues && 
+            (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' || 
+             formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+             formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+             formValues['formType'] === 'ssb');
+        
+        if (!isSSBForm) return;
+        
+        // Create a map of updates to apply (to avoid multiple state updates)
+        const updates = {};
+        
+        // For each section in the form
+        formData.sections.forEach((section, sectionIndex) => {
+            if (!section.fields) return;
+            
+            section.fields.forEach(field => {
+                const fieldId = field.id || `${field.label.toLowerCase().replace(/\s+/g, '-')}`;
+                
+                // Handle bank branch fields for SSB
+                if ((field.label && field.label.toLowerCase().includes('bank branch')) || 
+                    fieldId.toLowerCase().includes('bank-branch') || 
+                    fieldId.toLowerCase().includes('branch')) {
+                    
+                    if (field.required && !formValues[fieldId]) {
+                        updates[fieldId] = "SSB-BRANCH-NOT-REQUIRED";
+                    }
+                }
+                
+                // Pre-fill SSB deduction order form if currently on that section
+                if (sectionIndex === 5 || (section.title && section.title === "Deduction Order Form")) {
+                    // Map of field IDs and their possible sources
+                    const fieldMappings = {
+                        'First Name': ['first-name', 'customerFirstName', 'forename'],
+                        'Surname': ['surname', 'customerSurname'],
+                        'ID Number': ['id-number', 'customerIdNumber', 'national-id'],
+                        'Ministry': ['customerMinistry', 'ministry', 'Name of Responsible Ministry', 'name-of-responsible-ministry'],
+                        'Employee Code Number': ['ec-number', 'employment-code', 'employment-number', 'ec_number'],
+                        'Check Letter': ['ec-check-letter', 'check-letter']
+                    };
+                    
+                    // Check if field is in our mapping and needs to be filled
+                    Object.entries(fieldMappings).forEach(([targetField, sourceFields]) => {
+                        if ((field.label === targetField || fieldId === targetField.toLowerCase().replace(/\s+/g, '-')) 
+                            && !formValues[fieldId]) {
+                            
+                            // Find first non-empty source value
+                            for (const sourceField of sourceFields) {
+                                if (formValues[sourceField]) {
+                                    updates[fieldId] = formValues[sourceField];
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Calculate dates for From/To fields
+                    if (field.label === 'From Date' && !formValues['From Date']) {
+                        updates['From Date'] = calculateLoanStartDate();
+                    }
+                    
+                    if (field.label === 'To Date' && !formValues['To Date'] && formValues['productLoanPeriodMonths']) {
+                        const fromDate = formValues['From Date'] || updates['From Date'] || calculateLoanStartDate();
+                        const loanPeriodMonths = parseInt(formValues['productLoanPeriodMonths']) || 3;
+                        updates['To Date'] = calculateLoanEndDate(fromDate, loanPeriodMonths);
+                    }
+                    
+                    // Set monthly rate
+                    if (field.label === 'Monthly Rate (Installment Amount)' && 
+                        !formValues['Monthly Rate (Installment Amount)'] && 
+                        formValues['productInstallment']) {
+                        
+                        updates['Monthly Rate (Installment Amount)'] = formValues['productInstallment'];
+                    }
+                }
+            });
+        });
+        
+        // Apply all updates at once if we have any
+        if (Object.keys(updates).length > 0) {
+            setFormValues(prev => ({...prev, ...updates}));
+        }
+    }, [formData, currentSection]);
+    
     // Clear validation state when changing sections to only validate on Next button click
     useEffect(() => {
         setFieldValidation({});
@@ -1387,7 +1474,13 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                              formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
                              formValues['formType'] === 'ssb');
                             
-                        if (isSSBForm && (field.label.toLowerCase().includes('bank branch') || fieldId.toLowerCase().includes('bank-branch'))) {
+                        if (isSSBForm && (field.label.toLowerCase().includes('bank branch') || 
+                            fieldId.toLowerCase().includes('bank-branch') || 
+                            fieldId.toLowerCase().includes('branch'))) {
+                            
+                            // We'll handle this outside of the render function
+                            // Don't set form values during render as it causes infinite loops
+                            
                             return (
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor={fieldId}>
@@ -1396,6 +1489,13 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                     <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-lg border border-gray-200">
                                         Bank branch selection is not necessary for Government SSB applications.
                                     </p>
+                                    {/* Hidden input to ensure form validation passes */}
+                                    <input 
+                                        type="hidden" 
+                                        id={fieldId} 
+                                        name={fieldId} 
+                                        value="SSB-BRANCH-NOT-REQUIRED" 
+                                    />
                                 </div>
                             );
                         }
@@ -1776,6 +1876,61 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
 
             const fieldId = field.id || `${field.label.toLowerCase().replace(/\s+/g, '-')}`;
             
+            // Check for SSB form special handling
+            const isSSBForm = formValues && 
+                (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' || 
+                 formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                 formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                 formValues['formType'] === 'ssb');
+            
+            // Auto-validate bank branch fields for SSB forms
+            if (isSSBForm && (field.label.toLowerCase().includes('bank branch') || 
+                fieldId.toLowerCase().includes('bank-branch') || 
+                fieldId.toLowerCase().includes('branch'))) {
+                
+                newValidation[fieldId] = true;
+                return true;
+            }
+                 
+            // If this is an SSB form and we're on the Deduction Order Form section
+            if (isSSBForm && 
+                ((section.title && section.title === "Deduction Order Form") || 
+                 (currentSection === 5))) { // Deduction Order Form is typically section 5
+                
+                // Special handling for SSB Deduction Order Form fields
+                // Auto-validate fields that might be pre-filled or duplicated from other sections
+                if (['first-name', 'surname', 'id-number', 'ministry'].includes(fieldId.toLowerCase()) ||
+                    ['First Name', 'Surname', 'ID Number', 'Ministry'].includes(field.label)) {
+                    
+                    // If we have values for these fields in other places, consider them valid
+                    const firstName = formValues['first-name'] || formValues['customerFirstName'] || formValues['forename'];
+                    const surname = formValues['surname'] || formValues['customerSurname'];
+                    const idNumber = formValues['id-number'] || formValues['customerIdNumber'] || formValues['national-id'];
+                    const ministry = formValues['customerMinistry'] || formValues['ministry'] || formValues['Name of Responsible Ministry'] || 
+                                    formValues['name-of-responsible-ministry'];
+                    
+                    if ((fieldId.toLowerCase() === 'first-name' || field.label === 'First Name') && firstName) {
+                        newValidation[fieldId] = true;
+                        return true;
+                    }
+                    
+                    if ((fieldId.toLowerCase() === 'surname' || field.label === 'Surname') && surname) {
+                        newValidation[fieldId] = true;
+                        return true;
+                    }
+                    
+                    if ((fieldId.toLowerCase() === 'id-number' || field.label === 'ID Number') && idNumber) {
+                        newValidation[fieldId] = true;
+                        return true;
+                    }
+                    
+                    if ((fieldId.toLowerCase() === 'ministry' || field.label === 'Ministry') && ministry) {
+                        newValidation[fieldId] = true;
+                        return true;
+                    }
+                }
+            }
+            
             // Check for both direct value and bindTo value
             let value;
             if (field.bindTo && formValues[field.bindTo]) {
@@ -1810,7 +1965,11 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
             }
 
             newValidation[fieldId] = fieldValid;
-            if (!fieldValid) isValid = false;
+            if (!fieldValid) {
+                isValid = false;
+                // Add debug console logging to identify which fields are failing validation
+                console.warn(`Field validation failed for: ${fieldId} (${field.label}) with value: ${value}`);
+            }
             return fieldValid;
         };
 

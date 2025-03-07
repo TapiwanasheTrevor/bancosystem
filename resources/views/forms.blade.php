@@ -3,7 +3,7 @@
 @section('content')
     <div class="container mx-auto p-6 bg-white rounded-lg shadow-lg h-full">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-semibold text-gray-700">Manage Applications</h2>
+            <h2 class="text-2xl font-semibold text-gray-700">Agent Document Management</h2>
         </div>
 
         <div class="grid grid-cols-3 gap-6" style="height: 90%">
@@ -26,16 +26,24 @@
                     </div>
                 </div>
                 <div id="agents-list" class="divide-y max-h-[calc(100vh-16rem)] overflow-y-auto">
+                    <div class="p-4 text-center text-gray-500">
+                        <p>Select an agent to view their documents</p>
+                    </div>
                     @foreach($agents as $agent)
                         <div class="agent-item p-4 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
-                             data-agent-id="{{ $agent->id }}">
+                             data-agent-id="{{ $agent->id }}" 
+                             data-agent-name="{{ $agent->name }}">
                             <div class="flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
-                                    <span class="text-indigo-600 font-medium">{{ $agent->initials }}</span>
+                                    <span class="text-indigo-600 font-medium">
+                                        {{ substr($agent->name, 0, 1) . (strpos($agent->name, ' ') !== false ? substr($agent->name, strpos($agent->name, ' ') + 1, 1) : '') }}
+                                    </span>
                                 </div>
                                 <span class="font-medium">{{ $agent->name }}</span>
                             </div>
-                            <span class="text-sm text-gray-500">{{ $agent->documents_count }} docs</span>
+                            <span class="text-sm text-gray-500">
+                                <span class="document-count">0</span> docs
+                            </span>
                         </div>
                     @endforeach
                 </div>
@@ -47,49 +55,23 @@
                     <div class="flex justify-between items-center">
                         <div>
                             <h3 class="text-lg font-medium text-gray-700">New Documents</h3>
-                            <p class="text-sm text-gray-500" id="new-docs-title">Recently uploaded forms</p>
+                            <p class="text-sm text-gray-500" id="new-docs-title">Select an agent to see their documents</p>
                         </div>
-                        <button id="upload-document-btn" class="px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <button id="upload-document-btn" class="px-3 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" disabled>
                             <i class="fas fa-upload mr-2"></i> Upload PDF
                         </button>
                     </div>
                 </div>
                 <div id="new-documents" class="divide-y max-h-[calc(100vh-16rem)] overflow-y-auto">
-                    @foreach($newDocuments as $doc)
-                        <div class="p-4 hover:bg-gray-100">
-                            <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center space-x-2">
-                                    <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path
-                                            d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"/>
-                                    </svg>
-                                    <span class="font-medium">{{ $doc->name }}</span>
-                                </div>
-                                <span class="text-sm text-gray-500">{{ human_filesize($doc->size ?? 0) }}</span>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="text-sm text-gray-500">Uploaded {{ $doc->created_at->diffForHumans() }}</div>
-                                <div class="flex space-x-2">
-                                    <button 
-                                        class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 view-document" 
-                                        data-document-id="{{ $doc->id }}"
-                                        data-document-path="{{ asset($doc->path) }}"
-                                    >
-                                        View
-                                    </button>
-                                    <button 
-                                        class="text-xs px-2 py-1 bg-green-50 text-green-600 rounded hover:bg-green-100 mark-processed" 
-                                        data-document-id="{{ $doc->id }}"
-                                    >
-                                        Mark Processed
-                                    </button>
-                                </div>
-                            </div>
-                            @if($doc->notes)
-                                <div class="mt-2 text-xs italic text-gray-500">"{{ $doc->notes }}"</div>
-                            @endif
+                    @if($newDocuments->isEmpty())
+                        <div class="p-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No documents</h3>
+                            <p class="mt-1 text-sm text-gray-500">Select an agent to view their documents.</p>
                         </div>
-                    @endforeach
+                    @endif
                 </div>
             </div>
 
@@ -97,37 +79,18 @@
             <div class="border rounded-lg bg-gray-50">
                 <div class="p-4 border-b">
                     <h3 class="text-lg font-medium text-gray-700">History</h3>
-                    <p class="text-sm text-gray-500" id="history-title">Previously processed documents</p>
+                    <p class="text-sm text-gray-500" id="history-title">Select an agent to see processed documents</p>
                 </div>
                 <div id="history-documents" class="max-h-[calc(100vh-16rem)] overflow-y-auto">
-                    @foreach($processedDocuments->groupBy(function($doc) {
-                        return $doc->processed_at->format('Y-m-d');
-                    }) as $date => $documents)
-                        <div class="p-4 bg-gray-100">
-                            <h4 class="text-sm font-medium text-gray-600 mb-2">
-                                {{ \Carbon\Carbon::parse($date)->isToday() ? 'Today' : \Carbon\Carbon::parse($date)->format('F j, Y') }}
-                            </h4>
-                            <div class="space-y-3">
-                                @foreach($documents as $doc)
-                                    <div class="bg-white p-3 rounded-lg shadow-sm">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <div class="flex items-center space-x-2">
-                                                <svg class="w-5 h-5 text-green-500" fill="currentColor"
-                                                     viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd"
-                                                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
-                                                </svg>
-                                                <span class="font-medium">{{ $doc->name }}</span>
-                                            </div>
-                                            <span
-                                                class="text-sm text-gray-500">{{ $doc->processed_at->format('g:i A') }}</span>
-                                        </div>
-                                        <p class="text-sm text-gray-500">Processed by {{ $doc->processed_by }}</p>
-                                    </div>
-                                @endforeach
-                            </div>
+                    @if($processedDocuments->isEmpty())
+                        <div class="p-8 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No processed documents</h3>
+                            <p class="mt-1 text-sm text-gray-500">Select an agent to view their processed documents.</p>
                         </div>
-                    @endforeach
+                    @endif
                 </div>
             </div>
         </div>
@@ -299,7 +262,7 @@
                 agentSearch.addEventListener('input', function (e) {
                     const searchTerm = e.target.value.toLowerCase();
 
-                    fetch(`/api/agents/search?term=${searchTerm}`)
+                    fetch(`/web-api/agents/search?term=${searchTerm}`)
                         .then(response => response.text())
                         .then(html => {
                             agentsList.innerHTML = html;
@@ -335,8 +298,8 @@
                 // Load agent documents
                 function loadAgentDocuments(agentId) {
                     Promise.all([
-                        fetch(`/api/documents/new/${agentId}`).then(r => r.text()),
-                        fetch(`/api/documents/processed/${agentId}`).then(r => r.text())
+                        fetch(`/web-api/documents/new/${agentId}`).then(r => r.text()),
+                        fetch(`/web-api/documents/processed/${agentId}`).then(r => r.text())
                     ]).then(([newDocs, processedDocs]) => {
                         newDocuments.innerHTML = newDocs;
                         historyDocuments.innerHTML = processedDocs;

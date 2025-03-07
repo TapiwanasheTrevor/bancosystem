@@ -1,17 +1,22 @@
 <?php
 
-if (!function_exists('human_filesize')) {
+if (\!function_exists('human_filesize')) {
     /**
-     * Format bytes to human readable file size
+     * Convert bytes to human readable format
      * 
      * @param int $bytes
-     * @param int $decimals
+     * @param int $precision
      * @return string
      */
-    function human_filesize($bytes, $decimals = 2)
-    {
-        $size = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-        $factor = floor((strlen($bytes) - 1) / 3);
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . ' ' . $size[$factor];
+    function human_filesize($bytes, $precision = 2) {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        
+        $bytes /= (1 << (10 * $pow));
+        
+        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 }

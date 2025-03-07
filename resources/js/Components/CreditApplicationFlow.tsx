@@ -152,9 +152,10 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
         setError(null);
         try {
             // Determine which API endpoint to use based on intent
-            const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/api`;
+            //const baseUrl = `${import.meta.env.VITE_API_BASE_URL}/api`;
+            const baseUrl = `https://www.bancosystem.co.zw/api`;
             let apiUrl;
-            
+
             // Use different API endpoint for hire purchase products
             if (formData.intent === 'hirePurchase') {
                 apiUrl = categoryId
@@ -228,7 +229,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
         // Reset any previous application status when selecting a new product
         setApplicationStatus(null);
         setStatusError(null);
-        
+
         setFormData(prev => ({
             ...prev,
             selectedProduct: {
@@ -273,7 +274,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
         }
         // Otherwise, stay on current step to allow user to change their mind
     };
-    
+
     // Handle checking application status
     const handleCheckStatus = async () => {
         if (!referenceNumber.trim()) {
@@ -291,7 +292,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ reference_number: referenceNumber }),
+                body: JSON.stringify({reference_number: referenceNumber}),
             });
 
             const data = await response.json();
@@ -426,7 +427,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ tracking_number: trackingNumber }),
+                body: JSON.stringify({tracking_number: trackingNumber}),
             });
 
             const data = await response.json();
@@ -447,15 +448,15 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
 
     // Render the delivery tracking UI
     const renderDeliveryTracking = () => (
-        <StepContainer 
-            title="Track Your Delivery" 
+        <StepContainer
+            title="Track Your Delivery"
             subtitle="Enter your tracking number to see delivery status and updates"
         >
             <div className="p-6 md:p-8 space-y-6">
                 <div className="space-y-4">
                     <div className="flex flex-col">
                         <label className="text-gray-700 mb-2">Tracking Number</label>
-                        <input 
+                        <input
                             type="text"
                             value={trackingNumber}
                             onChange={(e) => setTrackingNumber(e.target.value)}
@@ -463,13 +464,13 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                             className="w-full p-3 border rounded-lg focus:ring focus:ring-emerald-400 outline-none"
                         />
                     </div>
-                    
+
                     {deliveryError && (
                         <div className="p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
                             {deliveryError}
                         </div>
                     )}
-                    
+
                     <Button
                         onClick={handleCheckDelivery}
                         variant="primary"
@@ -481,40 +482,42 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                     {deliveryDetails && (
                         <div className="mt-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
                             <h3 className="text-lg font-semibold mb-4">Delivery Details</h3>
-                            
+
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Status:</span>
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        deliveryDetails.status === 'delivered' 
-                                            ? 'bg-green-100 text-green-800' 
+                                        deliveryDetails.status === 'delivered'
+                                            ? 'bg-green-100 text-green-800'
                                             : deliveryDetails.status === 'delayed' || deliveryDetails.status === 'cancelled'
-                                            ? 'bg-red-100 text-red-800' 
-                                            : deliveryDetails.status === 'out_for_delivery'
-                                            ? 'bg-orange-100 text-orange-800'
-                                            : deliveryDetails.status === 'in_transit'
-                                            ? 'bg-purple-100 text-purple-800'
-                                            : 'bg-blue-100 text-blue-800'
+                                                ? 'bg-red-100 text-red-800'
+                                                : deliveryDetails.status === 'out_for_delivery'
+                                                    ? 'bg-orange-100 text-orange-800'
+                                                    : deliveryDetails.status === 'in_transit'
+                                                        ? 'bg-purple-100 text-purple-800'
+                                                        : 'bg-blue-100 text-blue-800'
                                     }`}>
                                         {deliveryDetails.status_label}
                                     </span>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Tracking Number:</span>
                                     <span className="font-medium">{deliveryDetails.tracking_number}</span>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Current Location:</span>
-                                    <span className="font-medium">{deliveryDetails.current_location || 'Not available'}</span>
+                                    <span
+                                        className="font-medium">{deliveryDetails.current_location || 'Not available'}</span>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Estimated Delivery:</span>
-                                    <span className="font-medium">{deliveryDetails.estimated_delivery_date || 'Not scheduled'}</span>
+                                    <span
+                                        className="font-medium">{deliveryDetails.estimated_delivery_date || 'Not scheduled'}</span>
                                 </div>
-                                
+
                                 {deliveryDetails.product && (
                                     <div className="flex items-center justify-between">
                                         <span className="text-gray-600">Product:</span>
@@ -522,7 +525,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                     </div>
                                 )}
                             </div>
-                            
+
                             {/* Delivery Timeline */}
                             {deliveryDetails.status_updates && deliveryDetails.status_updates.length > 0 && (
                                 <div className="mt-6">
@@ -534,32 +537,36 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                                 <div className={`absolute left-0 top-0 h-4 w-4 rounded-full border-2 ${
                                                     index === 0 ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-300'
                                                 }`}></div>
-                                                
+
                                                 {/* Line connecting dots */}
                                                 {index < deliveryDetails.status_updates.length - 1 && (
-                                                    <div className="absolute left-2 top-4 h-full w-0 border-l border-gray-300"></div>
+                                                    <div
+                                                        className="absolute left-2 top-4 h-full w-0 border-l border-gray-300"></div>
                                                 )}
-                                                
+
                                                 {/* Content */}
                                                 <div>
                                                     <div className="flex items-center">
-                                                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full mr-2 ${
-                                                            update.status === 'delivered' 
-                                                                ? 'bg-green-100 text-green-800' 
-                                                                : update.status === 'delayed' || update.status === 'cancelled'
-                                                                ? 'bg-red-100 text-red-800' 
-                                                                : update.status === 'out_for_delivery'
-                                                                ? 'bg-orange-100 text-orange-800'
-                                                                : update.status === 'in_transit'
-                                                                ? 'bg-purple-100 text-purple-800'
-                                                                : 'bg-blue-100 text-blue-800'
-                                                        }`}>
+                                                        <span
+                                                            className={`inline-block px-2 py-1 text-xs font-medium rounded-full mr-2 ${
+                                                                update.status === 'delivered'
+                                                                    ? 'bg-green-100 text-green-800'
+                                                                    : update.status === 'delayed' || update.status === 'cancelled'
+                                                                        ? 'bg-red-100 text-red-800'
+                                                                        : update.status === 'out_for_delivery'
+                                                                            ? 'bg-orange-100 text-orange-800'
+                                                                            : update.status === 'in_transit'
+                                                                                ? 'bg-purple-100 text-purple-800'
+                                                                                : 'bg-blue-100 text-blue-800'
+                                                            }`}>
                                                             {update.status_label}
                                                         </span>
                                                         <span className="text-xs text-gray-500">{update.datetime}</span>
                                                     </div>
-                                                    {update.location && <div className="mt-1 text-sm">{update.location}</div>}
-                                                    {update.notes && <div className="mt-1 text-sm text-gray-600">{update.notes}</div>}
+                                                    {update.location &&
+                                                        <div className="mt-1 text-sm">{update.location}</div>}
+                                                    {update.notes && <div
+                                                        className="mt-1 text-sm text-gray-600">{update.notes}</div>}
                                                 </div>
                                             </div>
                                         ))}
@@ -575,15 +582,15 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
 
     // Render the application status check UI
     const renderStatusCheck = () => (
-        <StepContainer 
-            title="Check Your Application Status" 
+        <StepContainer
+            title="Check Your Application Status"
             subtitle="Enter your reference number to check the status of your application"
         >
             <div className="p-6 md:p-8 space-y-6">
                 <div className="space-y-4">
                     <div className="flex flex-col">
                         <label className="text-gray-700 mb-2">Reference Number</label>
-                        <input 
+                        <input
                             type="text"
                             value={referenceNumber}
                             onChange={(e) => setReferenceNumber(e.target.value)}
@@ -591,13 +598,13 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                             className="w-full p-3 border rounded-lg focus:ring focus:ring-emerald-400 outline-none"
                         />
                     </div>
-                    
+
                     {statusError && (
                         <div className="p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
                             {statusError}
                         </div>
                     )}
-                    
+
                     <Button
                         onClick={handleCheckStatus}
                         variant="primary"
@@ -609,70 +616,76 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                     {applicationStatus && (
                         <div className="mt-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
                             <h3 className="text-lg font-semibold mb-4">Application Details</h3>
-                            
+
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Status:</span>
                                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                        applicationStatus.status === 'approved' 
-                                            ? 'bg-green-100 text-green-800' 
-                                            : applicationStatus.status === 'rejected' 
-                                            ? 'bg-red-100 text-red-800' 
-                                            : 'bg-yellow-100 text-yellow-800'
+                                        applicationStatus.status === 'approved'
+                                            ? 'bg-green-100 text-green-800'
+                                            : applicationStatus.status === 'rejected'
+                                                ? 'bg-red-100 text-red-800'
+                                                : 'bg-yellow-100 text-yellow-800'
                                     }`}>
                                         {applicationStatus.status.toUpperCase()}
                                     </span>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Reference Number:</span>
                                     <span className="font-medium">{applicationStatus.uuid}</span>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between">
                                     <span className="text-gray-600">Application Date:</span>
-                                    <span className="font-medium">{new Date(applicationStatus.created_at).toLocaleDateString()}</span>
+                                    <span
+                                        className="font-medium">{new Date(applicationStatus.created_at).toLocaleDateString()}</span>
                                 </div>
-                                
+
                                 {applicationStatus.product && (
                                     <>
                                         <div className="flex items-center justify-between">
                                             <span className="text-gray-600">Product:</span>
                                             <span className="font-medium">{applicationStatus.product.name}</span>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between">
                                             <span className="text-gray-600">Category:</span>
                                             <span className="font-medium">{applicationStatus.product.category}</span>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between">
                                             <span className="text-gray-600">Monthly Payment:</span>
-                                            <span className="font-medium">${applicationStatus.product.installment_amount}/month</span>
+                                            <span
+                                                className="font-medium">${applicationStatus.product.installment_amount}/month</span>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between">
                                             <span className="text-gray-600">Payment Period:</span>
-                                            <span className="font-medium">{applicationStatus.product.months} months</span>
+                                            <span
+                                                className="font-medium">{applicationStatus.product.months} months</span>
                                         </div>
                                     </>
                                 )}
                             </div>
-                            
+
                             {applicationStatus.status === 'approved' && (
                                 <div className="mt-4 p-3 bg-green-50 text-green-700 rounded-lg border border-green-200">
-                                    Your application has been approved! Our representative will contact you soon with next steps.
+                                    Your application has been approved! Our representative will contact you soon with
+                                    next steps.
                                 </div>
                             )}
-                            
+
                             {applicationStatus.status === 'rejected' && (
                                 <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
-                                    Unfortunately, your application was not approved at this time. Please contact our customer service for more details.
+                                    Unfortunately, your application was not approved at this time. Please contact our
+                                    customer service for more details.
                                 </div>
                             )}
-                            
+
                             {applicationStatus.status === 'pending' && (
-                                <div className="mt-4 p-3 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-200">
+                                <div
+                                    className="mt-4 p-3 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-200">
                                     Your application is still being processed. Please check back later for updates.
                                 </div>
                             )}
@@ -730,7 +743,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                             // If hire purchase or starter pack, continue to employer selection
                             else if (option.action === 'starterPack' || option.action === 'hirePurchase') {
                                 setStep(3);
-                            } 
+                            }
                             // Otherwise, go to final screen
                             else {
                                 setStep('final');
@@ -928,7 +941,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                             // Check if this is an SME applicant
                             if (formData.employer === 'SME (Small & Medium Enterprises)') {
                                 setFormData(prev => ({
-                                    ...prev, 
+                                    ...prev,
                                     hasAccount: 'no',
                                     accountType: 'SME Transaction Account',
                                     specificFormId: 'smes_business_account_opening'

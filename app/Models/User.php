@@ -160,4 +160,103 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+    
+    /**
+     * Get the supervisor of this user
+     */
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+    
+    /**
+     * Get the team members supervised by this user
+     */
+    public function teamMembers()
+    {
+        return $this->hasMany(User::class, 'supervisor_id');
+    }
+    
+    /**
+     * Get the team this user leads
+     */
+    public function ledTeam()
+    {
+        return $this->hasOne(AgentTeam::class, 'team_lead_id');
+    }
+    
+    /**
+     * Get the teams this user is a member of
+     */
+    public function teams()
+    {
+        return $this->belongsToMany(AgentTeam::class, 'agent_team_members', 'user_id', 'team_id')
+            ->withPivot('joined_date', 'left_date', 'is_active')
+            ->withTimestamps();
+    }
+    
+    /**
+     * Get the active team this user is a member of
+     */
+    public function activeTeam()
+    {
+        return $this->teams()->wherePivot('is_active', true)->first();
+    }
+    
+    /**
+     * Get the commissions earned by this user
+     */
+    public function commissions()
+    {
+        return $this->hasMany(Commission::class, 'agent_id');
+    }
+    
+    /**
+     * Get the commission payments for this user
+     */
+    public function commissionPayments()
+    {
+        return $this->hasMany(CommissionPayment::class, 'agent_id');
+    }
+    
+    /**
+     * Check if user is a team lead
+     */
+    public function isTeamLead()
+    {
+        return $this->is_team_lead === true;
+    }
+    
+    /**
+     * Get total commissions earned by this user
+     */
+    public function getTotalCommissionsEarned()
+    {
+        return $this->commissions()->where('status', 'paid')->sum('commission_amount');
+    }
+    
+    /**
+     * Get pending commissions for this user
+     */
+    public function getPendingCommissions()
+    {
+        return $this->commissions()->where('status', 'pending')->sum('commission_amount');
+    }
+    
+    /**
+     * Get all team members including those in sub-teams
+     */
+    public function getAllTeamMembers()
+    {
+        $directMembers = $this->teamMembers;
+        $allMembers = $directMembers->toArray();
+        
+        foreach ($directMembers as $member) {
+            if ($member->isTeamLead()) {
+                $allMembers = array_merge($allMembers, $member->getAllTeamMembers()->toArray());
+            }
+        }
+        
+        return collect($allMembers);
+    }
 }

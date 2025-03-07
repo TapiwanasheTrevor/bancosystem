@@ -83,6 +83,22 @@ class Form extends Model
     }
     
     /**
+     * Get the purchase orders associated with this form
+     */
+    public function purchaseOrders(): HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class);
+    }
+    
+    /**
+     * Get the commissions associated with this form
+     */
+    public function commissions(): HasMany
+    {
+        return $this->hasMany(Commission::class);
+    }
+    
+    /**
      * Get the status color for UI
      */
     public function getStatusColor(): string

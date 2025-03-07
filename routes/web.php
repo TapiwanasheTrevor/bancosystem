@@ -114,12 +114,34 @@ Route::get('/applications', function () {
 })->middleware(['auth', 'verified'])->name('applications');
 
 Route::get('/forms', function () {
-    // Fetch all form submissions
+    // Get agents who are user type 'agent'
     $agents = User::where('role', 'agent')->get();
+    
+    // Add initials and document count for each agent
+    foreach($agents as $agent) {
+        $nameParts = explode(' ', $agent->name);
+        $agent->initials = '';
+        foreach($nameParts as $part) {
+            if (strlen($part) > 0) {
+                $agent->initials .= strtoupper(substr($part, 0, 1));
+            }
+        }
+        $agent->documents_count = 0; // Default to 0 for now
+    }
+    
+    // Fetch all documents
     $newDocuments = Document::all();
     $processedDocuments = Document::where('status', 'processed')->get();
+    
     return view('forms', compact('agents', 'newDocuments', 'processedDocuments'));
 })->middleware(['auth', 'verified'])->name('forms');
+
+// Document routes - use web middleware for session auth
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/web-api/documents/new/{agentId}', [App\Http\Controllers\Api\DocumentController::class, 'getNewDocuments'])->name('documents.new');
+    Route::get('/web-api/documents/processed/{agentId}', [App\Http\Controllers\Api\DocumentController::class, 'getProcessedDocuments'])->name('documents.processed');
+    Route::get('/web-api/agents/search', [App\Http\Controllers\Api\DocumentController::class, 'searchAgents'])->name('agents.search');
+});
 
 // Removed duplicate route - using agents.index instead
 
@@ -198,6 +220,12 @@ Route::middleware('auth')->group(function () {
     //one link for them all
     Route::get('/download/{form}/{id}', [LoanApplicationController::class, 'downloadForm']);
     
+    // Direct route for SSB form downloads
+    Route::get('/download-ssb/{id}', function($id) {
+        $controller = new \App\Http\Controllers\LoanApplicationController();
+        return $controller->ssbLoanApplicationForm($id);
+    });
+    
     // Product Delivery Management
     Route::prefix('admin/deliveries')->name('admin.deliveries.')->group(function () {
         Route::get('/', [ProductDeliveryController::class, 'index'])->name('index');
@@ -215,5 +243,93 @@ Route::get('/director-form/{token}', function ($token) {
     return view('director-form', ['token' => $token]);
 })->name('director.form');
 
+// Purchase Orders
+Route::middleware(['auth'])->prefix('purchase-orders')->name('purchase-orders.')->group(function () {
+    Route::get('/', [App\Http\Controllers\PurchaseOrderController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\PurchaseOrderController::class, 'create'])->name('create');
+    Route::get('/create-from-form/{formId}', [App\Http\Controllers\PurchaseOrderController::class, 'createFromForm'])->name('create-from-form');
+    Route::post('/', [App\Http\Controllers\PurchaseOrderController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [App\Http\Controllers\PurchaseOrderController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'update'])->name('update');
+    Route::post('/{id}/change-status', [App\Http\Controllers\PurchaseOrderController::class, 'changeStatus'])->name('change-status');
+    Route::delete('/{id}', [App\Http\Controllers\PurchaseOrderController::class, 'destroy'])->name('destroy');
+    Route::get('/{id}/pdf', [App\Http\Controllers\PurchaseOrderController::class, 'generatePdf'])->name('pdf');
+    Route::get('/create-from-application/{form}', [App\Http\Controllers\PurchaseOrderController::class, 'createFromApplication'])->name('create-from-application');
+});
 
+// Inventory Management
+Route::middleware(['auth'])->prefix('inventory')->name('inventory.')->group(function () {
+    // Inventory Items
+    Route::get('/', [App\Http\Controllers\InventoryController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\InventoryController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\InventoryController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\InventoryController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [App\Http\Controllers\InventoryController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [App\Http\Controllers\InventoryController::class, 'update'])->name('update');
+    Route::get('/{id}/adjust', [App\Http\Controllers\InventoryController::class, 'showAdjustForm'])->name('adjust');
+    Route::post('/{id}/adjust', [App\Http\Controllers\InventoryController::class, 'processAdjustment'])->name('process-adjustment');
+    Route::get('/search', [App\Http\Controllers\InventoryController::class, 'search'])->name('search');
+    
+    // Warehouse Management
+    Route::get('/warehouses/manage', [App\Http\Controllers\InventoryController::class, 'manageWarehouses'])->name('warehouses.manage');
+    Route::post('/warehouses', [App\Http\Controllers\InventoryController::class, 'storeWarehouse'])->name('warehouses.store');
+    Route::put('/warehouses/{id}', [App\Http\Controllers\InventoryController::class, 'updateWarehouse'])->name('warehouses.update');
+    Route::get('/warehouses/{id}/report', [App\Http\Controllers\InventoryController::class, 'warehouseReport'])->name('warehouses.report');
+    
+    // Inventory Transfers
+    Route::get('/transfers/create', [App\Http\Controllers\InventoryController::class, 'showTransferForm'])->name('transfers.create');
+    Route::post('/transfers', [App\Http\Controllers\InventoryController::class, 'processTransfer'])->name('transfers.store');
+    Route::get('/transfers/{id}', [App\Http\Controllers\InventoryController::class, 'showTransfer'])->name('transfers.show');
+    Route::post('/transfers/{id}/complete', [App\Http\Controllers\InventoryController::class, 'completeTransfer'])->name('transfers.complete');
+    Route::post('/transfers/{id}/cancel', [App\Http\Controllers\InventoryController::class, 'cancelTransfer'])->name('transfers.cancel');
+    
+    // Goods Receiving Notes (GRN)
+    Route::get('/grn/create', [App\Http\Controllers\InventoryController::class, 'showGrnForm'])->name('grn.create');
+    Route::get('/grn/create-from-po/{poId}', [App\Http\Controllers\InventoryController::class, 'showGrnFormForPo'])->name('grn.create-from-po');
+    Route::post('/grn', [App\Http\Controllers\InventoryController::class, 'processGrn'])->name('grn.store');
+    Route::get('/grn/{id}', [App\Http\Controllers\InventoryController::class, 'showGrn'])->name('grn.show');
+    Route::get('/grn/{id}/pdf', [App\Http\Controllers\InventoryController::class, 'generateGrnPdf'])->name('grn.pdf');
+    
+    // Product Reports
+    Route::get('/products/{id}/report', [App\Http\Controllers\InventoryController::class, 'productReport'])->name('products.report');
+});
+
+// Commission Management
+Route::middleware(['auth'])->prefix('commissions')->name('commissions.')->group(function () {
+    Route::get('/', [App\Http\Controllers\CommissionController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\CommissionController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\CommissionController::class, 'store'])->name('store');
+    Route::get('/payment/create', [App\Http\Controllers\CommissionController::class, 'showPaymentForm'])->name('payment.create');
+    Route::post('/payment', [App\Http\Controllers\CommissionController::class, 'processPayment'])->name('payment.store');
+    Route::get('/agent-report', [App\Http\Controllers\CommissionController::class, 'agentReport'])->name('agent-report');
+    Route::get('/team-report', [App\Http\Controllers\CommissionController::class, 'teamReport'])->name('team-report');
+    Route::post('/calculate', [App\Http\Controllers\CommissionController::class, 'calculateCommissions'])->name('calculate');
+    
+    // These routes should come after the specific routes to avoid conflicts
+    Route::get('/{id}', [App\Http\Controllers\CommissionController::class, 'show'])->name('show')->where('id', '[0-9]+');
+    Route::get('/{id}/edit', [App\Http\Controllers\CommissionController::class, 'edit'])->name('edit')->where('id', '[0-9]+');
+    Route::put('/{id}', [App\Http\Controllers\CommissionController::class, 'update'])->name('update')->where('id', '[0-9]+');
+    Route::post('/{id}/approve', [App\Http\Controllers\CommissionController::class, 'approve'])->name('approve')->where('id', '[0-9]+');
+    Route::post('/{id}/reject', [App\Http\Controllers\CommissionController::class, 'reject'])->name('reject')->where('id', '[0-9]+');
+});
+
+// Commission Payments
+Route::middleware(['auth'])->prefix('commission-payments')->name('commission-payments.')->group(function () {
+    Route::get('/', [App\Http\Controllers\CommissionPaymentController::class, 'index'])->name('index');
+    Route::get('/{id}', [App\Http\Controllers\CommissionPaymentController::class, 'show'])->name('show');
+    Route::get('/{id}/pdf', [App\Http\Controllers\CommissionPaymentController::class, 'generatePdf'])->name('pdf');
+});
+
+// Team Management
+Route::middleware(['auth'])->prefix('teams')->name('teams.')->group(function () {
+    Route::get('/', [App\Http\Controllers\TeamController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\TeamController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\TeamController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\TeamController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [App\Http\Controllers\TeamController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [App\Http\Controllers\TeamController::class, 'update'])->name('update');
+    Route::post('/{id}/add-member', [App\Http\Controllers\TeamController::class, 'addMember'])->name('add-member');
+    Route::post('/members/{id}/remove', [App\Http\Controllers\TeamController::class, 'removeMember'])->name('remove-member');
+});
 

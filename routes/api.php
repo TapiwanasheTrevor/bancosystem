@@ -48,6 +48,25 @@ Route::delete('/forms/{id}', [\App\Http\Controllers\Api\FormStatusController::cl
 // Director links for forms
 Route::post('/director-links/generate', [DirectorLinkController::class, 'generate']);
 Route::get('/director-links/{token}', [DirectorLinkController::class, 'getDirectorFormData']);
+
+// Document management API endpoints
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Document upload
+    Route::post('/documents/upload', [DocumentController::class, 'upload']);
+    
+    // Get documents by agent
+    Route::get('/documents/new/{agentId}', [DocumentController::class, 'getNewDocuments']);
+    Route::get('/documents/processed/{agentId}', [DocumentController::class, 'getProcessedDocuments']);
+    
+    // Process document
+    Route::post('/documents/{id}/process', [DocumentController::class, 'markProcessed']);
+    
+    // Agent search
+    Route::get('/agents/search', [DocumentController::class, 'searchAgents']);
+    
+    // Get agent clients
+    Route::get('/agents/{agentId}/clients', [DocumentController::class, 'getAgentClients']);
+});
 Route::post('/director-links/{token}/submit', [DirectorLinkController::class, 'submitDirectorData']);
 
 // Document management
@@ -69,3 +88,26 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/track-delivery', [\App\Http\Controllers\Api\DeliveryTrackingController::class, 'trackByNumber']);
 Route::post('/user-deliveries', [\App\Http\Controllers\Api\DeliveryTrackingController::class, 'getUserDeliveries']);
 Route::post('/delivery-details', [\App\Http\Controllers\Api\DeliveryTrackingController::class, 'getDeliveryDetails']);
+
+// Inventory API endpoints
+Route::middleware('auth:sanctum')->prefix('inventory')->group(function() {
+    // Available items in a warehouse
+    Route::get('/warehouse/{id}/available-items', function($id) {
+        $items = \App\Models\InventoryItem::with('product')
+            ->where('warehouse_id', $id)
+            ->where('available_quantity', '>', 0)
+            ->orderBy('product_id')
+            ->get();
+            
+        return response()->json([
+            'success' => true,
+            'items' => $items
+        ]);
+    });
+});
+
+// Commission API endpoints
+Route::middleware('auth:sanctum')->prefix('commissions')->group(function() {
+    // Calculate commissions for payment
+    Route::get('/calculate', [\App\Http\Controllers\Api\CommissionController::class, 'calculateForPayment']);
+});

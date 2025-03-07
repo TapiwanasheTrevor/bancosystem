@@ -1,4 +1,12 @@
-@if(count($documents) > 0)
+@if($documents->isEmpty())
+    <div class="p-8 text-center">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No documents</h3>
+        <p class="mt-1 text-sm text-gray-500">This agent has no uploaded documents.</p>
+    </div>
+@else
     @foreach($documents as $doc)
         <div class="p-4 hover:bg-gray-100">
             <div class="flex items-center justify-between mb-2">
@@ -8,10 +16,15 @@
                     </svg>
                     <span class="font-medium">{{ $doc->name }}</span>
                 </div>
-                <span class="text-sm text-gray-500">{{ human_filesize($doc->size) }}</span>
+                <span class="text-sm text-gray-500">{{ human_filesize($doc->size ?? 0) }}</span>
             </div>
             <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-500">Uploaded {{ $doc->created_at->diffForHumans() }}</div>
+                <div class="text-sm text-gray-500">
+                    Uploaded {{ $doc->created_at->diffForHumans() }}
+                    @if($doc->user)
+                        for {{ $doc->user->name }}
+                    @endif
+                </div>
                 <div class="flex space-x-2">
                     <button 
                         class="text-xs px-2 py-1 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 view-document" 
@@ -33,8 +46,4 @@
             @endif
         </div>
     @endforeach
-@else
-    <div class="p-4 text-center text-gray-500">
-        No documents found
-    </div>
 @endif
