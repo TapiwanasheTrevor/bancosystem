@@ -403,6 +403,176 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
         </StepContainer>
     );
 
+    // State for delivery tracking
+    const [trackingNumber, setTrackingNumber] = useState('');
+    const [deliveryDetails, setDeliveryDetails] = useState<any | null>(null);
+    const [isCheckingDelivery, setIsCheckingDelivery] = useState(false);
+    const [deliveryError, setDeliveryError] = useState<string | null>(null);
+
+    // Handle checking delivery status
+    const handleCheckDelivery = async () => {
+        if (!trackingNumber.trim()) {
+            setDeliveryError('Please enter a tracking number');
+            return;
+        }
+
+        setIsCheckingDelivery(true);
+        setDeliveryError(null);
+        setDeliveryDetails(null);
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/track-delivery`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ tracking_number: trackingNumber }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setDeliveryError(data.message || 'Failed to find tracking information');
+                return;
+            }
+
+            setDeliveryDetails(data.delivery);
+        } catch (err) {
+            console.error('Error checking delivery status:', err);
+            setDeliveryError('An error occurred while checking your delivery status');
+        } finally {
+            setIsCheckingDelivery(false);
+        }
+    };
+
+    // Render the delivery tracking UI
+    const renderDeliveryTracking = () => (
+        <StepContainer 
+            title="Track Your Delivery" 
+            subtitle="Enter your tracking number to see delivery status and updates"
+        >
+            <div className="p-6 md:p-8 space-y-6">
+                <div className="space-y-4">
+                    <div className="flex flex-col">
+                        <label className="text-gray-700 mb-2">Tracking Number</label>
+                        <input 
+                            type="text"
+                            value={trackingNumber}
+                            onChange={(e) => setTrackingNumber(e.target.value)}
+                            placeholder="Enter your tracking number"
+                            className="w-full p-3 border rounded-lg focus:ring focus:ring-emerald-400 outline-none"
+                        />
+                    </div>
+                    
+                    {deliveryError && (
+                        <div className="p-3 bg-red-50 text-red-700 rounded-lg border border-red-200">
+                            {deliveryError}
+                        </div>
+                    )}
+                    
+                    <Button
+                        onClick={handleCheckDelivery}
+                        variant="primary"
+                        disabled={isCheckingDelivery}
+                    >
+                        {isCheckingDelivery ? 'Tracking...' : 'Track Delivery'}
+                    </Button>
+
+                    {deliveryDetails && (
+                        <div className="mt-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                            <h3 className="text-lg font-semibold mb-4">Delivery Details</h3>
+                            
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600">Status:</span>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                        deliveryDetails.status === 'delivered' 
+                                            ? 'bg-green-100 text-green-800' 
+                                            : deliveryDetails.status === 'delayed' || deliveryDetails.status === 'cancelled'
+                                            ? 'bg-red-100 text-red-800' 
+                                            : deliveryDetails.status === 'out_for_delivery'
+                                            ? 'bg-orange-100 text-orange-800'
+                                            : deliveryDetails.status === 'in_transit'
+                                            ? 'bg-purple-100 text-purple-800'
+                                            : 'bg-blue-100 text-blue-800'
+                                    }`}>
+                                        {deliveryDetails.status_label}
+                                    </span>
+                                </div>
+                                
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600">Tracking Number:</span>
+                                    <span className="font-medium">{deliveryDetails.tracking_number}</span>
+                                </div>
+                                
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600">Current Location:</span>
+                                    <span className="font-medium">{deliveryDetails.current_location || 'Not available'}</span>
+                                </div>
+                                
+                                <div className="flex items-center justify-between">
+                                    <span className="text-gray-600">Estimated Delivery:</span>
+                                    <span className="font-medium">{deliveryDetails.estimated_delivery_date || 'Not scheduled'}</span>
+                                </div>
+                                
+                                {deliveryDetails.product && (
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-gray-600">Product:</span>
+                                        <span className="font-medium">{deliveryDetails.product.name}</span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Delivery Timeline */}
+                            {deliveryDetails.status_updates && deliveryDetails.status_updates.length > 0 && (
+                                <div className="mt-6">
+                                    <h4 className="font-medium mb-4">Delivery Progress</h4>
+                                    <div className="space-y-4">
+                                        {deliveryDetails.status_updates.map((update, index) => (
+                                            <div key={index} className="relative pl-8 pb-4">
+                                                {/* Timeline dot */}
+                                                <div className={`absolute left-0 top-0 h-4 w-4 rounded-full border-2 ${
+                                                    index === 0 ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-300'
+                                                }`}></div>
+                                                
+                                                {/* Line connecting dots */}
+                                                {index < deliveryDetails.status_updates.length - 1 && (
+                                                    <div className="absolute left-2 top-4 h-full w-0 border-l border-gray-300"></div>
+                                                )}
+                                                
+                                                {/* Content */}
+                                                <div>
+                                                    <div className="flex items-center">
+                                                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full mr-2 ${
+                                                            update.status === 'delivered' 
+                                                                ? 'bg-green-100 text-green-800' 
+                                                                : update.status === 'delayed' || update.status === 'cancelled'
+                                                                ? 'bg-red-100 text-red-800' 
+                                                                : update.status === 'out_for_delivery'
+                                                                ? 'bg-orange-100 text-orange-800'
+                                                                : update.status === 'in_transit'
+                                                                ? 'bg-purple-100 text-purple-800'
+                                                                : 'bg-blue-100 text-blue-800'
+                                                        }`}>
+                                                            {update.status_label}
+                                                        </span>
+                                                        <span className="text-xs text-gray-500">{update.datetime}</span>
+                                                    </div>
+                                                    {update.location && <div className="mt-1 text-sm">{update.location}</div>}
+                                                    {update.notes && <div className="mt-1 text-sm text-gray-600">{update.notes}</div>}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </StepContainer>
+    );
+
     // Render the application status check UI
     const renderStatusCheck = () => (
         <StepContainer 
@@ -477,12 +647,12 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                         </div>
                                         
                                         <div className="flex items-center justify-between">
-                                            <span className="text-gray-600">Amount:</span>
-                                            <span className="font-medium">${applicationStatus.product.final_price}</span>
+                                            <span className="text-gray-600">Monthly Payment:</span>
+                                            <span className="font-medium">${applicationStatus.product.installment_amount}/month</span>
                                         </div>
                                         
                                         <div className="flex items-center justify-between">
-                                            <span className="text-gray-600">Term:</span>
+                                            <span className="text-gray-600">Payment Period:</span>
                                             <span className="font-medium">{applicationStatus.product.months} months</span>
                                         </div>
                                     </>
@@ -552,7 +722,11 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                             // If checking status, go to status check screen
                             if (option.action === 'checkStatus') {
                                 setStep('check-status');
-                            } 
+                            }
+                            // If tracking delivery, go to delivery tracking screen
+                            else if (option.action === 'trackDelivery') {
+                                setStep('track-delivery');
+                            }
                             // If hire purchase or starter pack, continue to employer selection
                             else if (option.action === 'starterPack' || option.action === 'hirePurchase') {
                                 setStep(3);
@@ -685,14 +859,10 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                                                     <div
                                                                         className="font-medium">{option.months} Months
                                                                     </div>
-                                                                    <div
-                                                                        className="text-sm text-gray-500">
-                                                                        ${option.installment_amount}/month
-                                                                    </div>
                                                                 </div>
                                                                 <div
                                                                     className="text-emerald-600 font-semibold">
-                                                                    ${option.final_price} total
+                                                                    ${option.installment_amount}/month
                                                                 </div>
                                                             </div>
                                                         </button>
@@ -864,15 +1034,6 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                         <p className="font-medium">
                                             {formData.selectedProduct.selectedCreditOption.months} Months
                                         </p>
-                                        <p className="text-sm text-gray-500">
-                                            Interest: {formData.selectedProduct.selectedCreditOption.interest}%
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <h4 className="text-sm text-gray-500">Final Price</h4>
-                                        <p className="font-medium text-emerald-600">
-                                            ${formData.selectedProduct.selectedCreditOption.final_price}
-                                        </p>
                                     </div>
                                     <div>
                                         <h4 className="text-sm text-gray-500">Monthly Installment</h4>
@@ -881,9 +1042,9 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
                                         </p>
                                     </div>
                                     <div>
-                                        <h4 className="text-sm text-gray-500">Loan Period</h4>
+                                        <h4 className="text-sm text-gray-500">Payment Period</h4>
                                         <p className="font-medium">
-                                            {formData.selectedProduct.loanStartDate} to {formData.selectedProduct.loanEndDate}
+                                            {formatDateText(formData.selectedProduct.loanStartDate)} to {formatDateText(formData.selectedProduct.loanEndDate)}
                                         </p>
                                     </div>
                                 </>
@@ -969,6 +1130,7 @@ const CreditApplicationFlow = ({onComplete}: CreditApplicationFlowProps) => {
             {step === 5 && renderAccountCheck()}
             {step === 6 && renderWantAccount()}
             {step === 'check-status' && renderStatusCheck()}
+            {step === 'track-delivery' && renderDeliveryTracking()}
             {(step === 'final' || step === 'terminate') && renderFinal()}
 
             {/* Confirmation Dialog for when user doesn't agree to terms */}

@@ -184,4 +184,23 @@ class DocumentController extends Controller
             'agents' => $agents
         ]);
     }
+    
+    /**
+     * Get clients for an agent
+     */
+    public function getAgentClients($agentId)
+    {
+        $agent = User::findOrFail($agentId);
+        
+        // Get users who were referred by this agent
+        $clients = User::where('referred_by', $agent->id)
+            ->where('role', 'client')
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+            
+        return response()->json([
+            'success' => true,
+            'clients' => $clients
+        ]);
+    }
 }

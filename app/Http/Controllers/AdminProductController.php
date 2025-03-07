@@ -66,13 +66,21 @@ class AdminProductController extends Controller
 
         // Save credit pricing for different months
         foreach ($request->credit as $months => $data) {
-            //if
-            if ($data['interest'] != 0) {
+            $interest = isset($data['interest']) ? (float)$data['interest'] : 0;
+            $installmentAmount = isset($data['installment_amount']) ? (float)$data['installment_amount'] : null;
+            
+            // Only create entry if either interest or installment amount is provided
+            if ($interest > 0 || $installmentAmount > 0) {
+                // Calculate final price based on installment amount if provided
+                $finalPrice = $installmentAmount ? ($installmentAmount * (int)$months) : 
+                              ($request->base_price * (1 + ($interest / 100)));
+                
                 CreditPricing::create([
                     'product_id' => $product->id,
-                    'months' => (int)$months,  // Ensure it's an integer
-                    'interest' => (float)$data['interest'], // Ensure it's a float
-                    'final_price' => $data['interest'],
+                    'months' => (int)$months,
+                    'interest' => $interest,
+                    'installment_amount' => $installmentAmount,
+                    'final_price' => $finalPrice,
                 ]);
             }
         }

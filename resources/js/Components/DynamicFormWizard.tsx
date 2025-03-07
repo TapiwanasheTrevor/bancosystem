@@ -306,7 +306,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
             const initialFormValues: Record<string, any> = {};
 
             if (initialData?.applicationDetails) {
-                const {name, phone, email, idNumber} = initialData.applicationDetails;
+                const {name, phone, email, idNumber, ecNumber} = initialData.applicationDetails;
                 if (name) {
                     const nameParts = name.split(' ');
                     let firstName, surname;
@@ -334,10 +334,20 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 }
                 
                 if (phone) {
-                    initialFormValues['cell-number'] = phone;
-                    initialFormValues['phone'] = phone;
-                    initialFormValues['phone-number'] = phone;
-                    initialFormValues['customerCellNumber'] = phone;
+                    // Ensure phone starts with 07 format
+                    let formattedPhone = phone;
+                    if (formattedPhone && !formattedPhone.startsWith('07') && formattedPhone !== '0') {
+                        if (formattedPhone.startsWith('0') && formattedPhone.length > 1) {
+                            formattedPhone = '07' + formattedPhone.substring(2);
+                        } else if (!formattedPhone.startsWith('0')) {
+                            formattedPhone = '07' + formattedPhone;
+                        }
+                    }
+                    
+                    initialFormValues['cell-number'] = formattedPhone;
+                    initialFormValues['phone'] = formattedPhone;
+                    initialFormValues['phone-number'] = formattedPhone;
+                    initialFormValues['customerCellNumber'] = formattedPhone;
                 }
                 
                 if (email) {
@@ -350,6 +360,14 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                     initialFormValues['id-number'] = idNumber;
                     initialFormValues['national-id'] = idNumber;
                     initialFormValues['customerIdNumber'] = idNumber;
+                }
+                
+                // Handle Employment/EC number if available
+                if (ecNumber) {
+                    initialFormValues['ec-number'] = ecNumber;
+                    initialFormValues['employment-code'] = ecNumber;
+                    initialFormValues['ec-check-letter'] = ''; // Initialize empty to be filled by user
+                    initialFormValues['employment-number'] = ecNumber;
                 }
             }
 
@@ -418,6 +436,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
 
     const calculateLoanStartDate = () => {
         try {
+            // Set to 1st of the next month
             const today = new Date();
             return new Date(today.getFullYear(), today.getMonth() + 1, 1).toISOString().split('T')[0];
         } catch (error) {
@@ -429,8 +448,9 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
     const calculateLoanEndDate = (startDateStr: string, loanPeriodMonths: number) => {
         try {
             const startDate = new Date(startDateStr);
-            // To get the last day of a month: create a date for the first day of the next month, then subtract one day
-            const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + loanPeriodMonths + 1, 0);
+            // Create a date for the loan period months later
+            // Then get the last day of that month
+            const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + loanPeriodMonths, 0);
             return endDate.toISOString().split('T')[0];
         } catch (error) {
             console.error("Error calculating loan end date:", error);
@@ -496,8 +516,154 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
         }
     };
 
+    // Function to dynamically format ID number with hyphens as user types
+    const validateAndFormatIdNumber = (value: string): string => {
+        // If empty, just return empty
+        if (!value) return '';
+        
+        // Remove any existing hyphens to work with clean value
+        let cleanValue = value.replace(/-/g, '');
+        
+        // Simple formatting based on length
+        let formattedValue = cleanValue;
+        
+        if (cleanValue.length > 0) {
+            // Format first 2 digits
+            if (cleanValue.length >= 2) {
+                formattedValue = cleanValue.substring(0, 2);
+                
+                // Add first hyphen and more digits
+                if (cleanValue.length > 2) {
+                    // Add digits after first hyphen (middle section)
+                    const middleSection = cleanValue.substring(2);
+                    
+                    // Check if we have a letter in the next section
+                    const letterMatch = middleSection.match(/[A-Za-z]/);
+                    
+                    if (letterMatch && letterMatch.index !== undefined) {
+                        // We found a letter - ensure middle section is exactly 6 digits
+                        const letterIndex = letterMatch.index;
+                        
+                        // Format first section with hyphen
+                        formattedValue = cleanValue.substring(0, 2) + '-';
+                        
+                        // Add middle digits (up to 6 digits only)
+                        const middleDigits = middleSection.substring(0, letterIndex);
+                        formattedValue += middleDigits.length > 6 ? middleDigits.substring(0, 6) : middleDigits;
+                        
+                        // Add hyphen and letter
+                        formattedValue += '-' + middleSection.charAt(letterIndex);
+                        
+                        // Add final section if we have it
+                        if (middleSection.length > letterIndex + 1) {
+                            formattedValue += '-' + middleSection.substring(letterIndex + 1, letterIndex + 3);
+                        }
+                    } else {
+                        // No letter found yet, just show what we have with first hyphen
+                        // Limit middle section to 6 digits
+                        if (middleSection.length > 6) {
+                            formattedValue = cleanValue.substring(0, 2) + '-' + middleSection.substring(0, 6);
+                        } else {
+                            formattedValue = cleanValue.substring(0, 2) + '-' + middleSection;
+                        }
+                    }
+                }
+            }
+        }
+        
+        return formattedValue;
+    };
+    
+    // Delete this line since we moved it up
+
     const handleInputChange = (fieldId: string, value: any, field?: Field) => {
         if (!fieldId) return;
+
+        // Auto capitalize names
+        if (['first-name', 'forename', 'forenames', 'surname', 'last-name', 'full-name'].includes(fieldId.toLowerCase()) || 
+            ['First Name', 'Forename', 'Forenames', 'Surname', 'Last Name', 'Full Name'].includes(fieldId)) {
+            if (typeof value === 'string') {
+                // Capitalize first letter of each word
+                value = value.replace(/\b\w/g, (char) => char.toUpperCase());
+            }
+        }
+
+        // Special handling for cell numbers to begin with 07
+        if (['cell-number', 'phone-number', 'phone', 'mobile'].includes(fieldId.toLowerCase()) || 
+            ['Cell Number', 'Phone Number', 'Phone', 'Mobile'].includes(fieldId)) {
+            if (typeof value === 'string') {
+                // Make sure the number starts with 07
+                if (value && !value.startsWith('07') && value !== '0') {
+                    if (value.startsWith('0') && value.length > 1) {
+                        // If starts with 0 but not 07, replace with 07
+                        value = '07' + value.substring(2);
+                    } else if (!value.startsWith('0')) {
+                        // If doesn't start with 0, add 07 to beginning
+                        value = '07' + value;
+                    }
+                }
+            }
+        }
+        
+        // Special handling for ID number fields
+        if (['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
+            ['ID Number', 'National ID', 'Identity Number'].includes(fieldId) ||
+            fieldId.includes('id-number') || fieldId.includes('national-id')) {
+            // Only apply formatting if it's a string
+            if (typeof value === 'string') {
+                // Validate input pattern in real-time (block invalid characters)
+                const cleanValue = value.replace(/-/g, ''); // Remove hyphens for validation
+                const charCount = cleanValue.length;
+                
+                // Validate based on which part of the ID they're typing
+                if (charCount <= 2) {
+                    // First 2 chars must be digits
+                    if (!/^\d*$/.test(cleanValue)) {
+                        return; // Reject non-digit input for first section
+                    }
+                } else if (charCount <= 8) {
+                    // Next 6 chars must be digits
+                    const middleSection = cleanValue.substring(2);
+                    if (!/^\d*$/.test(middleSection)) {
+                        // Allow a letter only at the end of middle section (position 8)
+                        if (!/^\d+[A-Za-z]?$/.test(middleSection)) {
+                            return; // Reject invalid input for middle section
+                        }
+                    }
+                    
+                    // If middle section exceeds 6 digits, reject
+                    if (middleSection.length > 6 && !/[A-Za-z]/.test(middleSection)) {
+                        return; // Reject if more than 6 digits in middle section
+                    }
+                } else if (charCount === 9) {
+                    // Position 8 must be a letter (after 2 digits and 6 digits)
+                    const letterPos = 8;
+                    if (!/[A-Za-z]/.test(cleanValue.charAt(letterPos))) {
+                        return; // Reject non-letter for the letter position
+                    }
+                    
+                    // Last two positions must be digits
+                    const lastChars = cleanValue.substring(letterPos + 1);
+                    if (!/^\d*$/.test(lastChars)) {
+                        return; // Reject non-digits for last section
+                    }
+                } else if (charCount > 12) {
+                    return; // Reject any input beyond max length
+                }
+                
+                // If validation passes, format as the user types
+                value = validateAndFormatIdNumber(value);
+                
+                // Capitalize the check letter (letter in position 8)
+                if (value.length >= 10) {
+                    const parts = value.split('-');
+                    if (parts.length >= 3 && parts[2].length === 1) {
+                        parts[2] = parts[2].toUpperCase();
+                        value = parts.join('-');
+                    }
+                }
+            }
+        }
 
         setFormValues(prev => {
             const newValues = {...prev, [fieldId]: value};
@@ -574,6 +740,22 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 ['Address', 'Residential Address'].includes(fieldId)) {
                 newValues['customerAddress'] = value;
             }
+            
+            // Handle address type selection (urban/rural)
+            if (fieldId.toLowerCase() === 'address-type' || fieldId === 'Address Type') {
+                if (value === 'Urban') {
+                    // Show urban address fields
+                    newValues['isUrbanAddress'] = true;
+                    newValues['isRuralAddress'] = false;
+                } else if (value === 'Rural') {
+                    // Show rural address fields
+                    newValues['isUrbanAddress'] = false;
+                    newValues['isRuralAddress'] = true;
+                    
+                    // Show province selection
+                    newValues['showProvinceField'] = true;
+                }
+            }
 
             if (field?.onChange) {
                 handleFieldOnChange(field, value, newValues);
@@ -586,6 +768,39 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
     const handleFieldOnChange = (field: Field, value: any, currentValues: Record<string, any>) => {
         try {
             const {action, dependency, values, target} = field.onChange || {};
+
+            // Check if this is a Next of Kin name field to prevent using applicant's name
+            if (field.label && 
+                (field.label.toLowerCase().includes('next of kin') || 
+                field.label.toLowerCase().includes('kin name') ||
+                (field.label.toLowerCase().includes('name') && 
+                field.id && field.id.toLowerCase().includes('nextofkin')))) {
+                
+                // Get applicant's name from form values
+                const applicantFirstName = currentValues['first-name'] || 
+                                        currentValues['forename'] || 
+                                        currentValues['customerFirstName'] || '';
+                
+                const applicantSurname = currentValues['surname'] || 
+                                      currentValues['last-name'] || 
+                                      currentValues['customerSurname'] || '';
+                
+                // If input matches applicant's name, show alert and clear the field
+                if ((applicantFirstName && value && value.includes(applicantFirstName)) || 
+                    (applicantSurname && value && value.includes(applicantSurname))) {
+                    alert("Next of kin cannot be the applicant. Please enter different person's details.");
+                    
+                    // Set to empty string to clear the field
+                    setTimeout(() => {
+                        setFormValues(prev => ({
+                            ...prev,
+                            [field.id || field.label.toLowerCase().replace(/\s+/g, '-')]: ''
+                        }));
+                    }, 100);
+                    
+                    return;
+                }
+            }
 
             if (action === 'updateNextOfKin' && dependency && values) {
                 const dependencyField = dependency.toLowerCase().replace(/\s+/g, '-');
@@ -697,7 +912,10 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                 required={field.required}
                                 onChange={(e) => handleInputChange(fieldId, e.target.value, field)}
                                 value={fieldValue || ''}
-                                placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                                placeholder={(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
+                                             ['ID Number', 'National ID', 'Identity Number'].includes(field.label)) 
+                                             ? "Example: 45-123456-T-78" 
+                                             : (field.placeholder || `Enter ${field.label.toLowerCase()}`)}
                                 readOnly={isReadOnly}
                                 disabled={isReadOnly}
                                 min={field.type === 'number' ? 0 : undefined}
@@ -706,7 +924,10 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             {attemptedValidation && !fieldValidation[fieldId] && field.required && (
                                 <p className="mt-1 text-sm text-red-500 flex items-center">
                                     <AlertCircle className="w-4 h-4 mr-1"/>
-                                    This field is required
+                                    {(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
+                                       ['ID Number', 'National ID', 'Identity Number'].includes(field.label)) 
+                                       ? "Must be in format: 00-000000-X-00 (exactly 6 digits in middle)" 
+                                       : "This field is required"}
                                 </p>
                             )}
                         </div>
@@ -777,28 +998,156 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                 {field.label} {field.required && <span className="text-emerald-500">*</span>}
                             </label>
                             <div
-                                className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-emerald-300 transition-colors">
-                                <div className="space-y-1 text-center">
-                                    <svg
-                                        className="mx-auto h-12 w-12 text-gray-400"
-                                        stroke="currentColor"
-                                        fill="none"
-                                        viewBox="0 0 48 48"
-                                        aria-hidden="true"
-                                    >
-                                        <path
-                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                            strokeWidth={2}
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
+                                className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-emerald-300 transition-colors"
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.currentTarget.classList.add('border-emerald-400');
+                                }}
+                                onDragLeave={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.currentTarget.classList.remove('border-emerald-400');
+                                }}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.currentTarget.classList.remove('border-emerald-400');
+                                    
+                                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                                        const file = e.dataTransfer.files[0];
+                                        const fileType = file.type;
+                                        const acceptTypes = field.accept ? field.accept.split(',') : ['*/*'];
+                                        
+                                        // Check if the file type is acceptable
+                                        const isAcceptable = acceptTypes.some(type => {
+                                            if (type === '*/*') return true;
+                                            if (type.endsWith('/*')) {
+                                                const prefix = type.substring(0, type.length - 2);
+                                                return fileType.startsWith(prefix);
+                                            }
+                                            return type === fileType;
+                                        });
+                                        
+                                        if (isAcceptable) {
+                                            handleInputChange(fieldId, file, field);
+                                        } else {
+                                            alert(`File type not accepted. Please upload ${field.accept?.includes('image') ? 'an image file' : 'a PDF or document'}.`);
+                                        }
+                                    }
+                                }}
+                            >
+                                <div className="space-y-1 text-center w-full">
+                                    {!formValues[fieldId] && (
+                                        <svg
+                                            className="mx-auto h-12 w-12 text-gray-400"
+                                            stroke="currentColor"
+                                            fill="none"
+                                            viewBox="0 0 48 48"
+                                            aria-hidden="true"
+                                        >
+                                            <path
+                                                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                                strokeWidth={2}
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                            />
+                                        </svg>
+                                    )}
+                                    
+                                    {/* Preview area */}
+                                    {formValues[fieldId] && (
+                                        <div className="mb-3">
+                                            {formValues[fieldId].type?.startsWith('image/') ? (
+                                                // Image preview
+                                                <div className="relative w-full max-w-xs mx-auto">
+                                                    <img 
+                                                        src={URL.createObjectURL(formValues[fieldId])} 
+                                                        alt="Uploaded file preview" 
+                                                        className="max-h-48 mx-auto rounded-md object-contain"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            handleInputChange(fieldId, null, field);
+                                                            
+                                                            // Clear the file input
+                                                            if (fileInputRefs.current[fieldId]) {
+                                                                fileInputRefs.current[fieldId].value = '';
+                                                            }
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ) : formValues[fieldId].type === 'application/pdf' ? (
+                                                // PDF preview
+                                                <div className="relative flex items-center justify-center w-full max-w-xs mx-auto p-4 bg-gray-50 rounded-md">
+                                                    <svg className="w-12 h-12 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
+                                                        <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                                                    </svg>
+                                                    <div className="ml-3">
+                                                        <p className="text-sm font-medium text-gray-900">{formValues[fieldId].name}</p>
+                                                        <p className="text-xs text-gray-500">{(formValues[fieldId].size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            handleInputChange(fieldId, null, field);
+                                                            
+                                                            // Clear the file input
+                                                            if (fileInputRefs.current[fieldId]) {
+                                                                fileInputRefs.current[fieldId].value = '';
+                                                            }
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                // Other file types
+                                                <div className="relative flex items-center justify-center w-full max-w-xs mx-auto p-4 bg-gray-50 rounded-md">
+                                                    <svg className="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                                                    </svg>
+                                                    <div className="ml-3">
+                                                        <p className="text-sm font-medium text-gray-900">{formValues[fieldId].name}</p>
+                                                        <p className="text-xs text-gray-500">{(formValues[fieldId].size / 1024 / 1024).toFixed(2)} MB</p>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            handleInputChange(fieldId, null, field);
+                                                            
+                                                            // Clear the file input
+                                                            if (fileInputRefs.current[fieldId]) {
+                                                                fileInputRefs.current[fieldId].value = '';
+                                                            }
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    
                                     <div className="flex text-sm text-gray-600">
                                         <label
                                             htmlFor={fieldId}
                                             className="relative cursor-pointer bg-white rounded-md font-medium text-emerald-600 hover:text-emerald-500 focus-within:outline-none"
                                         >
-                                            <span>Upload a file</span>
+                                            <span>{formValues[fieldId] ? 'Replace file' : 'Upload a file'}</span>
                                             <input
                                                 id={fieldId}
                                                 ref={el => fileInputRefs.current[fieldId] = el}
@@ -821,11 +1170,6 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                             ? 'PNG, JPG, GIF up to 10MB'
                                             : 'PDF, DOC, DOCX up to 10MB'}
                                     </p>
-                                    {formValues[fieldId] && (
-                                        <p className="mt-2 text-sm text-emerald-600">
-                                            File selected: {formValues[fieldId].name || formValues[fieldId]}
-                                        </p>
-                                    )}
                                 </div>
                             </div>
                             {attemptedValidation && !fieldValidation[fieldId] && field.required && (
@@ -874,17 +1218,154 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                     />
                                 </div>
                                 {field.generateLink && (
-                                    <div className="bg-gray-50 p-2">
-                                        <button
-                                            type="button"
-                                            className="text-sm text-emerald-600 hover:text-emerald-700 w-full text-center"
-                                            onClick={() => {
-                                                const linkCode = Math.random().toString(36).substring(2, 10);
-                                                alert(`A link has been generated for other directors to sign: https://example.com/sign/${linkCode}`);
-                                            }}
-                                        >
-                                            Generate link for other directors
-                                        </button>
+                                    <div className="bg-gray-50 p-4">
+                                        {directorCount > 1 ? (
+                                            <>
+                                                <p className="text-sm text-gray-600 mb-3">
+                                                    This is the primary director's signature. For the {directorCount - 1} additional director{directorCount > 2 ? 's' : ''}, 
+                                                    click the button below to generate unique links that you can share with them.
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    className="w-full py-2 px-4 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg transition-colors font-medium"
+                                                    onClick={() => {
+                                                        // Check if we have the business information needed
+                                                        if (!formValues['registered-name']) {
+                                                            alert('Please fill in the business details first before generating director links.');
+                                                            return;
+                                                        }
+                                                        
+                                                        // Check if director count is specified
+                                                        if (!directorCount || directorCount < 2) {
+                                                            alert('Please specify at least 2 directors to use this feature.');
+                                                            return;
+                                                        }
+                                                        
+                                                        // Create business details object from form values
+                                                        const businessDetails = {
+                                                            name: formValues['registered-name'],
+                                                            tradingName: formValues['trading-name'] || '',
+                                                            incNumber: formValues['certificate-of-incorporation-number'] || '',
+                                                            businessType: formValues['business-type'] || '',
+                                                            address: formValues['business-address'] || '',
+                                                            phoneNumber: formValues['contact-phone-number'] || '',
+                                                            email: formValues['email-address'] || ''
+                                                        };
+                                                        
+                                                        // Generate links via API
+                                                        // Get CSRF token safely (with fallback)
+                                                        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                                                        const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+                                                        
+                                                        const headers = {
+                                                            'Content-Type': 'application/json'
+                                                        };
+                                                        
+                                                        if (csrfToken) {
+                                                            headers['X-CSRF-TOKEN'] = csrfToken;
+                                                        }
+                                                        
+                                                        fetch('/api/director-links/generate', {
+                                                            method: 'POST',
+                                                            headers,
+                                                            body: JSON.stringify({
+                                                                form_id: formId,
+                                                                business_name: formValues['registered-name'],
+                                                                business_details: businessDetails,
+                                                                total_directors: directorCount
+                                                            })
+                                                        })
+                                                        .then(response => response.json())
+                                                        .then(data => {
+                                                            if (!data.success) {
+                                                                console.error('Error generating links:', data);
+                                                                alert('Failed to generate links for directors. Please try again.');
+                                                                return;
+                                                            }
+                                                            
+                                                            // Show the links to the user
+                                                            const linksHtml = data.links
+                                                                .filter(link => link.position > 1) // Skip the primary director (already filled)
+                                                                .map(link => 
+                                                                `<div class="mb-4">
+                                                                    <p class="font-medium">Director ${link.position}${link.is_final_director ? ' (Final)' : ''}:</p>
+                                                                    <div class="flex items-center">
+                                                                        <input type="text" value="${link.url}" 
+                                                                            class="flex-1 p-2 border rounded text-sm" readonly />
+                                                                        <button type="button" 
+                                                                            class="ml-2 p-2 bg-emerald-100 text-emerald-700 rounded text-sm copy-btn" 
+                                                                            data-url="${link.url}">
+                                                                            Copy
+                                                                        </button>
+                                                                    </div>
+                                                                </div>`
+                                                            ).join('');
+                                                            
+                                                            // Create a modal dialog to display links
+                                                            const modal = document.createElement('div');
+                                                            modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+                                                            modal.innerHTML = `
+                                                                <div class="bg-white rounded-xl max-w-lg w-full p-6 space-y-4">
+                                                                    <h3 class="text-lg font-semibold">Additional Director Links Generated</h3>
+                                                                    <p class="text-sm text-gray-600">Share these links with each director to let them fill in their own details. The last director will be able to submit the complete application.</p>
+                                                                    <div class="mt-4 space-y-2">
+                                                                        ${linksHtml}
+                                                                    </div>
+                                                                    <div class="text-sm text-red-600 mt-4">
+                                                                        Important: Save these links now. They will expire in 7 days.
+                                                                    </div>
+                                                                    <div class="flex justify-end">
+                                                                        <button type="button" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300" id="close-modal">
+                                                                            Close
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            `;
+                                                            
+                                                            // Add the modal to the document
+                                                            document.body.appendChild(modal);
+                                                            
+                                                            // Add event listeners for copy buttons
+                                                            modal.querySelectorAll('.copy-btn').forEach(btn => {
+                                                                btn.addEventListener('click', function() {
+                                                                    const url = this.getAttribute('data-url');
+                                                                    navigator.clipboard.writeText(url)
+                                                                        .then(() => {
+                                                                            this.textContent = 'Copied!';
+                                                                            this.classList.remove('bg-emerald-100', 'text-emerald-700');
+                                                                            this.classList.add('bg-emerald-500', 'text-white');
+                                                                            setTimeout(() => {
+                                                                                this.textContent = 'Copy';
+                                                                                this.classList.remove('bg-emerald-500', 'text-white');
+                                                                                this.classList.add('bg-emerald-100', 'text-emerald-700');
+                                                                            }, 2000);
+                                                                        })
+                                                                        .catch(err => {
+                                                                            console.error('Failed to copy:', err);
+                                                                            alert('Failed to copy to clipboard');
+                                                                        });
+                                                                });
+                                                            });
+                                                            
+                                                            // Add event listener for close button
+                                                            document.getElementById('close-modal').addEventListener('click', function() {
+                                                                document.body.removeChild(modal);
+                                                            });
+                                                        })
+                                                        .catch(error => {
+                                                            console.error('Error:', error);
+                                                            alert('Failed to generate links for directors. Please try again.');
+                                                        });
+                                                    }}
+                                                >
+                                                    Generate Links for Additional Directors
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <p className="text-sm text-gray-600">
+                                                This is a single-director business. No additional director signatures needed.
+                                            </p>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -899,6 +1380,26 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
 
                 case 'component':
                     if (field.component === 'BranchLocator') {
+                        // Check if this is an SSB form - we don't need bank branch for SSB
+                        const isSSBForm = formValues && 
+                            (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' || 
+                             formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                             formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                             formValues['formType'] === 'ssb');
+                            
+                        if (isSSBForm && (field.label.toLowerCase().includes('bank branch') || fieldId.toLowerCase().includes('bank-branch'))) {
+                            return (
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor={fieldId}>
+                                        {field.label} <span className="text-gray-400">(Not required for SSB)</span>
+                                    </label>
+                                    <p className="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                        Bank branch selection is not necessary for Government SSB applications.
+                                    </p>
+                                </div>
+                            );
+                        }
+                        
                         return (
                             <div className="mb-6">
                                 <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor={fieldId}>
@@ -908,12 +1409,15 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                     fieldId={fieldId}
                                     onChange={(value) => handleInputChange(fieldId, value, field)}
                                     value={fieldValue}
-                                    required={field.required}
+                                    required={field.required && !isSSBForm}
                                 />
-                                {attemptedValidation && !fieldValidation[fieldId] && field.required && (
+                                {attemptedValidation && !fieldValidation[fieldId] && field.required && !isSSBForm && (
                                     <p className="mt-1 text-sm text-red-500 flex items-center">
                                         <AlertCircle className="w-4 h-4 mr-1"/>
-                                        This field is required
+                                        {(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
+                                           ['ID Number', 'National ID', 'Identity Number'].includes(field.label)) 
+                                           ? `Must be in format: 00-000000-X-00 (exactly 6 digits in middle)` 
+                                           : `This field is required`}
                                     </p>
                                 )}
                             </div>
@@ -965,6 +1469,13 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                     <option key={idx} value={option}>{option}</option>
                                 ))}
                             </select>
+                            {/* Fix for period at current address dropdown issue */}
+                            {(fieldId.toLowerCase() === 'period-at-current-address' || 
+                              field.label === 'Period at Current Address') && !fieldValue && (
+                                <p className="mt-1 text-sm text-gray-500">
+                                  Please select how long you've lived at this address
+                                </p>
+                            )}
                             {attemptedValidation && !fieldValidation[fieldId] && field.required && (
                                 <p className="mt-1 text-sm text-red-500 flex items-center">
                                     <AlertCircle className="w-4 h-4 mr-1"/>
@@ -1176,35 +1687,54 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
             }
 
             const directorFields = directorTemplate.fields || [];
-            const directorSections = [];
+            
+            // Only show fields for the first director (primary applicant)
+            // For additional directors, we'll use the link generation feature
+            const fieldsWithReplacedIds = directorFields.map(field => {
+                if (!field) return null;
+                const newField = {...field};
+                if (newField.id) {
+                    newField.id = newField.id.replace('{index}', "1"); // Always use index 1 for primary director
+                }
+                return newField;
+            }).filter(Boolean);
 
-            for (let i = 0; i < directorCount; i++) {
-                const fieldsWithReplacedIds = directorFields.map(field => {
-                    if (!field) return null;
-                    const newField = {...field};
-                    if (newField.id) {
-                        newField.id = newField.id.replace('{index}', (i + 1).toString());
-                    }
-                    return newField;
-                }).filter(Boolean);
-
-                directorSections.push(
-                    <div key={`director-${i + 1}`} className="mt-8 bg-white rounded-lg p-6 border">
+            return (
+                <div className="space-y-8">
+                    <div className="bg-white rounded-lg p-6 border">
                         <h3 className="text-xl font-semibold mb-6 text-center">
-                            {(directorTemplate.title || "Director").replace('{index}', (i + 1).toString())}
+                            Primary Director Details
                         </h3>
+                        <p className="text-gray-600 mb-4 text-center">
+                            Please fill in details for the primary director. {directorCount > 1 ? 
+                            `You'll be able to generate links for the other ${directorCount-1} director${directorCount > 2 ? 's' : ''} to fill in their own details.` : 
+                            ''}
+                        </p>
                         <div className="space-y-4">
                             {fieldsWithReplacedIds.map((field, index) => (
-                                <div key={`dir-${i}-field-${index}`}>
+                                <div key={`dir-1-field-${index}`}>
                                     {renderField(field, section.id || '')}
                                 </div>
                             ))}
                         </div>
                     </div>
-                );
-            }
-
-            return <div className="space-y-8">{directorSections}</div>;
+                    
+                    {directorCount > 1 && (
+                        <div className="mt-8 bg-emerald-50 rounded-lg p-6 border border-emerald-100">
+                            <h3 className="text-lg font-semibold mb-3 text-center">
+                                Additional Directors ({directorCount - 1})
+                            </h3>
+                            <p className="text-gray-600 mb-4 text-center">
+                                After completing this form, you will be able to generate unique links for the other directors to fill in their details separately.
+                            </p>
+                            <div className="bg-white p-4 rounded-lg border border-gray-200 text-sm text-gray-700">
+                                <p className="mb-2"><strong>Note:</strong> Each director will receive a separate, secure link where they can fill in their personal details.</p>
+                                <p>The last director to complete the form will be able to submit the final application.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
         }
 
         const fields = section.fields || [];
@@ -1256,7 +1786,16 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
 
             let fieldValid = false;
 
-            if (field.type === 'checkbox') {
+            // Special validation for ID number fields
+            if (
+                (field.type === 'text') && 
+                (['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
+                ['ID Number', 'National ID', 'Identity Number'].includes(field.label))
+            ) {
+                // Validate against Zimbabwe ID format: 00-000000-X-00
+                const idRegex = /^\d{2}-\d{6}-[A-Za-z]-\d{2}$/;
+                fieldValid = value !== undefined && value !== null && value !== '' && idRegex.test(value);
+            } else if (field.type === 'checkbox') {
                 fieldValid = !!value;
             } else if (field.type === 'checkbox_list') {
                 fieldValid = Array.isArray(value) && value.length > 0;
@@ -1298,17 +1837,16 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
             const directorTemplate = section.templates.director;
 
             if (directorTemplate && directorTemplate.fields) {
-                for (let i = 0; i < directorCount; i++) {
-                    const directorFields = directorTemplate.fields.map(field => {
-                        const newField = {...field};
-                        if (newField.id) {
-                            newField.id = newField.id.replace('{index}', (i + 1).toString());
-                        }
-                        return newField;
-                    });
+                // Only validate the primary director (index 1)
+                const directorFields = directorTemplate.fields.map(field => {
+                    const newField = {...field};
+                    if (newField.id) {
+                        newField.id = newField.id.replace('{index}', "1");
+                    }
+                    return newField;
+                });
 
-                    validateFields(directorFields);
-                }
+                validateFields(directorFields);
             }
         } else if (section.fields) {
             validateFields(section.fields);
@@ -1352,25 +1890,142 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
         }
 
         try {
-            const response = await fetch('/api/submit-form', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    formId,
-                    formValues,
-                    questionnaireData: initialData,
-                    agent_id: agentId,
-                    formName: formData?.fileName,
-                    referral_code: localStorage.getItem('referralCode'), // Include referral code from localStorage
-                }),
-            });
-
-            if (!response.ok) throw new Error('Failed to submit form');
-            const {insertId} = await response.json();
-            setSuccess(true);
-            onComplete(insertId);
+            // Check if form contains any file uploads
+            const hasFileUploads = Object.values(formValues).some(value => value instanceof File);
+            
+            if (hasFileUploads) {
+                // Use FormData approach for file uploads
+                const formData = new FormData();
+                
+                // Add form metadata
+                formData.append('formId', formId);
+                formData.append('formName', formData?.fileName || '');
+                
+                if (agentId) {
+                    formData.append('agent_id', agentId);
+                }
+                
+                const referralCode = localStorage.getItem('referralCode');
+                if (referralCode) {
+                    formData.append('referral_code', referralCode);
+                }
+                
+                // Add questionnaire data as JSON
+                formData.append('questionnaireData', JSON.stringify(initialData));
+                
+                // Clone formValues to a plain object for serialization
+                const plainFormValues = {};
+                
+                // Process each form value
+                Object.entries(formValues).forEach(([key, value]) => {
+                    if (value instanceof File) {
+                        // Append files directly to FormData
+                        formData.append(`files[${key}]`, value, value.name);
+                        
+                        // Create a placeholder in plainFormValues
+                        plainFormValues[key] = {
+                            isFile: true,
+                            name: value.name,
+                            size: value.size,
+                            type: value.type,
+                            lastModified: value.lastModified
+                        };
+                    } else {
+                        // For non-file values, add to the plain object
+                        plainFormValues[key] = value;
+                    }
+                });
+                
+                // Add the form values as JSON
+                formData.append('formValues', JSON.stringify(plainFormValues));
+                
+                // Send the FormData without a Content-Type header (browser will set it with the boundary)
+                // Get CSRF token safely (with fallback)
+                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+                
+                // Add CSRF token to form data if available
+                if (csrfToken) {
+                    formData.append('_token', csrfToken);
+                }
+                
+                try {
+                    const response = await fetch('/api/submit-form-with-files', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Server response error:', response.status, errorData);
+                        throw new Error(`Failed to submit form with files: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const responseData = await response.json();
+                    console.log('Form submission successful:', responseData);
+                    
+                    // Only set success and complete if we have valid data
+                    if (responseData && responseData.insertId) {
+                        setSuccess(true);
+                        onComplete(responseData.insertId);
+                    } else {
+                        throw new Error('Invalid response from server: missing insertId');
+                    }
+                } catch (error) {
+                    console.error('Error in form submission:', error);
+                    throw error;
+                }
+            } else {
+                // Standard JSON submission for forms without files
+                // Get CSRF token safely (with fallback)
+                const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+                const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+                
+                // Prepare headers
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                
+                if (csrfToken) {
+                    headers['X-CSRF-TOKEN'] = csrfToken;
+                }
+                
+                try {
+                    const response = await fetch('/api/submit-form', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            formId,
+                            formValues,
+                            questionnaireData: initialData,
+                            agent_id: agentId,
+                            formName: formData?.fileName,
+                            referral_code: localStorage.getItem('referralCode'), // Include referral code from localStorage
+                            _token: csrfToken // Also include token in body for Laravel
+                        }),
+                    });
+    
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('Server response error:', response.status, errorData);
+                        throw new Error(`Failed to submit form: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    const responseData = await response.json();
+                    console.log('Form submission successful:', responseData);
+                    
+                    // Only set success and complete if we have valid data
+                    if (responseData && responseData.insertId) {
+                        setSuccess(true);
+                        onComplete(responseData.insertId);
+                    } else {
+                        throw new Error('Invalid response from server: missing insertId');
+                    }
+                } catch (error) {
+                    console.error('Error in form submission:', error);
+                    throw error;
+                }
+            }
         } catch (err) {
             console.error('Error submitting form:', err);
             setError('Failed to submit form. Please try again.');

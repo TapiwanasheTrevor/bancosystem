@@ -46,8 +46,8 @@ class ApplicationStatusController extends Controller
                 $applicationData['product'] = [
                     'name' => $questionnaireData['selectedProduct']['product']['name'] ?? 'Unknown',
                     'category' => $questionnaireData['selectedProduct']['category'] ?? 'Unknown',
-                    'final_price' => $questionnaireData['selectedProduct']['selectedCreditOption']['final_price'] ?? '0',
                     'months' => $questionnaireData['selectedProduct']['selectedCreditOption']['months'] ?? 0,
+                    'installment_amount' => $questionnaireData['selectedProduct']['selectedCreditOption']['installment_amount'] ?? '0',
                 ];
             }
         }

@@ -90,11 +90,16 @@ class CategoryController extends Controller
                         'base_price' => $product->base_price,
                         'image' => $product->image ? asset('images/products/' . $product->image) : null,
                         'credit_options' => $product->creditPricings->map(function ($credit) {
+                            // Use the actual installment_amount if set, otherwise calculate it
+                            $installmentAmount = $credit->installment_amount 
+                                ? (string)$credit->installment_amount 
+                                : number_format($credit->final_price / $credit->months, 2);
+                                
                             return [
                                 'months' => $credit->months,
                                 'interest' => $credit->interest,
                                 'final_price' => $credit->final_price,
-                                'installment_amount' => number_format($credit->final_price / $credit->months, 2),
+                                'installment_amount' => $installmentAmount,
                             ];
                         }),
                     ];

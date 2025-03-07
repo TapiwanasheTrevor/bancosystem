@@ -24,7 +24,7 @@
         @endif
 
         <div class="bg-white shadow-md rounded-lg overflow-hidden">
-            <table class="min-w-full" id="deliveriesTable">
+            <table class="min-w-full">
                 <thead class="bg-gray-100">
                     <tr>
                         <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ID</th>
@@ -56,7 +56,7 @@
                                         'cancelled' => 'bg-red-100 text-red-800',
                                         default => 'bg-gray-100 text-gray-800'
                                     } }}">
-                                    {{ $delivery->status_label }}
+                                    {{ ucwords(str_replace('_', ' ', $delivery->status)) }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-700">{{ $delivery->current_location ?? 'N/A' }}</td>
@@ -87,12 +87,7 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
-        $('#deliveriesTable').DataTable({
-            "paging": false, // We're using Laravel pagination
-            "info": false,
-            "searching": true,
-            "order": [[0, 'desc']]
-        });
+        // No DataTables initialization - using Laravel's pagination instead
     });
 </script>
 @endpush

@@ -210,5 +210,10 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__ . '/auth.php';
 
+// Director Form link - public route, no auth required
+Route::get('/director-form/{token}', function ($token) {
+    return view('director-form', ['token' => $token]);
+})->name('director.form');
+
 
 

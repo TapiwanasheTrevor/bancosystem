@@ -15,6 +15,7 @@ class Form extends Model
     protected $casts = [
         'form_values' => 'array',
         'questionnaire_data' => 'array',
+        'uploaded_files' => 'array',
         'loan_amount' => 'decimal:2',
         'loan_term_months' => 'integer',
         'loan_start_date' => 'date',
@@ -23,6 +24,7 @@ class Form extends Model
     protected $fillable = [
         'form_values',
         'questionnaire_data',
+        'uploaded_files',
         'uuid',
         'status',
         'form_name',

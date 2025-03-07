@@ -123,6 +123,211 @@ class FormSubmissionController extends Controller
             'reference_number' => $formSubmission->uuid
         ], 200);
     }
+    
+    /**
+     * Handle form submission that includes file uploads
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function submitWithFiles(Request $request)
+    {
+        // Validate basic form data first
+        $request->validate([
+            'formId' => 'required|string',
+            'formValues' => 'required|string', // This will be a JSON string in FormData
+            'questionnaireData' => 'required|string', // This will be a JSON string in FormData
+            'referral_code' => 'nullable|string|exists:users,referral_code',
+        ]);
+        
+        // Parse JSON strings
+        $formValues = json_decode($request->input('formValues'), true);
+        $questionnaireData = json_decode($request->input('questionnaireData'), true);
+        
+        // Validate that we could parse the JSON
+        if (!is_array($formValues) || !is_array($questionnaireData)) {
+            return response()->json([
+                'message' => 'Invalid JSON data provided',
+            ], 400);
+        }
+        
+        // Process files
+        $uploadedFiles = [];
+        $uploadPath = 'attachments/' . date('Y/m/d') . '/' . Str::random(10);
+        $publicPath = public_path($uploadPath);
+        
+        try {
+            // Create directory if it doesn't exist
+            if (!file_exists($publicPath)) {
+                mkdir($publicPath, 0755, true);
+            }
+            
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $fieldName => $file) {
+                    try {
+                        // Validate the file
+                        if (!$file->isValid()) {
+                            \Log::warning("Invalid file uploaded for field: $fieldName");
+                            continue;
+                        }
+                        
+                        // Generate unique filename
+                        $extension = $file->getClientOriginalExtension() ?: 'bin';
+                        $filename = Str::uuid() . '.' . $extension;
+                        
+                        // Move file to storage location - handle failures
+                        try {
+                            $file->move($publicPath, $filename);
+                        } catch (\Exception $e) {
+                            \Log::error("Failed to move uploaded file: " . $e->getMessage());
+                            continue; // Skip this file and continue with others
+                        }
+                        
+                        // Store file info - be defensive about file properties
+                        try {
+                            // Get basic properties safely
+                            $fileInfo = [
+                                'original_name' => $file->getClientOriginalName(),
+                                'path' => $uploadPath . '/' . $filename,
+                                'url' => asset($uploadPath . '/' . $filename)
+                            ];
+                            
+                            // Try to get mime type and size only after file is moved
+                            // and use client-provided info as fallback
+                            try {
+                                $fileInfo['mime_type'] = $file->getClientMimeType();
+                            } catch (\Exception $e) {
+                                $fileInfo['mime_type'] = 'application/octet-stream'; // Generic fallback
+                            }
+                            
+                            try {
+                                $fileInfo['size'] = filesize($publicPath . '/' . $filename);
+                            } catch (\Exception $e) {
+                                $fileInfo['size'] = 0; // Default size if can't be determined
+                            }
+                            
+                            $uploadedFiles[$fieldName] = $fileInfo;
+                        } catch (\Exception $e) {
+                            // Log error but continue
+                            \Log::error('Error processing uploaded file: ' . $e->getMessage());
+                        }
+                        
+                        // Update formValues with file info
+                        if (isset($formValues[$fieldName])) {
+                            $formValues[$fieldName] = $uploadedFiles[$fieldName];
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Error processing file for field $fieldName: " . $e->getMessage());
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error("Error in file upload process: " . $e->getMessage());
+            // Continue without files rather than failing the entire submission
+        }
+        
+        // Create form submission
+        $formSubmission = new Form();
+        $formSubmission->form_name = $request->input('formId');
+        $formSubmission->form_values = json_encode($formValues);
+        $formSubmission->questionnaire_data = json_encode($questionnaireData);
+        $formSubmission->uploaded_files = json_encode($uploadedFiles);
+        
+        // Link to current authenticated user if available
+        if (auth()->check()) {
+            $formSubmission->user_id = auth()->id();
+        }
+        
+        // Handle referral if provided
+        if ($request->has('referral_code')) {
+            $agent = User::where('referral_code', $request->input('referral_code'))
+                        ->where('role', 'agent')
+                        ->where('status', 1)
+                        ->first();
+                         
+            if ($agent) {
+                $formSubmission->referred_by = $agent->id;
+                
+                // Track this referral
+                $agent->trackReferral();
+                
+                // Also assign this agent to the form
+                $formSubmission->agent_id = $agent->id;
+            }
+        } else {
+            $formSubmission->agent_id = $request->input('agent_id');
+        }
+        
+        // Generate a unique UUID as reference number
+        $formSubmission->uuid = (string) Str::uuid();
+        
+        // Set default status
+        $formSubmission->status = 'pending';
+        
+        // Extract key fields for easier querying
+        // Extract applicant details - check all possible field names
+        $firstName = $formValues['first-name'] ?? $formValues['forename'] ?? $formValues['forenames'] ?? $formValues['customerFirstName'] ?? '';
+        $surname = $formValues['surname'] ?? $formValues['last-name'] ?? $formValues['customerSurname'] ?? '';
+        $formSubmission->applicant_name = trim($firstName . ' ' . $surname);
+        
+        // Extract ID number from various possible fields
+        $formSubmission->applicant_id_number = $formValues['id-number'] ?? $formValues['national-id'] ?? $formValues['identity-number'] ?? 
+                                              $formValues['customerIdNumber'] ?? $formValues['idNumber'] ?? '';
+        
+        // Extract phone number
+        $formSubmission->applicant_phone = $formValues['cell-number'] ?? $formValues['phone-number'] ?? $formValues['phone'] ?? 
+                                          $formValues['mobile'] ?? $formValues['customerCellNumber'] ?? '';
+        
+        // Extract email
+        $formSubmission->applicant_email = $formValues['email-address'] ?? $formValues['email'] ?? $formValues['customerEmail'] ?? '';
+        
+        // Extract employer
+        $formSubmission->employer = $formValues['employer-name'] ?? $formValues['employer'] ?? $formValues['customerEmployer'] ?? 
+                                    $questionnaireData['employer'] ?? '';
+        
+        // Extract loan details if available
+        if (isset($questionnaireData['selectedProduct'])) {
+            $selectedProduct = $questionnaireData['selectedProduct'];
+            
+            if (isset($selectedProduct['selectedCreditOption'])) {
+                $creditOption = $selectedProduct['selectedCreditOption'];
+                
+                // Extract loan amount
+                if (isset($creditOption['final_price'])) {
+                    $formSubmission->loan_amount = (float) $creditOption['final_price'];
+                } elseif (isset($formValues['loan-amount'])) {
+                    $formSubmission->loan_amount = (float) $formValues['loan-amount'];
+                } elseif (isset($formValues['applied-amount'])) {
+                    $formSubmission->loan_amount = (float) $formValues['applied-amount'];
+                }
+                
+                // Extract loan term
+                if (isset($creditOption['months'])) {
+                    $formSubmission->loan_term_months = (int) $creditOption['months'];
+                }
+                
+                // Extract loan dates
+                if (isset($selectedProduct['loanStartDate'])) {
+                    $formSubmission->loan_start_date = $selectedProduct['loanStartDate'];
+                }
+                
+                if (isset($selectedProduct['loanEndDate'])) {
+                    $formSubmission->loan_end_date = $selectedProduct['loanEndDate'];
+                }
+            }
+        }
+        
+        $formSubmission->save();
+        
+        // Return a response with reference number
+        return response()->json([
+            'message' => 'Form with files submitted successfully',
+            'data' => $formSubmission,
+            'insertId' => $formSubmission->id,
+            'reference_number' => $formSubmission->uuid,
+            'files' => $uploadedFiles
+        ], 200);
+    }
 
 
     /**

@@ -79,7 +79,7 @@ class AdminAgentController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$id],
             'phone_number' => ['required', 'string', 'max:20'],
-            'position' => ['required', 'string', 'in:field_agent,office_agent,supervisor'],
+            'position' => ['required', 'string', 'in:field_agent,office_agent,online_agent'],
         ]);
         
         $agent->update($validated);
@@ -121,7 +121,7 @@ class AdminAgentController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'phone_number' => ['required', 'string', 'max:20'],
-            'position' => ['required', 'string', 'in:field_agent,office_agent,supervisor'],
+            'position' => ['required', 'string', 'in:field_agent,office_agent,online_agent'],
             'referral_code' => ['nullable', 'string', 'exists:users,referral_code'],
         ]);
 

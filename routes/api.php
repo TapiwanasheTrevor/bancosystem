@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Api\ApplicationStatusController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\DirectorLinkController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\FormController;
 use App\Http\Controllers\FormSubmissionController;
@@ -29,6 +31,7 @@ Route::get('/hirepurchase/categories/{id}', [CategoryController::class, 'showHir
 Route::get('/products/{id}', [ProductController::class, 'show']); // Get product details
 
 Route::post('/submit-form', [FormSubmissionController::class, 'submit'])->name('api.form.submit');
+Route::post('/submit-form-with-files', [FormSubmissionController::class, 'submitWithFiles'])->name('api.form.submit-with-files');
 
 Route::get('/applications/{formType}', [FormSubmissionController::class, 'listFormSubmissions']);
 
@@ -42,16 +45,24 @@ Route::post('/forms/{id}/status', [\App\Http\Controllers\Api\FormStatusControlle
 Route::post('/forms/batch-status', [\App\Http\Controllers\Api\FormStatusController::class, 'batchUpdateStatus']);
 Route::delete('/forms/{id}', [\App\Http\Controllers\Api\FormStatusController::class, 'deleteForm']);
 
+// Director links for forms
+Route::post('/director-links/generate', [DirectorLinkController::class, 'generate']);
+Route::get('/director-links/{token}', [DirectorLinkController::class, 'getDirectorFormData']);
+Route::post('/director-links/{token}/submit', [DirectorLinkController::class, 'submitDirectorData']);
+
 // Document management
 Route::middleware('auth:sanctum')->group(function () {
     // Document uploads by agents
-    Route::post('/documents/upload', [\App\Http\Controllers\Api\DocumentController::class, 'upload']);
-    Route::get('/documents/new/{agentId}', [\App\Http\Controllers\Api\DocumentController::class, 'getNewDocuments']);
-    Route::get('/documents/processed/{agentId}', [\App\Http\Controllers\Api\DocumentController::class, 'getProcessedDocuments']);
-    Route::post('/documents/{id}/process', [\App\Http\Controllers\Api\DocumentController::class, 'markProcessed']);
+    Route::post('/documents/upload', [DocumentController::class, 'upload']);
+    Route::get('/documents/new/{agentId}', [DocumentController::class, 'getNewDocuments']);
+    Route::get('/documents/processed/{agentId}', [DocumentController::class, 'getProcessedDocuments']);
+    Route::post('/documents/{id}/process', [DocumentController::class, 'markProcessed']);
     
     // Agent search for document management
-    Route::get('/agents/search', [\App\Http\Controllers\Api\DocumentController::class, 'searchAgents']);
+    Route::get('/agents/search', [DocumentController::class, 'searchAgents']);
+    
+    // Get clients for an agent
+    Route::get('/agents/{id}/clients', [DocumentController::class, 'getAgentClients']);
 });
 
 // Delivery tracking routes

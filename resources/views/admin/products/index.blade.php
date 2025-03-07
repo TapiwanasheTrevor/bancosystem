@@ -77,17 +77,33 @@
 
             <!-- Credit Pricing -->
             <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">Credit Pricing (Interest Rate)</h3>
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Credit Pricing</h3>
                 <div class="grid grid-cols-2 gap-4">
                     @foreach([3, 6, 9, 12] as $months)
-                        <div class="flex flex-col">
-                            <label class="text-gray-700">{{ $months }} Months</label>
-                            <input type="number" name="credit[{{ $months }}][interest]" placeholder="Interest %"
-                                   required step="0.01"
-                                   class="w-full p-3 border rounded-lg focus:ring focus:ring-blue-300 outline-none">
+                        <div class="flex flex-col space-y-2 border rounded-lg p-4">
+                            <label class="text-gray-700 font-medium">{{ $months }} Months</label>
+                            
+                            <!-- Interest Rate -->
+                            <div>
+                                <label class="text-sm text-gray-600">Interest (%)</label>
+                                <input type="number" name="credit[{{ $months }}][interest]" placeholder="Interest %"
+                                    step="0.01"
+                                    class="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300 outline-none">
+                            </div>
+                            
+                            <!-- Flat Fee / Installment Amount -->
+                            <div>
+                                <label class="text-sm text-gray-600">Monthly Installment (USD)</label>
+                                <input type="number" name="credit[{{ $months }}][installment_amount]" 
+                                    placeholder="Amount per month"
+                                    step="0.01"
+                                    class="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300 outline-none">
+                                <p class="text-xs text-gray-500 mt-1">Fixed monthly payment amount</p>
+                            </div>
                         </div>
                     @endforeach
                 </div>
+                <p class="text-sm text-gray-500 mt-2">Note: You can specify either an interest rate or a fixed monthly installment amount (or both).</p>
             </div>
 
             <!-- Submit Button -->

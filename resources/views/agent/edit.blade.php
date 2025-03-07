@@ -85,7 +85,7 @@
                             <option value="">Select agent position</option>
                             <option value="field_agent" {{ old('position', $agent->position) == 'field_agent' ? 'selected' : '' }}>Field Agent</option>
                             <option value="office_agent" {{ old('position', $agent->position) == 'office_agent' ? 'selected' : '' }}>Office Agent</option>
-                            <option value="supervisor" {{ old('position', $agent->position) == 'supervisor' ? 'selected' : '' }}>Supervisor</option>
+                            <option value="online_agent" {{ old('position', $agent->position) == 'online_agent' ? 'selected' : '' }}>Online Agent</option>
                         </select>
                         @error('position')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

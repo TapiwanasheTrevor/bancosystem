@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class CreditPricing extends Model
 {
     use HasFactory;
-    protected $fillable = ['product_id', 'months', 'interest', 'final_price'];
+    protected $fillable = ['product_id', 'months', 'interest', 'final_price', 'installment_amount'];
 
     public function product()
     {

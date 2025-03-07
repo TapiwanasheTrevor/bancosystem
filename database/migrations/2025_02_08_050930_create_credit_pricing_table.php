@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('months'); // 3, 6, 9, 12
             $table->decimal('interest', 5, 2);
             $table->decimal('final_price', 10, 2);
+            $table->decimal('installment_amount', 10, 2)->nullable();
             $table->timestamps();
         });
     }

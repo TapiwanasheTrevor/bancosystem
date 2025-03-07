@@ -45,19 +45,60 @@ class ProductDeliveryController extends Controller
     {
         $validated = $request->validate([
             'form_id' => 'required|exists:forms,id',
-            'product_id' => 'required|exists:products,id',
             'status' => 'required|in:pending,processing,dispatched,in_transit,at_station,out_for_delivery,delivered,delayed,cancelled',
             'current_location' => 'nullable|string|max:255',
             'status_notes' => 'nullable|string',
             'estimated_delivery_date' => 'nullable|date',
         ]);
         
-        // Generate unique tracking number
-        $validated['tracking_number'] = strtoupper(Str::random(4) . '-' . Str::random(4) . '-' . Str::random(4));
-        
         DB::beginTransaction();
         
         try {
+            // Get the form
+            $form = Form::findOrFail($validated['form_id']);
+            
+            // Check if form has product data in form_values JSON field
+            $formValues = json_decode($form->form_values, true) ?? [];
+            $productId = null;
+            
+            // Try to find the product ID from form values
+            if (isset($formValues['questionnaireData']) && 
+                isset($formValues['questionnaireData']['selectedProduct']) && 
+                isset($formValues['questionnaireData']['selectedProduct']['product']) && 
+                isset($formValues['questionnaireData']['selectedProduct']['product']['id'])) {
+                    
+                $productId = $formValues['questionnaireData']['selectedProduct']['product']['id'];
+            }
+            
+            // If product ID wasn't found, try other possible locations in the form data
+            if (!$productId && isset($formValues['productId'])) {
+                $productId = $formValues['productId'];
+            }
+            
+            // If still no product ID found, try any field that might contain it
+            if (!$productId) {
+                foreach ($formValues as $key => $value) {
+                    if (is_numeric($value) && strpos(strtolower($key), 'product') !== false) {
+                        $productId = $value;
+                        break;
+                    }
+                }
+            }
+            
+            // Validate that we found a product ID
+            if (!$productId) {
+                throw new \Exception('Could not determine product for this application. Please select a product manually.');
+            }
+            
+            // Verify the product exists
+            $product = Product::findOrFail($productId);
+            
+            // Add product_id to validated data
+            $validated['product_id'] = $productId;
+            
+            // Generate unique tracking number
+            $validated['tracking_number'] = strtoupper(Str::random(4) . '-' . Str::random(4) . '-' . Str::random(4));
+            
             // Create delivery record
             $delivery = ProductDelivery::create($validated);
             
@@ -72,7 +113,7 @@ class ProductDeliveryController extends Controller
             DB::commit();
             
             return redirect()->route('admin.deliveries.show', $delivery)
-                ->with('success', 'Delivery record created successfully with tracking number: ' . $delivery->tracking_number);
+                ->with('success', "Delivery record created successfully for product: {$product->name} with tracking number: {$delivery->tracking_number}");
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withInput()->with('error', 'Error creating delivery record: ' . $e->getMessage());

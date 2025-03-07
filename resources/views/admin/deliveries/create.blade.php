@@ -37,15 +37,8 @@
                 </div>
 
                 <div class="mb-6">
-                    <label for="product_id" class="block text-sm font-medium text-gray-700 mb-2">Product</label>
-                    <select id="product_id" name="product_id" required class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                        <option value="">Select a Product</option>
-                        @foreach($products as $product)
-                            <option value="{{ $product->id }}" {{ old('product_id') == $product->id ? 'selected' : '' }}>
-                                {{ $product->name }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Product</label>
+                    <p class="text-gray-600 italic">The product will be automatically determined from the selected application.</p>
                     @error('product_id')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
