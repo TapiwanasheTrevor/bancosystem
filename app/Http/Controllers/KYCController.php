@@ -11,14 +11,49 @@ class KYCController extends Controller
     public function upload(Request $request)
     {
         try {
+            \Log::info('KYC upload attempt with params: ' . json_encode($request->all()));
+            
+            // Extract form_id from any of the possible parameter names
+            $formId = $request->input('insertId', 
+                      $request->input('form_id',
+                      $request->input('application_id',
+                      $request->input('id'))));
+                      
+            if (!$formId) {
+                return response()->json(['error' => 'Missing form ID parameter'], 400);
+            }
+            
+            // Apply validation with more flexible input naming
             $validatedData = $request->validate([
-                'insertId' => 'required|integer',
-                'idDocument' => 'required|file|mimes:jpeg,png,pdf|max:2048',
-                'passportPhoto' => 'required|file|mimes:jpeg,png|max:2048',
-                'payslip' => 'required|file|mimes:jpeg,png,pdf|max:2048',
                 'signature' => 'required|string',
-                // Proof of residence has been removed as requested
+                // Accept files from multiple possible parameter names
+                // At least one variation of each document type must be present
             ]);
+            
+            // Check for different variations of document fields
+            $idDocument = $request->file('idDocument') ?? $request->file('id_document');
+            $passportPhoto = $request->file('passportPhoto') ?? $request->file('passport_photo');
+            $payslip = $request->file('payslip') ?? $request->file('proof_of_income');
+            
+            if (!$idDocument || !$passportPhoto || !$payslip) {
+                return response()->json(['error' => 'Missing required document files'], 400);
+            }
+            
+            // Validate file types
+            if (!in_array($idDocument->getClientMimeType(), ['image/jpeg', 'image/png', 'application/pdf'])) {
+                return response()->json(['error' => 'ID document must be a JPG, PNG or PDF file'], 400);
+            }
+            
+            if (!in_array($passportPhoto->getClientMimeType(), ['image/jpeg', 'image/png'])) {
+                return response()->json(['error' => 'Passport photo must be a JPG or PNG file'], 400);
+            }
+            
+            if (!in_array($payslip->getClientMimeType(), ['image/jpeg', 'image/png', 'application/pdf'])) {
+                return response()->json(['error' => 'Payslip must be a JPG, PNG or PDF file'], 400);
+            }
+            
+            // Continue with form ID from any parameter name
+            $validatedData['insertId'] = $formId;
     
             // Create directories if they don't exist
             $this->ensureDirectoryExists('kyc/id_documents');

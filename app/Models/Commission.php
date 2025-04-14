@@ -10,42 +10,29 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Commission extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'agent_id',
-        'form_id',
-        'product_id',
-        'sale_amount',
-        'base_price',
-        'commission_rate',
-        'commission_amount',
-        'status',
-        'sale_date',
-        'approval_date',
-        'payment_date',
-        'payment_reference',
-        'approved_by',
-        'notes',
+        'application_number',
+        'amount',
+        'percentage',
+        'period',
+        'status'
     ];
-    
+
     protected $casts = [
-        'sale_amount' => 'decimal:2',
-        'base_price' => 'decimal:2',
-        'commission_rate' => 'decimal:2',
-        'commission_amount' => 'decimal:2',
-        'sale_date' => 'date',
-        'approval_date' => 'date',
-        'payment_date' => 'date',
+        'amount' => 'decimal:2',
+        'percentage' => 'decimal:2'
     ];
-    
+
     /**
      * Get the agent who earned this commission
      */
     public function agent(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'agent_id');
+        return $this->belongsTo(Agent::class);
     }
-    
+
     /**
      * Get the form this commission is related to
      */
@@ -53,7 +40,7 @@ class Commission extends Model
     {
         return $this->belongsTo(Form::class);
     }
-    
+
     /**
      * Get the product this commission is for
      */
@@ -61,7 +48,7 @@ class Commission extends Model
     {
         return $this->belongsTo(Product::class);
     }
-    
+
     /**
      * Get the user who approved this commission
      */
@@ -69,7 +56,7 @@ class Commission extends Model
     {
         return $this->belongsTo(User::class, 'approved_by');
     }
-    
+
     /**
      * Get the payment items for this commission
      */
@@ -77,38 +64,34 @@ class Commission extends Model
     {
         return $this->hasMany(CommissionPaymentItem::class);
     }
-    
+
     /**
      * Calculate commission amount
      */
     public function calculateCommission(): void
     {
-        $this->commission_amount = $this->base_price * ($this->commission_rate / 100);
+        $this->amount = $this->base_price * ($this->percentage / 100);
         $this->save();
     }
-    
+
     /**
      * Approve the commission
      */
-    public function approve(int $approverId): void
+    public function approve(): void
     {
         $this->status = 'approved';
-        $this->approved_by = $approverId;
-        $this->approval_date = now();
         $this->save();
     }
-    
+
     /**
      * Mark the commission as paid
      */
-    public function markAsPaid(string $paymentReference): void
+    public function markAsPaid(): void
     {
         $this->status = 'paid';
-        $this->payment_reference = $paymentReference;
-        $this->payment_date = now();
         $this->save();
     }
-    
+
     /**
      * Reject the commission
      */
@@ -117,14 +100,14 @@ class Commission extends Model
         $this->status = 'rejected';
         $this->approved_by = $approverId;
         $this->approval_date = now();
-        
+
         if ($reason) {
             $this->notes = $reason;
         }
-        
+
         $this->save();
     }
-    
+
     /**
      * Scope query to only include pending commissions
      */
@@ -132,7 +115,7 @@ class Commission extends Model
     {
         return $query->where('status', 'pending');
     }
-    
+
     /**
      * Scope query to only include approved commissions
      */
@@ -140,7 +123,7 @@ class Commission extends Model
     {
         return $query->where('status', 'approved');
     }
-    
+
     /**
      * Scope query to only include paid commissions
      */
@@ -148,7 +131,7 @@ class Commission extends Model
     {
         return $query->where('status', 'paid');
     }
-    
+
     /**
      * Scope query to only include rejected commissions
      */
@@ -156,7 +139,7 @@ class Commission extends Model
     {
         return $query->where('status', 'rejected');
     }
-    
+
     /**
      * Scope query to only include commissions for a specific agent
      */
@@ -164,12 +147,65 @@ class Commission extends Model
     {
         return $query->where('agent_id', $agentId);
     }
-    
+
     /**
      * Scope query to only include commissions for a specific period
      */
     public function scopeForPeriod($query, $startDate, $endDate)
     {
         return $query->whereBetween('sale_date', [$startDate, $endDate]);
+    }
+
+    public static function calculateForPeriod(string $period): array
+    {
+        $commissions = self::where('period', $period)
+            ->with('agent')
+            ->get()
+            ->groupBy('agent_id');
+
+        $summary = [];
+
+        foreach ($commissions as $agentId => $agentCommissions) {
+            $agent = $agentCommissions->first()->agent;
+            $totalAmount = $agentCommissions->sum('amount');
+            $totalApplications = $agentCommissions->count();
+
+            // Calculate supervisor incentive if applicable
+            $supervisorIncentive = 0;
+            if ($agent->type === 'supervisor') {
+                $subordinateCommissions = self::whereHas('agent', function ($query) {
+                    $query->where('type', 'field');
+                })->where('period', $period)->get();
+
+                $supervisorIncentive = $subordinateCommissions->sum('amount') * 0.10; // 10% of subordinates' commissions
+            }
+
+            $summary[] = [
+                'agent_id' => $agentId,
+                'agent_name' => $agent->name,
+                'agent_type' => $agent->type,
+                'total_amount' => $totalAmount,
+                'total_applications' => $totalApplications,
+                'supervisor_incentive' => $supervisorIncentive,
+                'grand_total' => $totalAmount + $supervisorIncentive
+            ];
+        }
+
+        return $summary;
+    }
+
+    public static function generateForApplication(string $applicationNumber, float $basePrice, Agent $agent): self
+    {
+        $amount = $basePrice * ($agent->commission_rate / 100);
+        $period = date('Y-m');
+
+        return self::create([
+            'agent_id' => $agent->id,
+            'application_number' => $applicationNumber,
+            'amount' => $amount,
+            'percentage' => $agent->commission_rate,
+            'period' => $period,
+            'status' => 'pending'
+        ]);
     }
 }

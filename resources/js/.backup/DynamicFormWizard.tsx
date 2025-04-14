@@ -265,39 +265,39 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
             initializeFormWithProductData();
         }
     }, [formData, initialData]);
-    
+
     // Handle SSB form special cases in an effect to avoid infinite render loops
     useEffect(() => {
         if (!formData || !formValues) return;
-        
-        const isSSBForm = formValues && 
-            (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' || 
-             formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
-             formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
-             formValues['formType'] === 'ssb');
-        
+
+        const isSSBForm = formValues &&
+            (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                formValues['formType'] === 'ssb');
+
         if (!isSSBForm) return;
-        
+
         // Create a map of updates to apply (to avoid multiple state updates)
         const updates = {};
-        
+
         // For each section in the form
         formData.sections.forEach((section, sectionIndex) => {
             if (!section.fields) return;
-            
+
             section.fields.forEach(field => {
                 const fieldId = field.id || `${field.label.toLowerCase().replace(/\s+/g, '-')}`;
-                
+
                 // Handle bank branch fields for SSB
-                if ((field.label && field.label.toLowerCase().includes('bank branch')) || 
-                    fieldId.toLowerCase().includes('bank-branch') || 
+                if ((field.label && field.label.toLowerCase().includes('bank branch')) ||
+                    fieldId.toLowerCase().includes('bank-branch') ||
                     fieldId.toLowerCase().includes('branch')) {
-                    
+
                     if (field.required && !formValues[fieldId]) {
                         updates[fieldId] = "SSB-BRANCH-NOT-REQUIRED";
                     }
                 }
-                
+
                 // Pre-fill SSB deduction order form if currently on that section
                 if (sectionIndex === 5 || (section.title && section.title === "Deduction Order Form")) {
                     // Map of field IDs and their possible sources
@@ -309,12 +309,12 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                         'Employee Code Number': ['ec-number', 'employment-code', 'employment-number', 'ec_number'],
                         'Check Letter': ['ec-check-letter', 'check-letter']
                     };
-                    
+
                     // Check if field is in our mapping and needs to be filled
                     Object.entries(fieldMappings).forEach(([targetField, sourceFields]) => {
-                        if ((field.label === targetField || fieldId === targetField.toLowerCase().replace(/\s+/g, '-')) 
+                        if ((field.label === targetField || fieldId === targetField.toLowerCase().replace(/\s+/g, '-'))
                             && !formValues[fieldId]) {
-                            
+
                             // Find first non-empty source value
                             for (const sourceField of sourceFields) {
                                 if (formValues[sourceField]) {
@@ -324,64 +324,64 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             }
                         }
                     });
-                    
+
                     // Calculate dates for From/To fields
                     if (field.label === 'From Date' && !formValues['From Date']) {
                         updates['From Date'] = calculateLoanStartDate();
                     }
-                    
+
                     if (field.label === 'To Date' && !formValues['To Date'] && formValues['productLoanPeriodMonths']) {
                         const fromDate = formValues['From Date'] || updates['From Date'] || calculateLoanStartDate();
                         const loanPeriodMonths = parseInt(formValues['productLoanPeriodMonths']) || 3;
                         updates['To Date'] = calculateLoanEndDate(fromDate, loanPeriodMonths);
                     }
-                    
+
                     // Set monthly rate
-                    if (field.label === 'Monthly Rate (Installment Amount)' && 
-                        !formValues['Monthly Rate (Installment Amount)'] && 
+                    if (field.label === 'Monthly Rate (Installment Amount)' &&
+                        !formValues['Monthly Rate (Installment Amount)'] &&
                         formValues['productInstallment']) {
-                        
+
                         updates['Monthly Rate (Installment Amount)'] = formValues['productInstallment'];
                     }
                 }
             });
         });
-        
+
         // Apply all updates at once if we have any
         if (Object.keys(updates).length > 0) {
             setFormValues(prev => ({...prev, ...updates}));
         }
     }, [formData, currentSection]);
-    
+
     // Clear validation state when changing sections to only validate on Next button click
     useEffect(() => {
         setFieldValidation({});
         setAttemptedValidation(false);
-        
+
         // Pre-validate read-only fields for the current section
         if (formData && formData.sections[currentSection]) {
             const section = formData.sections[currentSection];
             const preValidation: Record<string, boolean> = {};
-            
+
             const preValidateReadOnly = (fields: Field[]) => {
                 if (!fields || !Array.isArray(fields)) return;
-                
+
                 fields.forEach(field => {
                     if (field.readOnly) {
                         const fieldId = field.id || `${field.label.toLowerCase().replace(/\s+/g, '-')}`;
                         preValidation[fieldId] = true;
                     }
-                    
+
                     if (field.type === 'fieldset' && field.children) {
                         preValidateReadOnly(field.children);
                     }
                 });
             };
-            
+
             if (section.fields) {
                 preValidateReadOnly(section.fields);
             }
-            
+
             if (Object.keys(preValidation).length > 0) {
                 setFieldValidation(preValidation);
             }
@@ -410,7 +410,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                         initialFormValues['forename'] = firstName;
                         initialFormValues['forenames'] = firstName;
                     }
-                    
+
                     // Populate customer name fields for ALL forms
                     initialFormValues['customerFirstName'] = firstName;
                     initialFormValues['customerSurname'] = surname || '';
@@ -419,7 +419,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                     initialFormValues['customerForename'] = firstName;
                     initialFormValues['customerForenames'] = firstName;
                 }
-                
+
                 if (phone) {
                     // Ensure phone starts with 07 format
                     let formattedPhone = phone;
@@ -430,25 +430,25 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             formattedPhone = '07' + formattedPhone;
                         }
                     }
-                    
+
                     initialFormValues['cell-number'] = formattedPhone;
                     initialFormValues['phone'] = formattedPhone;
                     initialFormValues['phone-number'] = formattedPhone;
                     initialFormValues['customerCellNumber'] = formattedPhone;
                 }
-                
+
                 if (email) {
                     initialFormValues['email-address'] = email;
                     initialFormValues['email'] = email;
                     initialFormValues['customerEmail'] = email;
                 }
-                
+
                 if (idNumber) {
                     initialFormValues['id-number'] = idNumber;
                     initialFormValues['national-id'] = idNumber;
                     initialFormValues['customerIdNumber'] = idNumber;
                 }
-                
+
                 // Handle Employment/EC number if available
                 if (ecNumber) {
                     initialFormValues['ec-number'] = ecNumber;
@@ -462,19 +462,19 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 initialFormValues['employer-name'] = initialData.employer;
                 initialFormValues['employer'] = initialData.employer;
                 initialFormValues['customerEmployer'] = initialData.employer;
-                
+
                 // Populate ministry field for SSB form if the employer is GOZ SSB
                 if (initialData.employer === 'GOZ (Government of Zimbabwe) - SSB') {
                     // Extract ministry data from the form if available
                     if (formData?.sections) {
-                        const customerSection = formData.sections.find(section => 
+                        const customerSection = formData.sections.find(section =>
                             section.title === 'Customer Personal Details');
-                        
+
                         if (customerSection && customerSection.fields) {
-                            const ministryField = customerSection.fields.find(field => 
+                            const ministryField = customerSection.fields.find(field =>
                                 field.label === 'Name of Responsible Ministry');
-                            
-                            if (ministryField && ministryField.type === 'select' && 
+
+                            if (ministryField && ministryField.type === 'select' &&
                                 Array.isArray(ministryField.options) && ministryField.options.length > 0) {
                                 // Default to first ministry or set empty to require selection
                                 initialFormValues['customerMinistry'] = '';
@@ -563,7 +563,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
         setError(null);
         try {
             let data = null;
-            
+
             // Always fetch from API endpoint for consistency
             const response = await fetch(`/api/forms/${formId}`);
             if (!response.ok) throw new Error('Failed to fetch form data');
@@ -607,40 +607,40 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
     const validateAndFormatIdNumber = (value: string): string => {
         // If empty, just return empty
         if (!value) return '';
-        
+
         // Remove any existing hyphens to work with clean value
         let cleanValue = value.replace(/-/g, '');
-        
+
         // Simple formatting based on length
         let formattedValue = cleanValue;
-        
+
         if (cleanValue.length > 0) {
             // Format first 2 digits
             if (cleanValue.length >= 2) {
                 formattedValue = cleanValue.substring(0, 2);
-                
+
                 // Add first hyphen and more digits
                 if (cleanValue.length > 2) {
                     // Add digits after first hyphen (middle section)
                     const middleSection = cleanValue.substring(2);
-                    
+
                     // Check if we have a letter in the next section
                     const letterMatch = middleSection.match(/[A-Za-z]/);
-                    
+
                     if (letterMatch && letterMatch.index !== undefined) {
                         // We found a letter - ensure middle section is exactly 6 digits
                         const letterIndex = letterMatch.index;
-                        
+
                         // Format first section with hyphen
                         formattedValue = cleanValue.substring(0, 2) + '-';
-                        
+
                         // Add middle digits (up to 6 digits only)
                         const middleDigits = middleSection.substring(0, letterIndex);
                         formattedValue += middleDigits.length > 6 ? middleDigits.substring(0, 6) : middleDigits;
-                        
+
                         // Add hyphen and letter
                         formattedValue += '-' + middleSection.charAt(letterIndex);
-                        
+
                         // Add final section if we have it
                         if (middleSection.length > letterIndex + 1) {
                             formattedValue += '-' + middleSection.substring(letterIndex + 1, letterIndex + 3);
@@ -657,17 +657,17 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 }
             }
         }
-        
+
         return formattedValue;
     };
-    
+
     // Delete this line since we moved it up
 
     const handleInputChange = (fieldId: string, value: any, field?: Field) => {
         if (!fieldId) return;
 
         // Auto capitalize names
-        if (['first-name', 'forename', 'forenames', 'surname', 'last-name', 'full-name'].includes(fieldId.toLowerCase()) || 
+        if (['first-name', 'forename', 'forenames', 'surname', 'last-name', 'full-name'].includes(fieldId.toLowerCase()) ||
             ['First Name', 'Forename', 'Forenames', 'Surname', 'Last Name', 'Full Name'].includes(fieldId)) {
             if (typeof value === 'string') {
                 // Capitalize first letter of each word
@@ -676,7 +676,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
         }
 
         // Special handling for cell numbers to begin with 07
-        if (['cell-number', 'phone-number', 'phone', 'mobile'].includes(fieldId.toLowerCase()) || 
+        if (['cell-number', 'phone-number', 'phone', 'mobile'].includes(fieldId.toLowerCase()) ||
             ['Cell Number', 'Phone Number', 'Phone', 'Mobile'].includes(fieldId)) {
             if (typeof value === 'string') {
                 // Make sure the number starts with 07
@@ -691,9 +691,9 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 }
             }
         }
-        
+
         // Special handling for ID number fields
-        if (['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
+        if (['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) ||
             ['ID Number', 'National ID', 'Identity Number'].includes(fieldId) ||
             fieldId.includes('id-number') || fieldId.includes('national-id')) {
             // Only apply formatting if it's a string
@@ -701,7 +701,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 // Validate input pattern in real-time (block invalid characters)
                 const cleanValue = value.replace(/-/g, ''); // Remove hyphens for validation
                 const charCount = cleanValue.length;
-                
+
                 // Validate based on which part of the ID they're typing
                 if (charCount <= 2) {
                     // First 2 chars must be digits
@@ -717,7 +717,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             return; // Reject invalid input for middle section
                         }
                     }
-                    
+
                     // If middle section exceeds 6 digits, reject
                     if (middleSection.length > 6 && !/[A-Za-z]/.test(middleSection)) {
                         return; // Reject if more than 6 digits in middle section
@@ -728,7 +728,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                     if (!/[A-Za-z]/.test(cleanValue.charAt(letterPos))) {
                         return; // Reject non-letter for the letter position
                     }
-                    
+
                     // Last two positions must be digits
                     const lastChars = cleanValue.substring(letterPos + 1);
                     if (!/^\d*$/.test(lastChars)) {
@@ -737,10 +737,10 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 } else if (charCount > 12) {
                     return; // Reject any input beyond max length
                 }
-                
+
                 // If validation passes, format as the user types
                 value = validateAndFormatIdNumber(value);
-                
+
                 // Capitalize the check letter (letter in position 8)
                 if (value.length >= 10) {
                     const parts = value.split('-');
@@ -759,75 +759,75 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
             if (field?.bindTo && field.bindTo in prev) {
                 newValues[field.bindTo] = value;
             }
-            
+
             // Special case for all forms to sync customer data across sections
-            
+
             // Handle first name variants (field IDs are converted to lowercase with hyphens)
-            if (['first-name', 'forename', 'forenames'].includes(fieldId.toLowerCase()) || 
+            if (['first-name', 'forename', 'forenames'].includes(fieldId.toLowerCase()) ||
                 ['First Name', 'Forename', 'Forenames'].includes(fieldId)) {
                 newValues['customerFirstName'] = value;
                 newValues['customerForename'] = value;
                 newValues['customerForenames'] = value;
-                
+
                 // Update full name in all possible fields
                 const surname = prev['surname'] || prev['customerSurname'] || '';
                 const fullName = `${value} ${surname}`.trim();
                 newValues['customerFullName'] = fullName;
                 newValues['full-name'] = fullName;
             }
-            
+
             // Handle surname variants
-            if (['surname', 'last-name'].includes(fieldId.toLowerCase()) || 
+            if (['surname', 'last-name'].includes(fieldId.toLowerCase()) ||
                 ['Surname', 'Last Name'].includes(fieldId)) {
                 newValues['customerSurname'] = value;
-                
+
                 // Update full name in all possible fields
                 const firstName = prev['first-name'] || prev['forename'] || prev['customerFirstName'] || '';
                 const fullName = `${firstName} ${value}`.trim();
                 newValues['customerFullName'] = fullName;
                 newValues['full-name'] = fullName;
             }
-            
+
             // Handle ID Number variants
-            if (['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
+            if (['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) ||
                 ['ID Number', 'National ID', 'Identity Number'].includes(fieldId)) {
                 newValues['customerIdNumber'] = value;
                 newValues['national-id'] = value;
                 newValues['id-number'] = value;
             }
-            
+
             // Handle phone number variants
-            if (['cell-number', 'phone-number', 'phone', 'mobile'].includes(fieldId.toLowerCase()) || 
+            if (['cell-number', 'phone-number', 'phone', 'mobile'].includes(fieldId.toLowerCase()) ||
                 ['Cell Number', 'Phone Number', 'Phone', 'Mobile'].includes(fieldId)) {
                 newValues['customerCellNumber'] = value;
                 newValues['cell-number'] = value;
                 newValues['phone'] = value;
             }
-            
+
             // Handle email variants
-            if (['email-address', 'email'].includes(fieldId.toLowerCase()) || 
+            if (['email-address', 'email'].includes(fieldId.toLowerCase()) ||
                 ['Email Address', 'Email'].includes(fieldId)) {
                 newValues['customerEmail'] = value;
                 newValues['email'] = value;
-                newValues['email-address'] = value; 
+                newValues['email-address'] = value;
             }
-            
+
             // Handle ministry/employer specific fields
             if (fieldId === 'Name of Responsible Ministry' || fieldId === 'name-of-responsible-ministry') {
                 newValues['customerMinistry'] = value;
             }
-            
-            if (['employer-name', 'employer'].includes(fieldId.toLowerCase()) || 
+
+            if (['employer-name', 'employer'].includes(fieldId.toLowerCase()) ||
                 ['Employer Name', 'Employer'].includes(fieldId)) {
                 newValues['customerEmployer'] = value;
             }
-            
+
             // Handle address fields
-            if (['address', 'residential-address'].includes(fieldId.toLowerCase()) || 
+            if (['address', 'residential-address'].includes(fieldId.toLowerCase()) ||
                 ['Address', 'Residential Address'].includes(fieldId)) {
                 newValues['customerAddress'] = value;
             }
-            
+
             // Handle address type selection (urban/rural)
             if (fieldId.toLowerCase() === 'address-type' || fieldId === 'Address Type') {
                 if (value === 'Urban') {
@@ -838,7 +838,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                     // Show rural address fields
                     newValues['isUrbanAddress'] = false;
                     newValues['isRuralAddress'] = true;
-                    
+
                     // Show province selection
                     newValues['showProvinceField'] = true;
                 }
@@ -857,26 +857,26 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
             const {action, dependency, values, target} = field.onChange || {};
 
             // Check if this is a Next of Kin name field to prevent using applicant's name
-            if (field.label && 
-                (field.label.toLowerCase().includes('next of kin') || 
-                field.label.toLowerCase().includes('kin name') ||
-                (field.label.toLowerCase().includes('name') && 
-                field.id && field.id.toLowerCase().includes('nextofkin')))) {
-                
+            if (field.label &&
+                (field.label.toLowerCase().includes('next of kin') ||
+                    field.label.toLowerCase().includes('kin name') ||
+                    (field.label.toLowerCase().includes('name') &&
+                        field.id && field.id.toLowerCase().includes('nextofkin')))) {
+
                 // Get applicant's name from form values
-                const applicantFirstName = currentValues['first-name'] || 
-                                        currentValues['forename'] || 
-                                        currentValues['customerFirstName'] || '';
-                
-                const applicantSurname = currentValues['surname'] || 
-                                      currentValues['last-name'] || 
-                                      currentValues['customerSurname'] || '';
-                
+                const applicantFirstName = currentValues['first-name'] ||
+                    currentValues['forename'] ||
+                    currentValues['customerFirstName'] || '';
+
+                const applicantSurname = currentValues['surname'] ||
+                    currentValues['last-name'] ||
+                    currentValues['customerSurname'] || '';
+
                 // If input matches applicant's name, show alert and clear the field
-                if ((applicantFirstName && value && value.includes(applicantFirstName)) || 
+                if ((applicantFirstName && value && value.includes(applicantFirstName)) ||
                     (applicantSurname && value && value.includes(applicantSurname))) {
                     alert("Next of kin cannot be the applicant. Please enter different person's details.");
-                    
+
                     // Set to empty string to clear the field
                     setTimeout(() => {
                         setFormValues(prev => ({
@@ -884,7 +884,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             [field.id || field.label.toLowerCase().replace(/\s+/g, '-')]: ''
                         }));
                     }, 100);
-                    
+
                     return;
                 }
             }
@@ -999,10 +999,10 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                 required={field.required}
                                 onChange={(e) => handleInputChange(fieldId, e.target.value, field)}
                                 value={fieldValue || ''}
-                                placeholder={(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
-                                             ['ID Number', 'National ID', 'Identity Number'].includes(field.label)) 
-                                             ? "Example: 45-123456-T-78" 
-                                             : (field.placeholder || `Enter ${field.label.toLowerCase()}`)}
+                                placeholder={(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) ||
+                                    ['ID Number', 'National ID', 'Identity Number'].includes(field.label))
+                                    ? "Example: 45-123456-T-78"
+                                    : (field.placeholder || `Enter ${field.label.toLowerCase()}`)}
                                 readOnly={isReadOnly}
                                 disabled={isReadOnly}
                                 min={field.type === 'number' ? 0 : undefined}
@@ -1011,10 +1011,10 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             {attemptedValidation && !fieldValidation[fieldId] && field.required && (
                                 <p className="mt-1 text-sm text-red-500 flex items-center">
                                     <AlertCircle className="w-4 h-4 mr-1"/>
-                                    {(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
-                                       ['ID Number', 'National ID', 'Identity Number'].includes(field.label)) 
-                                       ? "Must be in format: 00-000000-X-00 (exactly 6 digits in middle)" 
-                                       : "This field is required"}
+                                    {(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) ||
+                                        ['ID Number', 'National ID', 'Identity Number'].includes(field.label))
+                                        ? "Must be in format: 00-000000-X-00 (exactly 6 digits in middle)"
+                                        : "This field is required"}
                                 </p>
                             )}
                         </div>
@@ -1100,12 +1100,12 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                     e.preventDefault();
                                     e.stopPropagation();
                                     e.currentTarget.classList.remove('border-emerald-400');
-                                    
+
                                     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                                         const file = e.dataTransfer.files[0];
                                         const fileType = file.type;
                                         const acceptTypes = field.accept ? field.accept.split(',') : ['*/*'];
-                                        
+
                                         // Check if the file type is acceptable
                                         const isAcceptable = acceptTypes.some(type => {
                                             if (type === '*/*') return true;
@@ -1115,7 +1115,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                             }
                                             return type === fileType;
                                         });
-                                        
+
                                         if (isAcceptable) {
                                             handleInputChange(fieldId, file, field);
                                         } else {
@@ -1141,16 +1141,16 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                             />
                                         </svg>
                                     )}
-                                    
+
                                     {/* Preview area */}
                                     {formValues[fieldId] && (
                                         <div className="mb-3">
                                             {formValues[fieldId].type?.startsWith('image/') ? (
                                                 // Image preview
                                                 <div className="relative w-full max-w-xs mx-auto">
-                                                    <img 
-                                                        src={URL.createObjectURL(formValues[fieldId])} 
-                                                        alt="Uploaded file preview" 
+                                                    <img
+                                                        src={URL.createObjectURL(formValues[fieldId])}
+                                                        alt="Uploaded file preview"
                                                         className="max-h-48 mx-auto rounded-md object-contain"
                                                     />
                                                     <button
@@ -1160,7 +1160,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                             e.preventDefault();
                                                             e.stopPropagation();
                                                             handleInputChange(fieldId, null, field);
-                                                            
+
                                                             // Clear the file input
                                                             if (fileInputRefs.current[fieldId]) {
                                                                 fileInputRefs.current[fieldId].value = '';
@@ -1172,10 +1172,14 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                 </div>
                                             ) : formValues[fieldId].type === 'application/pdf' ? (
                                                 // PDF preview
-                                                <div className="relative flex items-center justify-center w-full max-w-xs mx-auto p-4 bg-gray-50 rounded-md">
-                                                    <svg className="w-12 h-12 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z" />
-                                                        <path d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+                                                <div
+                                                    className="relative flex items-center justify-center w-full max-w-xs mx-auto p-4 bg-gray-50 rounded-md">
+                                                    <svg className="w-12 h-12 text-red-500" fill="currentColor"
+                                                         viewBox="0 0 20 20">
+                                                        <path
+                                                            d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"/>
+                                                        <path
+                                                            d="M3 8a2 2 0 012-2h2a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
                                                     </svg>
                                                     <div className="ml-3">
                                                         <p className="text-sm font-medium text-gray-900">{formValues[fieldId].name}</p>
@@ -1188,7 +1192,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                             e.preventDefault();
                                                             e.stopPropagation();
                                                             handleInputChange(fieldId, null, field);
-                                                            
+
                                                             // Clear the file input
                                                             if (fileInputRefs.current[fieldId]) {
                                                                 fileInputRefs.current[fieldId].value = '';
@@ -1200,9 +1204,13 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                 </div>
                                             ) : (
                                                 // Other file types
-                                                <div className="relative flex items-center justify-center w-full max-w-xs mx-auto p-4 bg-gray-50 rounded-md">
-                                                    <svg className="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+                                                <div
+                                                    className="relative flex items-center justify-center w-full max-w-xs mx-auto p-4 bg-gray-50 rounded-md">
+                                                    <svg className="w-12 h-12 text-blue-500" fill="currentColor"
+                                                         viewBox="0 0 20 20">
+                                                        <path fillRule="evenodd"
+                                                              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+                                                              clipRule="evenodd"/>
                                                     </svg>
                                                     <div className="ml-3">
                                                         <p className="text-sm font-medium text-gray-900">{formValues[fieldId].name}</p>
@@ -1215,7 +1223,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                             e.preventDefault();
                                                             e.stopPropagation();
                                                             handleInputChange(fieldId, null, field);
-                                                            
+
                                                             // Clear the file input
                                                             if (fileInputRefs.current[fieldId]) {
                                                                 fileInputRefs.current[fieldId].value = '';
@@ -1228,7 +1236,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                             )}
                                         </div>
                                     )}
-                                    
+
                                     <div className="flex text-sm text-gray-600">
                                         <label
                                             htmlFor={fieldId}
@@ -1309,8 +1317,11 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                         {directorCount > 1 ? (
                                             <>
                                                 <p className="text-sm text-gray-600 mb-3">
-                                                    This is the primary director's signature. For the {directorCount - 1} additional director{directorCount > 2 ? 's' : ''}, 
-                                                    click the button below to generate unique links that you can share with them.
+                                                    This is the primary director's signature. For
+                                                    the {directorCount - 1} additional
+                                                    director{directorCount > 2 ? 's' : ''},
+                                                    click the button below to generate unique links that you can share
+                                                    with them.
                                                 </p>
                                                 <button
                                                     type="button"
@@ -1321,13 +1332,13 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                             alert('Please fill in the business details first before generating director links.');
                                                             return;
                                                         }
-                                                        
+
                                                         // Check if director count is specified
                                                         if (!directorCount || directorCount < 2) {
                                                             alert('Please specify at least 2 directors to use this feature.');
                                                             return;
                                                         }
-                                                        
+
                                                         // Create business details object from form values
                                                         const businessDetails = {
                                                             name: formValues['registered-name'],
@@ -1338,20 +1349,20 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                             phoneNumber: formValues['contact-phone-number'] || '',
                                                             email: formValues['email-address'] || ''
                                                         };
-                                                        
+
                                                         // Generate links via API
                                                         // Get CSRF token safely (with fallback)
                                                         const csrfMeta = document.querySelector('meta[name="csrf-token"]');
                                                         const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-                                                        
+
                                                         const headers = {
                                                             'Content-Type': 'application/json'
                                                         };
-                                                        
+
                                                         if (csrfToken) {
                                                             headers['X-CSRF-TOKEN'] = csrfToken;
                                                         }
-                                                        
+
                                                         fetch('/api/director-links/generate', {
                                                             method: 'POST',
                                                             headers,
@@ -1362,36 +1373,36 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                                 total_directors: directorCount
                                                             })
                                                         })
-                                                        .then(response => response.json())
-                                                        .then(data => {
-                                                            if (!data.success) {
-                                                                console.error('Error generating links:', data);
-                                                                alert('Failed to generate links for directors. Please try again.');
-                                                                return;
-                                                            }
-                                                            
-                                                            // Show the links to the user
-                                                            const linksHtml = data.links
-                                                                .filter(link => link.position > 1) // Skip the primary director (already filled)
-                                                                .map(link => 
-                                                                `<div class="mb-4">
+                                                            .then(response => response.json())
+                                                            .then(data => {
+                                                                if (!data.success) {
+                                                                    console.error('Error generating links:', data);
+                                                                    alert('Failed to generate links for directors. Please try again.');
+                                                                    return;
+                                                                }
+
+                                                                // Show the links to the user
+                                                                const linksHtml = data.links
+                                                                    .filter(link => link.position > 1) // Skip the primary director (already filled)
+                                                                    .map(link =>
+                                                                        `<div class="mb-4">
                                                                     <p class="font-medium">Director ${link.position}${link.is_final_director ? ' (Final)' : ''}:</p>
                                                                     <div class="flex items-center">
-                                                                        <input type="text" value="${link.url}" 
+                                                                        <input type="text" value="${link.url}"
                                                                             class="flex-1 p-2 border rounded text-sm" readonly />
-                                                                        <button type="button" 
-                                                                            class="ml-2 p-2 bg-emerald-100 text-emerald-700 rounded text-sm copy-btn" 
+                                                                        <button type="button"
+                                                                            class="ml-2 p-2 bg-emerald-100 text-emerald-700 rounded text-sm copy-btn"
                                                                             data-url="${link.url}">
                                                                             Copy
                                                                         </button>
                                                                     </div>
                                                                 </div>`
-                                                            ).join('');
-                                                            
-                                                            // Create a modal dialog to display links
-                                                            const modal = document.createElement('div');
-                                                            modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
-                                                            modal.innerHTML = `
+                                                                    ).join('');
+
+                                                                // Create a modal dialog to display links
+                                                                const modal = document.createElement('div');
+                                                                modal.className = 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4';
+                                                                modal.innerHTML = `
                                                                 <div class="bg-white rounded-xl max-w-lg w-full p-6 space-y-4">
                                                                     <h3 class="text-lg font-semibold">Additional Director Links Generated</h3>
                                                                     <p class="text-sm text-gray-600">Share these links with each director to let them fill in their own details. The last director will be able to submit the complete application.</p>
@@ -1408,41 +1419,41 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                                                     </div>
                                                                 </div>
                                                             `;
-                                                            
-                                                            // Add the modal to the document
-                                                            document.body.appendChild(modal);
-                                                            
-                                                            // Add event listeners for copy buttons
-                                                            modal.querySelectorAll('.copy-btn').forEach(btn => {
-                                                                btn.addEventListener('click', function() {
-                                                                    const url = this.getAttribute('data-url');
-                                                                    navigator.clipboard.writeText(url)
-                                                                        .then(() => {
-                                                                            this.textContent = 'Copied!';
-                                                                            this.classList.remove('bg-emerald-100', 'text-emerald-700');
-                                                                            this.classList.add('bg-emerald-500', 'text-white');
-                                                                            setTimeout(() => {
-                                                                                this.textContent = 'Copy';
-                                                                                this.classList.remove('bg-emerald-500', 'text-white');
-                                                                                this.classList.add('bg-emerald-100', 'text-emerald-700');
-                                                                            }, 2000);
-                                                                        })
-                                                                        .catch(err => {
-                                                                            console.error('Failed to copy:', err);
-                                                                            alert('Failed to copy to clipboard');
-                                                                        });
+
+                                                                // Add the modal to the document
+                                                                document.body.appendChild(modal);
+
+                                                                // Add event listeners for copy buttons
+                                                                modal.querySelectorAll('.copy-btn').forEach(btn => {
+                                                                    btn.addEventListener('click', function () {
+                                                                        const url = this.getAttribute('data-url');
+                                                                        navigator.clipboard.writeText(url)
+                                                                            .then(() => {
+                                                                                this.textContent = 'Copied!';
+                                                                                this.classList.remove('bg-emerald-100', 'text-emerald-700');
+                                                                                this.classList.add('bg-emerald-500', 'text-white');
+                                                                                setTimeout(() => {
+                                                                                    this.textContent = 'Copy';
+                                                                                    this.classList.remove('bg-emerald-500', 'text-white');
+                                                                                    this.classList.add('bg-emerald-100', 'text-emerald-700');
+                                                                                }, 2000);
+                                                                            })
+                                                                            .catch(err => {
+                                                                                console.error('Failed to copy:', err);
+                                                                                alert('Failed to copy to clipboard');
+                                                                            });
+                                                                    });
                                                                 });
+
+                                                                // Add event listener for close button
+                                                                document.getElementById('close-modal').addEventListener('click', function () {
+                                                                    document.body.removeChild(modal);
+                                                                });
+                                                            })
+                                                            .catch(error => {
+                                                                console.error('Error:', error);
+                                                                alert('Failed to generate links for directors. Please try again.');
                                                             });
-                                                            
-                                                            // Add event listener for close button
-                                                            document.getElementById('close-modal').addEventListener('click', function() {
-                                                                document.body.removeChild(modal);
-                                                            });
-                                                        })
-                                                        .catch(error => {
-                                                            console.error('Error:', error);
-                                                            alert('Failed to generate links for directors. Please try again.');
-                                                        });
                                                     }}
                                                 >
                                                     Generate Links for Additional Directors
@@ -1450,7 +1461,8 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                             </>
                                         ) : (
                                             <p className="text-sm text-gray-600">
-                                                This is a single-director business. No additional director signatures needed.
+                                                This is a single-director business. No additional director signatures
+                                                needed.
                                             </p>
                                         )}
                                     </div>
@@ -1468,19 +1480,19 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 case 'component':
                     if (field.component === 'BranchLocator') {
                         // Check if this is an SSB form - we don't need bank branch for SSB
-                        const isSSBForm = formValues && 
-                            (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' || 
-                             formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
-                             formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
-                             formValues['formType'] === 'ssb');
-                            
-                        if (isSSBForm && (field.label.toLowerCase().includes('bank branch') || 
-                            fieldId.toLowerCase().includes('bank-branch') || 
+                        const isSSBForm = formValues &&
+                            (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                                formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                                formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                                formValues['formType'] === 'ssb');
+
+                        if (isSSBForm && (field.label.toLowerCase().includes('bank branch') ||
+                            fieldId.toLowerCase().includes('bank-branch') ||
                             fieldId.toLowerCase().includes('branch'))) {
-                            
+
                             // We'll handle this outside of the render function
                             // Don't set form values during render as it causes infinite loops
-                            
+
                             return (
                                 <div className="mb-6">
                                     <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor={fieldId}>
@@ -1490,16 +1502,16 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                         Bank branch selection is not necessary for Government SSB applications.
                                     </p>
                                     {/* Hidden input to ensure form validation passes */}
-                                    <input 
-                                        type="hidden" 
-                                        id={fieldId} 
-                                        name={fieldId} 
-                                        value="SSB-BRANCH-NOT-REQUIRED" 
+                                    <input
+                                        type="hidden"
+                                        id={fieldId}
+                                        name={fieldId}
+                                        value="SSB-BRANCH-NOT-REQUIRED"
                                     />
                                 </div>
                             );
                         }
-                        
+
                         return (
                             <div className="mb-6">
                                 <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor={fieldId}>
@@ -1514,10 +1526,10 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                 {attemptedValidation && !fieldValidation[fieldId] && field.required && !isSSBForm && (
                                     <p className="mt-1 text-sm text-red-500 flex items-center">
                                         <AlertCircle className="w-4 h-4 mr-1"/>
-                                        {(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
-                                           ['ID Number', 'National ID', 'Identity Number'].includes(field.label)) 
-                                           ? `Must be in format: 00-000000-X-00 (exactly 6 digits in middle)` 
-                                           : `This field is required`}
+                                        {(['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) ||
+                                            ['ID Number', 'National ID', 'Identity Number'].includes(field.label))
+                                            ? `Must be in format: 00-000000-X-00 (exactly 6 digits in middle)`
+                                            : `This field is required`}
                                     </p>
                                 )}
                             </div>
@@ -1570,10 +1582,10 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                                 ))}
                             </select>
                             {/* Fix for period at current address dropdown issue */}
-                            {(fieldId.toLowerCase() === 'period-at-current-address' || 
-                              field.label === 'Period at Current Address') && !fieldValue && (
+                            {(fieldId.toLowerCase() === 'period-at-current-address' ||
+                                field.label === 'Period at Current Address') && !fieldValue && (
                                 <p className="mt-1 text-sm text-gray-500">
-                                  Please select how long you've lived at this address
+                                    Please select how long you've lived at this address
                                 </p>
                             )}
                             {attemptedValidation && !fieldValidation[fieldId] && field.required && (
@@ -1787,7 +1799,7 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
             }
 
             const directorFields = directorTemplate.fields || [];
-            
+
             // Only show fields for the first director (primary applicant)
             // For additional directors, we'll use the link generation feature
             const fieldsWithReplacedIds = directorFields.map(field => {
@@ -1806,8 +1818,8 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             Primary Director Details
                         </h3>
                         <p className="text-gray-600 mb-4 text-center">
-                            Please fill in details for the primary director. {directorCount > 1 ? 
-                            `You'll be able to generate links for the other ${directorCount-1} director${directorCount > 2 ? 's' : ''} to fill in their own details.` : 
+                            Please fill in details for the primary director. {directorCount > 1 ?
+                            `You'll be able to generate links for the other ${directorCount - 1} director${directorCount > 2 ? 's' : ''} to fill in their own details.` :
                             ''}
                         </p>
                         <div className="space-y-4">
@@ -1818,18 +1830,21 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             ))}
                         </div>
                     </div>
-                    
+
                     {directorCount > 1 && (
                         <div className="mt-8 bg-emerald-50 rounded-lg p-6 border border-emerald-100">
                             <h3 className="text-lg font-semibold mb-3 text-center">
                                 Additional Directors ({directorCount - 1})
                             </h3>
                             <p className="text-gray-600 mb-4 text-center">
-                                After completing this form, you will be able to generate unique links for the other directors to fill in their details separately.
+                                After completing this form, you will be able to generate unique links for the other
+                                directors to fill in their details separately.
                             </p>
                             <div className="bg-white p-4 rounded-lg border border-gray-200 text-sm text-gray-700">
-                                <p className="mb-2"><strong>Note:</strong> Each director will receive a separate, secure link where they can fill in their personal details.</p>
-                                <p>The last director to complete the form will be able to submit the final application.</p>
+                                <p className="mb-2"><strong>Note:</strong> Each director will receive a separate, secure
+                                    link where they can fill in their personal details.</p>
+                                <p>The last director to complete the form will be able to submit the final
+                                    application.</p>
                             </div>
                         </div>
                     )}
@@ -1864,73 +1879,73 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 newValidation[field.id || `${field.label.toLowerCase().replace(/\s+/g, '-')}`] = true;
                 return true;
             }
-            
+
             // If field is read-only, consider it valid regardless of value
             if (field.readOnly) {
                 newValidation[field.id || `${field.label.toLowerCase().replace(/\s+/g, '-')}`] = true;
                 return true;
             }
-            
+
             // The KYC Checklist section has been removed from the SME form
             // No need to check for bank statements anymore
 
             const fieldId = field.id || `${field.label.toLowerCase().replace(/\s+/g, '-')}`;
-            
+
             // Check for SSB form special handling
-            const isSSBForm = formValues && 
-                (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' || 
-                 formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
-                 formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
-                 formValues['formType'] === 'ssb');
-            
+            const isSSBForm = formValues &&
+                (formValues['employer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                    formValues['employer-name'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                    formValues['customerEmployer'] === 'GOZ (Government of Zimbabwe) - SSB' ||
+                    formValues['formType'] === 'ssb');
+
             // Auto-validate bank branch fields for SSB forms
-            if (isSSBForm && (field.label.toLowerCase().includes('bank branch') || 
-                fieldId.toLowerCase().includes('bank-branch') || 
+            if (isSSBForm && (field.label.toLowerCase().includes('bank branch') ||
+                fieldId.toLowerCase().includes('bank-branch') ||
                 fieldId.toLowerCase().includes('branch'))) {
-                
+
                 newValidation[fieldId] = true;
                 return true;
             }
-                 
+
             // If this is an SSB form and we're on the Deduction Order Form section
-            if (isSSBForm && 
-                ((section.title && section.title === "Deduction Order Form") || 
-                 (currentSection === 5))) { // Deduction Order Form is typically section 5
-                
+            if (isSSBForm &&
+                ((section.title && section.title === "Deduction Order Form") ||
+                    (currentSection === 5))) { // Deduction Order Form is typically section 5
+
                 // Special handling for SSB Deduction Order Form fields
                 // Auto-validate fields that might be pre-filled or duplicated from other sections
                 if (['first-name', 'surname', 'id-number', 'ministry'].includes(fieldId.toLowerCase()) ||
                     ['First Name', 'Surname', 'ID Number', 'Ministry'].includes(field.label)) {
-                    
+
                     // If we have values for these fields in other places, consider them valid
                     const firstName = formValues['first-name'] || formValues['customerFirstName'] || formValues['forename'];
                     const surname = formValues['surname'] || formValues['customerSurname'];
                     const idNumber = formValues['id-number'] || formValues['customerIdNumber'] || formValues['national-id'];
-                    const ministry = formValues['customerMinistry'] || formValues['ministry'] || formValues['Name of Responsible Ministry'] || 
-                                    formValues['name-of-responsible-ministry'];
-                    
+                    const ministry = formValues['customerMinistry'] || formValues['ministry'] || formValues['Name of Responsible Ministry'] ||
+                        formValues['name-of-responsible-ministry'];
+
                     if ((fieldId.toLowerCase() === 'first-name' || field.label === 'First Name') && firstName) {
                         newValidation[fieldId] = true;
                         return true;
                     }
-                    
+
                     if ((fieldId.toLowerCase() === 'surname' || field.label === 'Surname') && surname) {
                         newValidation[fieldId] = true;
                         return true;
                     }
-                    
+
                     if ((fieldId.toLowerCase() === 'id-number' || field.label === 'ID Number') && idNumber) {
                         newValidation[fieldId] = true;
                         return true;
                     }
-                    
+
                     if ((fieldId.toLowerCase() === 'ministry' || field.label === 'Ministry') && ministry) {
                         newValidation[fieldId] = true;
                         return true;
                     }
                 }
             }
-            
+
             // Check for both direct value and bindTo value
             let value;
             if (field.bindTo && formValues[field.bindTo]) {
@@ -1943,12 +1958,12 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
 
             // Special validation for ID number fields
             if (
-                (field.type === 'text') && 
-                (['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) || 
-                ['ID Number', 'National ID', 'Identity Number'].includes(field.label))
+                (field.type === 'text') &&
+                (['id-number', 'national-id', 'identity-number'].includes(fieldId.toLowerCase()) ||
+                    ['ID Number', 'National ID', 'Identity Number'].includes(field.label))
             ) {
                 // Validate against Zimbabwe ID format: 00-000000-X-00
-                const idRegex = /^\d{2}-\d{6}-[A-Za-z]-\d{2}$/;
+                const idRegex = /^\d{2}-\d{6,7}[A-Z]\d{2}$/;
                 fieldValid = value !== undefined && value !== null && value !== '' && idRegex.test(value);
             } else if (field.type === 'checkbox') {
                 fieldValid = !!value;
@@ -2014,17 +2029,17 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
         }
 
         setFieldValidation(newValidation);
-        
+
         // If validation fails, scroll to the first invalid field
         if (!isValid) {
             setTimeout(() => {
                 const firstInvalidField = document.querySelector('.border-red-300');
                 if (firstInvalidField) {
-                    firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalidField.scrollIntoView({behavior: 'smooth', block: 'center'});
                 }
             }, 100);
         }
-        
+
         return isValid;
     };
 
@@ -2051,36 +2066,36 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
         try {
             // Check if form contains any file uploads
             const hasFileUploads = Object.values(formValues).some(value => value instanceof File);
-            
+
             if (hasFileUploads) {
                 // Use FormData approach for file uploads
                 const formData = new FormData();
-                
+
                 // Add form metadata
                 formData.append('formId', formId);
                 formData.append('formName', formData?.fileName || '');
-                
+
                 if (agentId) {
                     formData.append('agent_id', agentId);
                 }
-                
+
                 const referralCode = localStorage.getItem('referralCode');
                 if (referralCode) {
                     formData.append('referral_code', referralCode);
                 }
-                
+
                 // Add questionnaire data as JSON
                 formData.append('questionnaireData', JSON.stringify(initialData));
-                
+
                 // Clone formValues to a plain object for serialization
                 const plainFormValues = {};
-                
+
                 // Process each form value
                 Object.entries(formValues).forEach(([key, value]) => {
                     if (value instanceof File) {
                         // Append files directly to FormData
                         formData.append(`files[${key}]`, value, value.name);
-                        
+
                         // Create a placeholder in plainFormValues
                         plainFormValues[key] = {
                             isFile: true,
@@ -2094,35 +2109,35 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                         plainFormValues[key] = value;
                     }
                 });
-                
+
                 // Add the form values as JSON
                 formData.append('formValues', JSON.stringify(plainFormValues));
-                
+
                 // Send the FormData without a Content-Type header (browser will set it with the boundary)
                 // Get CSRF token safely (with fallback)
                 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
                 const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-                
+
                 // Add CSRF token to form data if available
                 if (csrfToken) {
                     formData.append('_token', csrfToken);
                 }
-                
+
                 try {
                     const response = await fetch('/api/submit-form-with-files', {
                         method: 'POST',
                         body: formData
                     });
-                    
+
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
                         console.error('Server response error:', response.status, errorData);
                         throw new Error(`Failed to submit form with files: ${response.status} ${response.statusText}`);
                     }
-                    
+
                     const responseData = await response.json();
                     console.log('Form submission successful:', responseData);
-                    
+
                     // Only set success and complete if we have valid data
                     if (responseData && responseData.insertId) {
                         setSuccess(true);
@@ -2139,16 +2154,16 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                 // Get CSRF token safely (with fallback)
                 const csrfMeta = document.querySelector('meta[name="csrf-token"]');
                 const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
-                
+
                 // Prepare headers
                 const headers = {
                     'Content-Type': 'application/json'
                 };
-                
+
                 if (csrfToken) {
                     headers['X-CSRF-TOKEN'] = csrfToken;
                 }
-                
+
                 try {
                     const response = await fetch('/api/submit-form', {
                         method: 'POST',
@@ -2163,16 +2178,16 @@ const DynamicFormWizard = ({formId, initialData, onComplete}: DynamicFormWizardP
                             _token: csrfToken // Also include token in body for Laravel
                         }),
                     });
-    
+
                     if (!response.ok) {
                         const errorData = await response.json().catch(() => ({}));
                         console.error('Server response error:', response.status, errorData);
                         throw new Error(`Failed to submit form: ${response.status} ${response.statusText}`);
                     }
-                    
+
                     const responseData = await response.json();
                     console.log('Form submission successful:', responseData);
-                    
+
                     // Only set success and complete if we have valid data
                     if (responseData && responseData.insertId) {
                         setSuccess(true);

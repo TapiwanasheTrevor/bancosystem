@@ -93,7 +93,7 @@
                     <i class="fas fa-file-alt text-xs"></i>
                     <span>Forms</span>
                 </a>
-                
+
                 <!-- Purchase Orders submenu -->
                 <div>
                     <button class="submenu-toggle" type="button" id="poMenu">
@@ -288,19 +288,19 @@
             console.error('Submenu not found:', submenuId);
             return;
         }
-        
+
         // Toggle between showing/hiding the submenu
         if (submenu.style.maxHeight) {
             // Currently open, so close it
             submenu.style.maxHeight = null;
             submenu.classList.remove('open');
             submenu.classList.remove('active');
-            
+
             // Find the toggle button and rotate the chevron back
             const toggleButton = document.getElementById(submenuId).previousElementSibling;
             if (toggleButton) {
                 toggleButton.classList.remove('active');
-                
+
                 const chevron = toggleButton.querySelector('.fa-chevron-down');
                 if (chevron) {
                     chevron.style.transform = 'rotate(0deg)';
@@ -311,12 +311,12 @@
             submenu.style.maxHeight = '500px';
             submenu.classList.add('open');
             submenu.classList.add('active');
-            
+
             // Find the toggle button and rotate the chevron
             const toggleButton = document.getElementById(submenuId).previousElementSibling;
             if (toggleButton) {
                 toggleButton.classList.add('active');
-                
+
                 const chevron = toggleButton.querySelector('.fa-chevron-down');
                 if (chevron) {
                     chevron.style.transform = 'rotate(180deg)';
@@ -324,16 +324,16 @@
             }
         }
     };
-    
+
     document.addEventListener('DOMContentLoaded', function() {
         // Immediately apply fixes
         document.querySelectorAll('.sub-menu, .submenu').forEach(menu => {
             // Make sure it has the right padding
             menu.classList.add('pl-4');
-            
+
             // Get the current URL path
             const path = window.location.pathname;
-            
+
             // Check if this submenu should be open based on URL
             if ((menu.id === 'productsSubmenu' && path.includes('/products')) ||
                 (menu.id === 'categoriesSubmenu' && (path.includes('/categories') || path.includes('/microbiz') || path.includes('/hirepurchase'))) ||
@@ -341,17 +341,17 @@
                 (menu.id === 'inventorySubmenu' && path.includes('/inventory')) ||
                 (menu.id === 'agentsSubmenu' && (path.includes('/agents') || path.includes('/teams'))) ||
                 (menu.id === 'commissionsSubmenu' && (path.includes('/commissions') || path.includes('/commission-payments')))) {
-                
+
                 // Open this submenu
                 menu.style.maxHeight = '500px';
                 menu.classList.add('open');
                 menu.classList.add('active');
-                
+
                 // Mark the button as active
                 const toggleButton = menu.previousElementSibling;
                 if (toggleButton) {
                     toggleButton.classList.add('active');
-                    
+
                     // Rotate the chevron
                     const chevron = toggleButton.querySelector('.fa-chevron-down');
                     if (chevron) {
@@ -360,23 +360,23 @@
                 }
             }
         });
-        
+
         // Mark active links
         document.querySelectorAll('a').forEach(link => {
             if (link.getAttribute('href') === window.location.pathname) {
                 link.classList.add('active');
             }
         });
-        
+
         // Fix all submenu toggle buttons
         document.querySelectorAll('.submenu-toggle').forEach(button => {
             // Remove the old onclick handler
             button.removeAttribute('onclick');
-            
+
             // Add a new direct click event listener
             button.addEventListener('click', function(event) {
                 event.preventDefault();
-                
+
                 // Find the submenu ID by looking at the button's ID or the next element
                 let submenuId;
                 if (this.id === 'productsMenu') submenuId = 'productsSubmenu';
@@ -392,7 +392,7 @@
                         submenuId = nextEl.id;
                     }
                 }
-                
+
                 if (submenuId) {
                     console.log('Toggling submenu via click handler:', submenuId);
                     toggleSubmenu(submenuId);
@@ -400,7 +400,7 @@
                     console.error('Could not determine submenu ID for button:', this);
                 }
             });
-            
+
             // Log that we've attached a listener
             console.log('Attached click listener to:', button.id);
         });

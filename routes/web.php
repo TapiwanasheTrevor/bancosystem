@@ -120,7 +120,7 @@ Route::get('/applications/export', [App\Http\Controllers\FormSubmissionControlle
 Route::get('/forms', function () {
     // Get agents who are user type 'agent'
     $agents = User::where('role', 'agent')->get();
-    
+
     // Add initials and document count for each agent
     foreach($agents as $agent) {
         $nameParts = explode(' ', $agent->name);
@@ -132,11 +132,11 @@ Route::get('/forms', function () {
         }
         $agent->documents_count = 0; // Default to 0 for now
     }
-    
+
     // Fetch all documents
     $newDocuments = Document::all();
     $processedDocuments = Document::where('status', 'processed')->get();
-    
+
     return view('forms', compact('agents', 'newDocuments', 'processedDocuments'));
 })->middleware(['auth', 'verified'])->name('forms');
 
@@ -160,13 +160,13 @@ Route::middleware('auth')->group(function () {
 
     // Category Management - General route (legacy)
     Route::get('/categories', [AdminCategoryController::class, 'index']);
-    
+
     // Category Management - MicroBiz
     Route::get('/microbiz/categories', [AdminCategoryController::class, 'microbizCategories']);
-    
+
     // Category Management - Hire Purchase
     Route::get('/hirepurchase/categories', [AdminCategoryController::class, 'hirePurchaseCategories']);
-    
+
     // Common category operations
     Route::post('/categories', [AdminCategoryController::class, 'store']);
     Route::post('/categories/delete/{id}', [AdminCategoryController::class, 'destroy']);
@@ -189,21 +189,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/agents/{id}/toggle-status', [AdminAgentController::class, 'toggleStatus'])->name('agents.toggle-status');
     Route::get('/agents/{id}/dashboard', [AdminAgentController::class, 'dashboard'])->name('agents.dashboard');
     Route::post('/agents/{id}/generate-link', [AdminAgentController::class, 'generateReferralLink'])->name('agents.generate-link');
-    
+
     // Debug route for agent referrals
     Route::get('/debug/agent-referrals/{id}', function($id) {
         $agent = User::findOrFail($id);
-        
+
         try {
             // Method 1: Direct query to see if column exists
             $referredUsers = DB::select('SELECT * FROM users WHERE referred_by = ?', [$agent->id]);
-            
+
             // Method 2: Use Eloquent relationship
             $referrals = $agent->referrals;
-            
+
             // Method 3: Test the new relationship for referred forms
             $referredForms = $agent->referredForms()->get();
-            
+
             return [
                 'success' => true,
                 'agent' => $agent->only(['id', 'name', 'email', 'role']),
@@ -223,13 +223,13 @@ Route::middleware('auth')->group(function () {
 
     //one link for them all
     Route::get('/download/{form}/{id}', [LoanApplicationController::class, 'downloadForm']);
-    
+
     // Direct route for SSB form downloads
     Route::get('/download-ssb/{id}', function($id) {
         $controller = new \App\Http\Controllers\LoanApplicationController();
         return $controller->ssbLoanApplicationForm($id);
     });
-    
+
     // Product Delivery Management
     Route::prefix('admin/deliveries')->name('admin.deliveries.')->group(function () {
         Route::get('/', [ProductDeliveryController::class, 'index'])->name('index');
@@ -274,27 +274,27 @@ Route::middleware(['auth'])->prefix('inventory')->name('inventory.')->group(func
     Route::put('/{id}', [App\Http\Controllers\InventoryController::class, 'update'])->name('update')->where('id', '[0-9]+');
     Route::get('/{id}/adjust', [App\Http\Controllers\InventoryController::class, 'showAdjustForm'])->name('adjust')->where('id', '[0-9]+');
     Route::post('/{id}/adjust', [App\Http\Controllers\InventoryController::class, 'processAdjustment'])->name('process-adjustment')->where('id', '[0-9]+');
-    
+
     // Warehouse Management
     Route::get('/warehouses/manage', [App\Http\Controllers\InventoryController::class, 'manageWarehouses'])->name('warehouses.manage');
     Route::post('/warehouses', [App\Http\Controllers\InventoryController::class, 'storeWarehouse'])->name('warehouses.store');
     Route::put('/warehouses/{id}', [App\Http\Controllers\InventoryController::class, 'updateWarehouse'])->name('warehouses.update');
     Route::get('/warehouses/{id}/report', [App\Http\Controllers\InventoryController::class, 'warehouseReport'])->name('warehouses.report');
-    
+
     // Inventory Transfers
     Route::get('/transfers/create', [App\Http\Controllers\InventoryController::class, 'showTransferForm'])->name('transfers.create');
     Route::post('/transfers', [App\Http\Controllers\InventoryController::class, 'processTransfer'])->name('transfers.store');
     Route::get('/transfers/{id}', [App\Http\Controllers\InventoryController::class, 'showTransfer'])->name('transfers.show');
     Route::post('/transfers/{id}/complete', [App\Http\Controllers\InventoryController::class, 'completeTransfer'])->name('transfers.complete');
     Route::post('/transfers/{id}/cancel', [App\Http\Controllers\InventoryController::class, 'cancelTransfer'])->name('transfers.cancel');
-    
+
     // Goods Receiving Notes (GRN)
     Route::get('/grn/create', [App\Http\Controllers\InventoryController::class, 'showGrnForm'])->name('grn.create');
     Route::get('/grn/create-from-po/{poId}', [App\Http\Controllers\InventoryController::class, 'showGrnFormForPo'])->name('grn.create-from-po');
     Route::post('/grn', [App\Http\Controllers\InventoryController::class, 'processGrn'])->name('grn.store');
     Route::get('/grn/{id}', [App\Http\Controllers\InventoryController::class, 'showGrn'])->name('grn.show');
     Route::get('/grn/{id}/pdf', [App\Http\Controllers\InventoryController::class, 'generateGrnPdf'])->name('grn.pdf');
-    
+
     // Product Reports
     Route::get('/products/{id}/report', [App\Http\Controllers\InventoryController::class, 'productReport'])->name('products.report');
 });
@@ -309,7 +309,7 @@ Route::middleware(['auth'])->prefix('commissions')->name('commissions.')->group(
     Route::get('/agent-report', [App\Http\Controllers\CommissionController::class, 'agentReport'])->name('agent-report');
     Route::get('/team-report', [App\Http\Controllers\CommissionController::class, 'teamReport'])->name('team-report');
     Route::post('/calculate', [App\Http\Controllers\CommissionController::class, 'calculateCommissions'])->name('calculate');
-    
+
     // These routes should come after the specific routes to avoid conflicts
     Route::get('/{id}', [App\Http\Controllers\CommissionController::class, 'show'])->name('show')->where('id', '[0-9]+');
     Route::get('/{id}/edit', [App\Http\Controllers\CommissionController::class, 'edit'])->name('edit')->where('id', '[0-9]+');
