@@ -170,15 +170,8 @@ class Commission extends Model
             $totalAmount = $agentCommissions->sum('amount');
             $totalApplications = $agentCommissions->count();
 
-            // Calculate supervisor incentive if applicable
+            // We no longer have supervisor type, so no supervisor incentive calculation is needed
             $supervisorIncentive = 0;
-            if ($agent->type === 'supervisor') {
-                $subordinateCommissions = self::whereHas('agent', function ($query) {
-                    $query->where('type', 'field');
-                })->where('period', $period)->get();
-
-                $supervisorIncentive = $subordinateCommissions->sum('amount') * 0.10; // 10% of subordinates' commissions
-            }
 
             $summary[] = [
                 'agent_id' => $agentId,

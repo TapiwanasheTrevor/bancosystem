@@ -25,8 +25,8 @@ class Allowance extends Model
 
     public static function generateForPeriod(string $period): array
     {
-        // Get all field agents and supervisors
-        $agents = Agent::whereIn('type', ['field', 'supervisor'])
+        // Get all field agents
+        $agents = Agent::where('type', 'field_agent')
             ->where('is_active', true)
             ->get();
 
@@ -35,8 +35,7 @@ class Allowance extends Model
 
         foreach ($agents as $agent) {
             $amount = match($agent->type) {
-                'field' => $workingDays * 2, // $2 per day
-                'supervisor' => $workingDays * 3, // $3 per day
+                'field_agent' => $workingDays * 2, // $2 per day
                 default => 0
             };
 

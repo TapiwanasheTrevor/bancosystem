@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Form;
 use App\Models\User;
 use App\Exports\ApplicationsExport;
+use App\Helpers\TwilioHelper;
+use App\Helpers\ValidationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -127,6 +129,20 @@ class FormSubmissionController extends Controller
         }
         
         $formSubmission->save();
+        
+        // Send SMS notification based on form type
+        if ($formSubmission->applicant_phone) {
+            $phoneNumber = ValidationHelper::formatZimbabweanPhoneNumber($formSubmission->applicant_phone);
+            
+            if (str_contains($formSubmission->form_name, 'account_opening') || 
+                str_contains($formSubmission->form_name, 'account_application')) {
+                // Account application confirmation
+                TwilioHelper::sendAccountApplicationConfirmation($phoneNumber, $formSubmission->uuid);
+            } else {
+                // Loan application confirmation
+                TwilioHelper::sendLoanApplicationConfirmation($phoneNumber, $formSubmission->uuid);
+            }
+        }
 
         // Return a response with reference number
         return response()->json([
@@ -331,6 +347,20 @@ class FormSubmissionController extends Controller
         }
         
         $formSubmission->save();
+        
+        // Send SMS notification based on form type
+        if ($formSubmission->applicant_phone) {
+            $phoneNumber = ValidationHelper::formatZimbabweanPhoneNumber($formSubmission->applicant_phone);
+            
+            if (str_contains($formSubmission->form_name, 'account_opening') || 
+                str_contains($formSubmission->form_name, 'account_application')) {
+                // Account application confirmation
+                TwilioHelper::sendAccountApplicationConfirmation($phoneNumber, $formSubmission->uuid);
+            } else {
+                // Loan application confirmation
+                TwilioHelper::sendLoanApplicationConfirmation($phoneNumber, $formSubmission->uuid);
+            }
+        }
         
         // Return a response with reference number
         return response()->json([

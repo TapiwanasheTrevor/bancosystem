@@ -22,7 +22,7 @@ class AgentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'type' => ['required', Rule::in(['field', 'online', 'office'])],
+            'type' => ['required', Rule::in(['field_agent', 'online_agent', 'office_agent'])],
             'phone' => 'required|string|max:20',
             'email' => 'required|email|unique:agents,email',
             'employee_number' => 'required|string|unique:agents,employee_number',
@@ -57,7 +57,7 @@ class AgentController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
-            'type' => ['sometimes', Rule::in(['field', 'online', 'office'])],
+            'type' => ['sometimes', Rule::in(['field_agent', 'online_agent', 'office_agent'])],
             'phone' => 'sometimes|string|max:20',
             'email' => ['sometimes', 'email', Rule::unique('agents')->ignore($agent->id)],
             'employee_number' => ['sometimes', 'string', Rule::unique('agents')->ignore($agent->id)],

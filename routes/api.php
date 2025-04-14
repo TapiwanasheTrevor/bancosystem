@@ -135,6 +135,23 @@ Route::middleware('auth:sanctum')->prefix('commissions')->group(function() {
     Route::get('/calculate', [\App\Http\Controllers\Api\CommissionController::class, 'calculateForPayment']);
 });
 
+// Swift branches
+Route::get('swift-branches', [\App\Http\Controllers\Api\SwiftBranchController::class, 'index']);
+Route::get('swift-branches/province', [\App\Http\Controllers\Api\SwiftBranchController::class, 'getByProvince']);
+Route::get('swift-branches/district', [\App\Http\Controllers\Api\SwiftBranchController::class, 'getByDistrict']);
+Route::get('swift-branches/grouped', [\App\Http\Controllers\Api\SwiftBranchController::class, 'getAllGroupedByProvince']);
+
+// Cost Buildups
+Route::prefix('cost-buildups')->group(function() {
+    Route::get('/templates', [\App\Http\Controllers\Api\CostBuildupController::class, 'getTemplates']);
+    Route::get('/product', [\App\Http\Controllers\Api\CostBuildupController::class, 'getByProduct']);
+    Route::post('/', [\App\Http\Controllers\Api\CostBuildupController::class, 'create']);
+    Route::put('/{id}', [\App\Http\Controllers\Api\CostBuildupController::class, 'update']);
+    Route::delete('/{id}', [\App\Http\Controllers\Api\CostBuildupController::class, 'delete']);
+    Route::post('/from-template', [\App\Http\Controllers\Api\CostBuildupController::class, 'createFromTemplate']);
+    Route::post('/{id}/save-as-template', [\App\Http\Controllers\Api\CostBuildupController::class, 'saveAsTemplate']);
+});
+
 // Agent routes
 Route::apiResource('agents', AgentController::class);
 Route::post('agents/{agent}/calculate-commission', [AgentController::class, 'calculateCommission']);

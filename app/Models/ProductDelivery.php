@@ -35,6 +35,20 @@ class ProductDelivery extends Model
         return $this->belongsTo(Product::class);
     }
     
+    /**
+     * Get the associated product from the form if product_id is not set explicitly
+     */
+    public function getProductIdAttribute($value)
+    {
+        if (!$value && $this->form_id) {
+            $form = $this->form;
+            if ($form && isset($form->form_values['product_id'])) {
+                return $form->form_values['product_id'];
+            }
+        }
+        return $value;
+    }
+    
     public function statusUpdates()
     {
         return $this->hasMany(DeliveryStatusUpdate::class)->orderBy('created_at', 'desc');

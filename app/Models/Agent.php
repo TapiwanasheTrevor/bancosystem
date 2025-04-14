@@ -40,8 +40,7 @@ class Agent extends Model
     public function calculateAllowance($days): float
     {
         return match($this->type) {
-            'field' => $days * 2, // $2 per day
-            'supervisor' => $days * 3, // $3 per day
+            'field_agent' => $days * 2, // $2 per day
             default => 0
         };
     }

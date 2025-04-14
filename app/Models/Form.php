@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\ValidationHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -133,12 +134,65 @@ class Form extends Model
     {
         // This logic should be customized based on your form types
         return match($this->form_name) {
-            'individual_account_opening' => ['id_document', 'passport_photo', 'proof_of_residence'],
+            'individual_account_opening' => ['id_document', 'passport_photo'],
             'smes_business_account_opening' => ['business_registration', 'id_document', 'proof_of_address'],
             'account_holder_loan_application' => ['id_document', 'payslip', 'bank_statement'],
             'pensioners_loan_account' => ['id_document', 'pension_certificate', 'proof_of_address'],
-            'ssb_account_opening_form' => ['id_document', 'proof_of_residence'],
+            'ssb_account_opening_form' => ['id_document'],
             default => ['id_document']
         };
+    }
+    
+    /**
+     * Format attributes before saving to the database
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($form) {
+            // Capitalize names
+            if (isset($form->form_values['FirstName'])) {
+                $form->form_values['FirstName'] = ValidationHelper::capitalizeName($form->form_values['FirstName']);
+            }
+            
+            if (isset($form->form_values['Surname'])) {
+                $form->form_values['Surname'] = ValidationHelper::capitalizeName($form->form_values['Surname']);
+            }
+            
+            if (isset($form->form_values['OtherNames'])) {
+                $form->form_values['OtherNames'] = ValidationHelper::capitalizeName($form->form_values['OtherNames']);
+            }
+            
+            if (isset($form->form_values['FullName'])) {
+                $form->form_values['FullName'] = ValidationHelper::capitalizeName($form->form_values['FullName']);
+            }
+            
+            // Format ID numbers
+            if (isset($form->form_values['NationalIDNumber'])) {
+                $form->form_values['NationalIDNumber'] = ValidationHelper::formatZimbabweanID($form->form_values['NationalIDNumber']);
+            }
+            
+            // Format phone numbers with +263 prefix
+            if (isset($form->form_values['Mobile'])) {
+                $form->form_values['Mobile'] = ValidationHelper::formatZimbabweanPhoneNumber($form->form_values['Mobile']);
+            }
+            
+            if (isset($form->form_values['ContactNumber'])) {
+                $form->form_values['ContactNumber'] = ValidationHelper::formatZimbabweanPhoneNumber($form->form_values['ContactNumber']);
+            }
+            
+            // Set default loan dates
+            if (isset($form->form_values['LoanAmount']) && isset($form->form_values['LoanTermMonths'])) {
+                // Calculate the first day of next month for loan start date
+                $startDate = now()->addMonth()->startOfMonth();
+                
+                // Calculate the end date based on loan term
+                $endDate = $startDate->copy()->addMonths($form->form_values['LoanTermMonths'])->endOfMonth();
+                
+                $form->loan_start_date = $startDate;
+                $form->loan_end_date = $endDate;
+            }
+        });
     }
 }
