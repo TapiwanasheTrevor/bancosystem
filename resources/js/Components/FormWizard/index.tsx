@@ -13,8 +13,11 @@ import {
   updateRelatedValues,
   getDefaultValues
 } from './utils/formValues';
-import { getFieldId as generateFieldId } from './utils/validation';
-import { validateSection } from './utils/validation';
+import { 
+  getFieldId as generateFieldId,
+  validateSection,
+  formatPhoneNumber
+} from './utils/validation';
 import { 
   calculateLoanStartDate, 
   calculateLoanEndDate, 
@@ -135,14 +138,10 @@ const FormWizard: React.FC<FormWizardProps> = ({
     
           // Handle phone number
           if (phone) {
-            // Ensure phone starts with 07 format
+            // Ensure phone starts with +263 7 format
             let formattedPhone = phone;
-            if (formattedPhone && !formattedPhone.startsWith('07') && formattedPhone !== '0') {
-              if (formattedPhone.startsWith('0') && formattedPhone.length > 1) {
-                formattedPhone = '07' + formattedPhone.substring(2);
-              } else if (!formattedPhone.startsWith('0')) {
-                formattedPhone = '07' + formattedPhone;
-              }
+            if (formattedPhone) {
+              formattedPhone = formatPhoneNumber(formattedPhone);
             }
     
             initialFormValues['cell-number'] = formattedPhone;
@@ -185,6 +184,74 @@ const FormWizard: React.FC<FormWizardProps> = ({
         initialFormValues['account-type'] = 'USD Account';
         initialFormValues['currency-of-account'] = 'USD';
         
+        // Handle Product Data for Credit Facility Application Details section
+        if (initialData?.selectedProduct) {
+          const { product, selectedCreditOption, loanStartDate, loanEndDate } = initialData.selectedProduct;
+          
+          // Monthly Installment
+          if (selectedCreditOption && selectedCreditOption.installment_amount) {
+            // Format: Bind to productInstallment field
+            initialFormValues['productInstallment'] = selectedCreditOption.installment_amount;
+            initialFormValues['monthly-installment'] = selectedCreditOption.installment_amount;
+            initialFormValues['monthly-installment-usd'] = selectedCreditOption.installment_amount;
+          }
+          
+          // Loan Duration
+          if (selectedCreditOption && selectedCreditOption.months) {
+            // Format: "X months"
+            const loanPeriod = `${selectedCreditOption.months} months`;
+            initialFormValues['productLoanPeriod'] = loanPeriod;
+            initialFormValues['loan-duration'] = loanPeriod;
+            initialFormValues['tenure'] = loanPeriod;
+            initialFormValues['repayment-period'] = selectedCreditOption.months;
+          }
+          
+          // Start Date
+          if (loanStartDate) {
+            initialFormValues['autoLoanStartDate'] = loanStartDate;
+            initialFormValues['loan-start-date'] = loanStartDate;
+            initialFormValues['start-date'] = loanStartDate;
+          } else {
+            // Calculate default start date (1st of next month)
+            const defaultStartDate = calculateLoanStartDate();
+            initialFormValues['autoLoanStartDate'] = defaultStartDate;
+            initialFormValues['loan-start-date'] = defaultStartDate;
+            initialFormValues['start-date'] = defaultStartDate;
+          }
+          
+          // End Date
+          if (loanEndDate) {
+            initialFormValues['autoLoanEndDate'] = loanEndDate;
+            initialFormValues['loan-end-date'] = loanEndDate;
+            initialFormValues['end-date'] = loanEndDate;
+          } else if (loanStartDate && selectedCreditOption && selectedCreditOption.months) {
+            // Calculate based on start date and tenure
+            const calculatedEndDate = calculateLoanEndDate(
+              initialFormValues['autoLoanStartDate'], 
+              selectedCreditOption.months
+            );
+            initialFormValues['autoLoanEndDate'] = calculatedEndDate;
+            initialFormValues['loan-end-date'] = calculatedEndDate;
+            initialFormValues['end-date'] = calculatedEndDate;
+          }
+          
+          // Product Description & Applied For
+          if (product) {
+            initialFormValues['productDescription'] = product.name;
+            initialFormValues['asset-applied-for'] = product.name;
+            initialFormValues['purpose-of-loan'] = product.name;
+            initialFormValues['product-name'] = product.name;
+            
+            // If product has price, set as applied amount
+            if (product.price) {
+              initialFormValues['applied-amount'] = product.price;
+              initialFormValues['applied-amount-usd'] = product.price;
+              initialFormValues['loan-amount'] = product.price;
+            }
+          }
+        }
+        
+        console.log('Populated form values with product data:', initialFormValues);
         setFormValues(prev => ({ ...prev, ...initialFormValues }));
       } catch (error) {
         console.error('Error formatting form values:', error);
@@ -456,7 +523,7 @@ const FormWizard: React.FC<FormWizardProps> = ({
             totalSteps={formData.sections.length} 
           />
           
-          <div className="my-8">
+          <div className="my-6">
             {currentSectionData && (
               <SectionRenderer
                 section={currentSectionData}
@@ -467,9 +534,23 @@ const FormWizard: React.FC<FormWizardProps> = ({
                 fieldValidation={fieldValidation}
                 sectionVariant={sectionVariant}
                 directorCount={directorCount}
+                currentStep={currentSection}
+                totalSteps={formData?.sections?.length || 1}
               />
             )}
           </div>
+          
+          {/* Scroll to Top Button - visible after scrolling down */}
+          <button
+            type="button"
+            className="fixed bottom-8 right-8 bg-emerald-600 text-white p-2 rounded-full shadow-lg z-50 hover:bg-emerald-700 transition-all duration-200 focus:outline-none"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label="Scroll to top"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+          </button>
           
           <NavigationButtons
             currentStep={currentSection}

@@ -21,19 +21,24 @@ import {
   DeliveryDetails, 
   ApplicationStatus 
 } from './types';
-// Import calculateLoanDates directly here since we removed the utils directory
+// Import date utils
+import { calculateLoanStartDate, calculateLoanEndDate } from '../FormWizard/utils/dateUtils';
+
+/**
+ * Calculate loan dates:
+ * - Start date: 1st of next month
+ * - End date: Last day of the month after loan period
+ */
 const calculateLoanDates = (months: number): { startDate: string; endDate: string } => {
   // Get the first day of next month for the start date
-  const today = new Date();
-  const startDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-  // Calculate end date based on loan period (months)
-  // To get the last day of a month: create a date for the first day of the next month, then subtract one day
-  const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + months + 1, 0);
-
+  const startDate = calculateLoanStartDate();
+  
+  // Calculate end date as the last day of the month after the loan period
+  const endDate = calculateLoanEndDate(startDate, months);
+  
   return {
-    startDate: startDate.toISOString().slice(0, 10), // YYYY-MM-DD format
-    endDate: endDate.toISOString().slice(0, 10)
+    startDate,
+    endDate
   };
 };
 
@@ -47,7 +52,7 @@ const CreditFlow: React.FC<CreditFlowProps> = ({ onComplete }) => {
     selectedProduct: null,
     hasAccount: '',
     wantsAccount: '',
-    accountType: 'Individual Transaction Account',
+    accountType: 'New ZB Transaction Account',
     applicationDetails: {
       name: '',
       phone: '',
@@ -167,7 +172,26 @@ const CreditFlow: React.FC<CreditFlowProps> = ({ onComplete }) => {
     }));
     
     setSelectedProductId(product.id);
-    navigateToStep('account-check');
+    
+    // Check if the employer is Government of Zimbabwe (SSB)
+    if (formData.employer === 'Government of Zimbabwe') {
+      // If SSB, skip account check and go directly to final step
+      setFormData(prev => ({
+        ...prev,
+        selectedProduct: { // Keep selected product data
+          product,
+          selectedCreditOption: option,
+          category: currentCategory?.name || '',
+          loanStartDate: startDate,
+          loanEndDate: endDate
+        },
+        hasAccount: 'SSB' // Indicate SSB flow for FinalStep
+      }));
+      navigateToStep('final');
+    } else {
+      // Otherwise, proceed to account check
+      navigateToStep('account-check');
+    }
   };
 
   // Handler for application status check
@@ -259,16 +283,20 @@ const CreditFlow: React.FC<CreditFlowProps> = ({ onComplete }) => {
   };
 
   // Handler for employer selection
-  const handleEmployerSelect = (employer: string) => {
+  const handleEmployerSelect = (employer: { id: string; form: string }) => {
     // Set account type based on employer
-    const accountType = getAccountTypeByEmployer(employer);
+    // Assuming getAccountTypeByEmployer can handle the employer object or needs adjustment
+    // For now, let's pass the id or name if getAccountTypeByEmployer expects a string
+    // Let's assume it expects the id string for now
+    const accountType = getAccountTypeByEmployer(employer.id);
     
-    setFormData(prev => ({ 
-      ...prev, 
-      employer,
+    setFormData(prev => ({
+      ...prev,
+      employer: employer.id, // Store the id string in formData
       accountType
     }));
     
+    // Always navigate to product selection after employer selection
     navigateToStep('product');
   };
 

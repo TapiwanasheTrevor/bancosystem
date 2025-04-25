@@ -22,14 +22,14 @@
                         "label": "Account Type",
                         "type": "select",
                         "options": [
-                            "Individual Transactional Account",
+                            "New ZB Transactional Account",
                             "Senior Citizen Transactional Account",
                             "Informal Trader Transactional Account",
-                            "Individual Current Account",
+                            "New ZB Current Account",
                             "Sta$h Transactional Account",
                             "Other"
                         ],
-                        "default": "Individual Transactional Account",
+                        "default": "New ZB Transactional Account",
                         "required": true
                     }
                 ]
@@ -178,18 +178,21 @@
                     },
                     {
                         "label": "Telephone (Residential)",
-                        "type": "text",
-                        "required": false
+                        "type": "tel",
+                        "required": false,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Mobile",
-                        "type": "text",
-                        "required": true
+                        "type": "tel",
+                        "required": true,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Telephone (Business)",
-                        "type": "text",
-                        "required": false
+                        "type": "tel",
+                        "required": false,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Email Address",
@@ -208,7 +211,35 @@
                     },
                     {
                         "label": "Occupation",
-                        "type": "text",
+                        "type": "select",
+                        "options": [
+                            "Accountant",
+                            "Administrator",
+                            "Architect",
+                            "Artist",
+                            "Attorney/Lawyer",
+                            "Banker",
+                            "Business Owner",
+                            "Chef",
+                            "Consultant",
+                            "Doctor",
+                            "Engineer",
+                            "Farmer",
+                            "Healthcare Professional",
+                            "IT Professional",
+                            "Manager",
+                            "Marketing Professional",
+                            "Nurse",
+                            "Pharmacist",
+                            "Professor/Teacher",
+                            "Retired",
+                            "Sales Professional",
+                            "Self-employed",
+                            "Student",
+                            "Technician",
+                            "Unemployed",
+                            "Other"
+                        ],
                         "required": true
                     },
                     {
@@ -233,12 +264,91 @@
                         "type": "select",
                         "options": [
                             "Government",
+                            "Parastatal",
+                            "Large Corporate",
                             "Local Company",
                             "Multinational",
                             "NGO",
                             "Other"
                         ],
-                        "required": true
+                        "required": true,
+                        "onChange": {
+                            "action": "toggleField",
+                            "values": {
+                                "Parastatal": "show-parastatal",
+                                "Large Corporate": "show-corporate",
+                                "default": "hide"
+                            },
+                            "target": ["parastatal-details", "corporate-details"]
+                        }
+                    },
+                    {
+                        "label": "Parastatal Details",
+                        "type": "fieldset",
+                        "id": "parastatal-details",
+                        "legend": "Parastatal Information",
+                        "children": [
+                            {
+                                "label": "Parastatal Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Parastatal Acronym",
+                                "type": "text",
+                                "required": true
+                            }
+                        ]
+                    },
+                    {
+                        "label": "Corporate Details",
+                        "type": "fieldset",
+                        "id": "corporate-details",
+                        "legend": "Corporate Information",
+                        "children": [
+                            {
+                                "label": "Corporate Name",
+                                "type": "text",
+                                "required": true
+                            },
+                            {
+                                "label": "Listed on Stock Exchange",
+                                "type": "radio",
+                                "options": [
+                                    "Yes",
+                                    "No"
+                                ],
+                                "required": true,
+                                "onChange": {
+                                    "action": "toggleField",
+                                    "values": {
+                                        "Yes": "show",
+                                        "default": "hide"
+                                    },
+                                    "target": "stock-exchange"
+                                }
+                            },
+                            {
+                                "label": "Stock Exchange",
+                                "id": "stock-exchange",
+                                "type": "select",
+                                "options": [
+                                    "ZSE (Zimbabwe Stock Exchange)",
+                                    "JSE (Johannesburg Stock Exchange)",
+                                    "LSE (London Stock Exchange)",
+                                    "NYSE (New York Stock Exchange)",
+                                    "NASDAQ",
+                                    "ASX (Australian Securities Exchange)",
+                                    "Other"
+                                ],
+                                "required": true
+                            },
+                            {
+                                "label": "Employee ID/Staff Number",
+                                "type": "text",
+                                "required": true
+                            }
+                        ]
                     },
                     {
                         "label": "Employer Physical Address",
@@ -247,8 +357,9 @@
                     },
                     {
                         "label": "Employer Contact Number",
-                        "type": "text",
-                        "required": true
+                        "type": "tel",
+                        "required": true,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Gross Monthly Salary (USD)",
@@ -310,8 +421,9 @@
                             },
                             {
                                 "label": "Contact Number",
-                                "type": "text",
-                                "required": true
+                                "type": "tel",
+                                "required": true,
+                                "isPhoneNumber": true
                             },
                             {
                                 "label": "Gender",
@@ -365,8 +477,9 @@
                             },
                             {
                                 "label": "Contact Number",
-                                "type": "text",
-                                "required": true
+                                "type": "tel",
+                                "required": true,
+                                "isPhoneNumber": true
                             },
                             {
                                 "label": "Gender",
@@ -424,8 +537,9 @@
                             },
                             {
                                 "label": "Contact Number",
-                                "type": "text",
-                                "required": true
+                                "type": "tel",
+                                "required": true,
+                                "isPhoneNumber": true
                             },
                             {
                                 "label": "Gender",
@@ -479,8 +593,9 @@
                             },
                             {
                                 "label": "Contact Number",
-                                "type": "text",
-                                "required": true
+                                "type": "tel",
+                                "required": true,
+                                "isPhoneNumber": true
                             },
                             {
                                 "label": "Gender",
@@ -510,8 +625,9 @@
                     },
                     {
                         "label": "SMS Alert Mobile Number",
-                        "type": "text",
-                        "required": false
+                        "type": "tel",
+                        "required": false,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "E-Statements",
@@ -535,8 +651,9 @@
                     },
                     {
                         "label": "Mobile Money Number",
-                        "type": "text",
-                        "required": false
+                        "type": "tel",
+                        "required": false,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "E-Wallet",
@@ -545,8 +662,9 @@
                     },
                     {
                         "label": "E-Wallet Mobile Number",
-                        "type": "text",
-                        "required": false
+                        "type": "tel",
+                        "required": false,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "WhatsApp Banking",
@@ -566,7 +684,7 @@
                     {
                         "label": "",
                         "type": "html",
-                        "html": "<div style='text-align: justify; font-size: 14px;'><h3>Terms and Conditions for Individual Account Holders</h3><p>1. <strong>Account Operation:</strong> The account holder agrees to operate the account in accordance with the Bank's rules and regulations which may be subject to amendment from time to time.</p><p>2. <strong>Account Maintenance:</strong> The Bank reserves the right to levy charges for the maintenance of the account as per its standard schedule of charges which may be revised periodically.</p><p>3. <strong>Disclosure of Information:</strong> The Bank may disclose information about the account holder to credit reference bureaus or in response to legal obligations.</p><p>4. <strong>Dormant Accounts:</strong> Accounts with no transactions for a period of 12 months may be classified as dormant and subject to dormancy fees.</p><p>5. <strong>Closing of Account:</strong> The Bank reserves the right to close the account without notice if it is not operated satisfactorily or for any other reason it deems necessary.</p><p>6. <strong>Digital Services:</strong> The account holder who opts for digital banking services accepts the additional terms and conditions specific to these services.</p><p>7. <strong>Statement of Account:</strong> The account holder agrees to examine all statements furnished by the Bank and notify the Bank of any errors within 30 days from receipt, failing which the statement shall be deemed correct.</p><p>8. <strong>Change of Address:</strong> The account holder undertakes to inform the Bank in writing of any change in address or contact details.</p><p>9. <strong>Foreign Currency Accounts:</strong> Operation of foreign currency accounts shall be subject to foreign exchange regulations of the Reserve Bank of Zimbabwe.</p><p>10. <strong>Governing Law:</strong> These terms and conditions shall be governed by and construed in accordance with the laws of Zimbabwe.</p></div>"
+                        "html": "<div style='text-align: justify; font-size: 14px;'><h3>Terms and Conditions for New ZB Accounts</h3><p>1. <strong>Account Operation:</strong> The account holder agrees to operate the account in accordance with the Bank's rules and regulations which may be subject to amendment from time to time.</p><p>2. <strong>Account Maintenance:</strong> The Bank reserves the right to levy charges for the maintenance of the account as per its standard schedule of charges which may be revised periodically.</p><p>3. <strong>Disclosure of Information:</strong> The Bank may disclose information about the account holder to credit reference bureaus or in response to legal obligations.</p><p>4. <strong>Dormant Accounts:</strong> Accounts with no transactions for a period of 12 months may be classified as dormant and subject to dormancy fees.</p><p>5. <strong>Closing of Account:</strong> The Bank reserves the right to close the account without notice if it is not operated satisfactorily or for any other reason it deems necessary.</p><p>6. <strong>Digital Services:</strong> The account holder who opts for digital banking services accepts the additional terms and conditions specific to these services.</p><p>7. <strong>Statement of Account:</strong> The account holder agrees to examine all statements furnished by the Bank and notify the Bank of any errors within 30 days from receipt, failing which the statement shall be deemed correct.</p><p>8. <strong>Change of Address:</strong> The account holder undertakes to inform the Bank in writing of any change in address or contact details.</p><p>9. <strong>Foreign Currency Accounts:</strong> Operation of foreign currency accounts shall be subject to foreign exchange regulations of the Reserve Bank of Zimbabwe.</p><p>10. <strong>Governing Law:</strong> These terms and conditions shall be governed by and construed in accordance with the laws of Zimbabwe.</p></div>"
                     },
                     {
                         "label": "Do you agree with these terms and conditions?",

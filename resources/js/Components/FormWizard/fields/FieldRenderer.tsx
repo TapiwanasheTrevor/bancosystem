@@ -6,6 +6,7 @@ import SignaturePad from './SignaturePad';
 import DateField from './DateField';
 import FileUpload from './FileUpload';
 import TextArea from './TextArea';
+import PhoneInput from './PhoneInput';
 import { AlertCircle } from 'lucide-react';
 
 interface FieldRendererProps {
@@ -16,6 +17,7 @@ interface FieldRendererProps {
   sectionId?: string;
   attemptedValidation: boolean;
   fieldValidation: Record<string, boolean>;
+  formValues?: Record<string, any>;
 }
 
 const FieldRenderer: React.FC<FieldRendererProps> = ({
@@ -26,12 +28,14 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
   sectionId = '',
   attemptedValidation,
   fieldValidation,
+  formValues = {},
 }) => {
   if (!field) return null;
 
   const fieldId = field.id || `${field.label?.toLowerCase().replace(/\s+/g, '-')}`;
   const isReadOnly = field.readOnly || false;
-  const baseInputStyles = "w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-300 focus:border-emerald-400 text-gray-800 transition-all duration-300";
+  // More compact input styles with reduced padding
+  const baseInputStyles = "w-full p-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-emerald-300 focus:border-emerald-400 text-gray-800 transition-all duration-300 text-sm";
   const invalidStyles = attemptedValidation && !fieldValidation[fieldId] && field.required ? 'border-red-300 ring-1 ring-red-300' : '';
   const readOnlyStyles = isReadOnly ? 'bg-gray-100 cursor-not-allowed' : 'hover:border-emerald-300';
   
@@ -65,9 +69,35 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
     case 'email':
     case 'number':
     case 'tel':
+      // Check if this is a phone number field either by explicit flag or by label
+      const isPhoneField = 
+        field.isPhoneNumber || 
+        field.type === 'tel' || 
+        field.label.toLowerCase().includes('phone') || 
+        field.label.toLowerCase().includes('mobile') || 
+        field.label.toLowerCase().includes('telephone') || 
+        field.label.toLowerCase().includes('cell no') || 
+        field.label.toLowerCase().includes('contact number');
+      
+      if (isPhoneField) {
+        return (
+          <PhoneInput
+            fieldId={fieldId}
+            label={field.label}
+            required={field.required || false}
+            onChange={handleChange}
+            value={value || ''}
+            isInvalid={attemptedValidation && !fieldValidation[fieldId] && field.required}
+            readOnly={isReadOnly}
+            placeholder={field.placeholder || ''}
+          />
+        );
+      }
+      
+      // Regular text/email/number input
       return (
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-2 text-gray-700" htmlFor={fieldId}>
+        <div className="mb-3">
+          <label className="block text-xs font-medium mb-1 text-gray-700" htmlFor={fieldId}>
             {field.label} {field.required && <span className="text-emerald-500">*</span>}
           </label>
           <input
@@ -84,6 +114,15 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             <div className="text-red-500 text-sm mt-1 flex items-center">
               <AlertCircle size={14} className="mr-1" />
               This field is required
+            </div>
+          )}
+          
+          {/* Next of Kin validation error message */}
+          {formValues._nextOfKinNameError && 
+           formValues._nextOfKinErrorField === fieldId && (
+            <div className="text-red-500 text-sm mt-1 flex items-center">
+              <AlertCircle size={14} className="mr-1" />
+              {formValues._nextOfKinErrorMessage || "Next of kin cannot be the same as the applicant"}
             </div>
           )}
         </div>
@@ -221,19 +260,30 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
       );
 
     case 'checkbox':
+      // Determine if this is a declaration/confirmation checkbox
+      const isDeclaration = field.label?.toLowerCase().includes('confirm') || 
+                           field.label?.toLowerCase().includes('agree') || 
+                           field.label?.toLowerCase().includes('declaration');
+      
+      // Apply special styling for declarations
+      const declarationStyles = isDeclaration 
+        ? "bg-emerald-50 border-2 border-emerald-200 shadow-sm p-4 hover:bg-emerald-100 hover:border-emerald-300" 
+        : "bg-transparent border border-transparent active:border-emerald-300 hover:bg-gray-50 py-2 px-1";
+      
+      const checkboxSize = isDeclaration ? "w-6 h-6" : "w-5 h-5";
+      const textStyles = isDeclaration ? "text-gray-800 font-semibold text-base" : "text-gray-700 font-medium text-sm";
+      
       return (
         <div className="mb-4">
           <button 
             type="button"
-            className="flex items-start text-left w-full bg-transparent border border-transparent active:border-emerald-300 cursor-pointer py-2 px-1 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent" 
+            className={`flex items-start text-left w-full cursor-pointer rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent ${declarationStyles}`}
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               
               // Special handling for declaration/agree checkboxes - always set to true
-              if (field.label?.toLowerCase().includes('confirm') || 
-                  field.label?.toLowerCase().includes('agree') || 
-                  field.label?.toLowerCase().includes('declaration')) {
+              if (isDeclaration) {
                 console.log(`Declaration checkbox ${fieldId} setting to TRUE`);
                 handleChange(true);
               } else {
@@ -245,16 +295,16 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
             }}
           >
             <div className="flex items-center h-5 shrink-0">
-              <div className={`w-5 h-5 rounded border ${Boolean(value) ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'} flex items-center justify-center`}>
+              <div className={`${checkboxSize} rounded border ${Boolean(value) ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300'} flex items-center justify-center`}>
                 {Boolean(value) && (
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <svg className={`${isDeclaration ? 'w-5 h-5' : 'w-4 h-4'} text-white`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </div>
             </div>
-            <div className="ml-3 text-sm">
-              <span className="text-gray-700 font-medium">{field.label}</span>
+            <div className="ml-3">
+              <span className={textStyles}>{field.label}</span>
               {field.content && <p className="text-gray-500 mt-1">{field.content}</p>}
             </div>
           </button>
@@ -271,7 +321,7 @@ const FieldRenderer: React.FC<FieldRendererProps> = ({
           {attemptedValidation && field.required && !fieldValidation[fieldId] && (
             <div className="text-red-500 text-sm mt-1 flex items-center">
               <AlertCircle size={14} className="mr-1" />
-              This checkbox is required
+              {isDeclaration ? 'You must agree to the declaration before proceeding' : 'This checkbox is required'}
             </div>
           )}
         </div>

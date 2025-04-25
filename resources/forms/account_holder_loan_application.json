@@ -79,13 +79,15 @@
                     },
                     {
                         "label": "Cell Number",
-                        "type": "text",
-                        "required": true
+                        "type": "tel",
+                        "required": true,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "WhatsApp",
-                        "type": "text",
-                        "required": false
+                        "type": "tel",
+                        "required": false,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Email Address",
@@ -147,7 +149,35 @@
                     },
                     {
                         "label": "Job Title",
-                        "type": "text",
+                        "type": "select",
+                        "options": [
+                            "Accountant",
+                            "Administrator",
+                            "Architect",
+                            "Artist",
+                            "Attorney/Lawyer",
+                            "Banker",
+                            "Business Owner",
+                            "Chef",
+                            "Consultant",
+                            "Doctor",
+                            "Engineer",
+                            "Farmer",
+                            "Healthcare Professional",
+                            "IT Professional",
+                            "Manager",
+                            "Marketing Professional",
+                            "Nurse",
+                            "Pharmacist",
+                            "Professor/Teacher",
+                            "Retired",
+                            "Sales Professional",
+                            "Self-employed",
+                            "Student",
+                            "Technician",
+                            "Unemployed",
+                            "Other"
+                        ],
                         "required": true
                     },
                     {
@@ -156,14 +186,15 @@
                         "required": true
                     },
                     {
-                        "label": "Name of Head of Institution",
+                        "label": "Name of Immediate Supervisor",
                         "type": "text",
                         "required": true
                     },
                     {
-                        "label": "Cell No of Head of Institution",
-                        "type": "text",
-                        "required": true
+                        "label": "Cell No of Immediate Supervisor",
+                        "type": "tel",
+                        "required": true,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Employment Number",
@@ -210,8 +241,9 @@
                             },
                             {
                                 "label": "Phone Numbers",
-                                "type": "text",
-                                "required": true
+                                "type": "tel",
+                                "required": true,
+                                "isPhoneNumber": true
                             },
                             {
                                 "label": "Residential Address",
@@ -234,8 +266,9 @@
                             },
                             {
                                 "label": "Phone Numbers",
-                                "type": "text",
-                                "required": true
+                                "type": "tel",
+                                "required": true,
+                                "isPhoneNumber": true
                             },
                             {
                                 "label": "Residential Address",
@@ -262,8 +295,9 @@
                             },
                             {
                                 "label": "Phone Numbers",
-                                "type": "text",
-                                "required": true
+                                "type": "tel",
+                                "required": true,
+                                "isPhoneNumber": true
                             },
                             {
                                 "label": "Residential Address",
@@ -286,8 +320,9 @@
                             },
                             {
                                 "label": "Phone Numbers",
-                                "type": "text",
-                                "required": true
+                                "type": "tel",
+                                "required": true,
+                                "isPhoneNumber": true
                             },
                             {
                                 "label": "Residential Address",
@@ -310,16 +345,6 @@
                         "label": "Repayment Amount (USD)",
                         "type": "number",
                         "required": true
-                    },
-                    {
-                        "label": "Current Loan Balance (USD)",
-                        "type": "number",
-                        "required": true
-                    },
-                    {
-                        "label": "Maturity Date",
-                        "type": "date",
-                        "required": true
                     }
                 ]
             },
@@ -335,14 +360,7 @@
                     },
                     {
                         "label": "Loan Duration",
-                        "type": "radio",
-                        "options": [
-                            "3 months",
-                            "6 months",
-                            "9 months",
-                            "12 months",
-                            "Other"
-                        ],
+                        "type": "text",
                         "required": true,
                         "readOnly": true,
                         "bindTo": "productLoanPeriod"
@@ -392,14 +410,16 @@
                     },
                     {
                         "label": "Cell Number",
-                        "type": "text",
+                        "type": "tel",
                         "required": true,
-                        "bindTo": "customerCellNumber"
+                        "bindTo": "customerCellNumber",
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Work Contact",
-                        "type": "text",
-                        "required": false
+                        "type": "tel",
+                        "required": false,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Email Address",

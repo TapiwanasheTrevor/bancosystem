@@ -19,7 +19,23 @@ const FinalStep: React.FC<FinalStepProps> = ({
   formData,
   isTerminated = false
 }) => {
+  // Define a success message based on the form type
+  const getSuccessMessage = () => {
+    // Check if this is a new account application
+    if (formData.wantsAccount === 'yes' && formData.hasAccount !== 'yes') {
+      return "Thank you for applying for your New ZB Account. We will inform you of your account number once your application is processed.";
+    } 
+    // For loan applications (has account already)
+    else if (formData.hasAccount === 'yes' || formData.hasAccount === 'SSB') {
+      return "Thank you for your application. Your application number will be provided shortly.";
+    }
+    // Default message
+    return "Thank you for your application. We will process it shortly.";
+  };
+  
   const handleSubmit = () => {
+    // Here we could show a success alert with the appropriate message
+    // but for now, let's just call onNext which will complete the flow
     onNext();
   };
 
@@ -50,7 +66,7 @@ const FinalStep: React.FC<FinalStepProps> = ({
                 <div>
                   <h4 className="text-sm text-gray-500">Employer</h4>
                   <p className="font-medium">{formData.employer}</p>
-                  {formData.employer === 'GOZ (Government of Zimbabwe) - SSB' && (
+                  {formData.employer === 'Government of Zimbabwe' && (
                     <p className="text-xs text-emerald-600">SSB form will be used</p>
                   )}
                   {formData.employer === 'GOZ - Pension' && (
@@ -61,9 +77,20 @@ const FinalStep: React.FC<FinalStepProps> = ({
                       SME Business form will be used
                     </p>
                   )}
+                  {formData.employer.startsWith('Parastatal - ') && (
+                    <p className="text-xs text-emerald-600">
+                      Parastatal Employee form will be used
+                    </p>
+                  )}
+                  {formData.employer.startsWith('Corporate - ') && (
+                    <p className="text-xs text-emerald-600">
+                      Corporate Employee form will be used
+                    </p>
+                  )}
                 </div>
               )}
-              {formData.selectedProduct && (
+              {/* Product details - hide for first-time account openers */}
+              {formData.selectedProduct && !(formData.wantsAccount === 'yes' && formData.hasAccount !== 'yes') && (
                 <>
                   <div className="col-span-2">
                     <h4 className="text-sm text-gray-500">Selected Product</h4>
@@ -109,6 +136,12 @@ const FinalStep: React.FC<FinalStepProps> = ({
               )}
             </div>
           </div>
+          
+          {/* Success message box */}
+          <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg text-emerald-800 mb-4">
+            <p className="font-medium">{getSuccessMessage()}</p>
+          </div>
+          
           <Button
             onClick={handleSubmit}
             variant="primary"

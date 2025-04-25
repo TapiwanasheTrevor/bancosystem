@@ -26,6 +26,7 @@ export interface Field {
   component?: string;
   value?: string;
   id?: string;
+  isPhoneNumber?: boolean; // Added for phone number fields
   onChange?: {
     action: string;
     dependency?: string;

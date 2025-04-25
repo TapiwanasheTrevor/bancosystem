@@ -130,8 +130,8 @@ export const formatIdNumber = (value: string): string => {
                     const middleDigits = middleSection.substring(0, letterIndex);
                     formattedValue += middleDigits.length > 6 ? middleDigits.substring(0, 6) : middleDigits;
 
-                    // Add hyphen and letter
-                    formattedValue += '-' + middleSection.charAt(letterIndex);
+                    // Add hyphen and letter (always uppercase)
+                    formattedValue += '-' + middleSection.charAt(letterIndex).toUpperCase();
 
                     // Add final section if we have it
                     if (middleSection.length > letterIndex + 1) {
@@ -164,12 +164,39 @@ export const validateIdNumber = (value: string): boolean => {
 };
 
 /**
- * Validate a phone number format
+ * Validate a phone number format using libphonenumber-js
  */
+import { isValidPhoneNumber, parsePhoneNumber } from 'libphonenumber-js';
+
 export const validatePhoneNumber = (value: string): boolean => {
-    // Should start with 07 and have 10 digits total
-    const pattern = /^07\d{8}$/;
-    return pattern.test(value.replace(/\s+/g, ''));
+    if (!value) return false;
+    
+    try {
+        // Check if it's valid for Zimbabwe with libphonenumber-js
+        if (isValidPhoneNumber(value, 'ZW')) {
+            return true;
+        }
+    } catch (error) {
+        // Library error - continue to fallback patterns
+    }
+    
+    // Fallback to manual regex patterns for common Zimbabwe formats
+    // Remove all spaces, dashes, and parentheses
+    const cleanValue = value.replace(/[\s\-\(\)]/g, '');
+    
+    // Check various formats:
+    // +263XXXXXXXXX format
+    const internationalPattern = /^\+263[1-9]\d{8}$/;
+    // 0XXXXXXXXX format (local Zimbabwe)
+    const localPattern = /^0[1-9]\d{8}$/;
+    // XXXXXXXXX format (without prefix)
+    const shortPattern = /^[1-9]\d{8}$/;
+    
+    return (
+        internationalPattern.test(cleanValue) || 
+        localPattern.test(cleanValue) || 
+        shortPattern.test(cleanValue)
+    );
 };
 
 /**
@@ -178,15 +205,41 @@ export const validatePhoneNumber = (value: string): boolean => {
 export const formatPhoneNumber = (value: string): string => {
     if (!value) return '';
 
-    // Ensure it starts with 07
-    let formattedValue = value;
-    if (!value.startsWith('07') && value !== '0') {
-        if (value.startsWith('0') && value.length > 1) {
-            formattedValue = '07' + value.substring(2);
-        } else if (!value.startsWith('0')) {
-            formattedValue = '07' + value;
+    // Remove all spaces, dashes, and parentheses first
+    const cleanValue = value.replace(/[\s\-\(\)]/g, '');
+    
+    // Handle various input formats
+    if (cleanValue.startsWith('+263')) {
+        // Already in international format with +263
+        // Ensure it has 7 after the country code
+        if (cleanValue.length >= 5 && cleanValue.charAt(4) !== '7') {
+            // Insert 7 after +263
+            return '+2637' + cleanValue.substring(4);
         }
+        return cleanValue;
+    } else if (cleanValue.startsWith('263')) {
+        // Missing the + symbol
+        if (cleanValue.length >= 4 && cleanValue.charAt(3) !== '7') {
+            // Insert 7 after 263
+            return '+2637' + cleanValue.substring(3);
+        }
+        return '+' + cleanValue;
+    } else if (cleanValue.startsWith('0')) {
+        // Convert local format (0XXXXXXXXX) to international
+        if (cleanValue.length >= 2 && cleanValue.charAt(1) !== '7') {
+            // Change the first digit after 0 to 7
+            return '+2637' + cleanValue.substring(2);
+        }
+        return '+263' + cleanValue.substring(1);
+    } else if (cleanValue.length >= 9 && /^[1-9]/.test(cleanValue)) {
+        // Assumes it's a local number without the leading 0
+        // Ensure it starts with 7
+        if (cleanValue.charAt(0) !== '7') {
+            return '+2637' + cleanValue.substring(1);
+        }
+        return '+263' + cleanValue;
     }
-
-    return formattedValue;
+    
+    // If we can't determine the format, return +2637 + remaining digits
+    return '+2637' + cleanValue.replace(/\D/g, '');
 };

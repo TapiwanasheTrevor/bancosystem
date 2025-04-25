@@ -36,8 +36,9 @@
                     },
                     {
                         "label": "Contact Phone Number",
-                        "type": "text",
-                        "required": true
+                        "type": "tel",
+                        "required": true,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Email Address",
@@ -219,8 +220,9 @@
                     },
                     {
                         "label": "Reference 1 Phone Number",
-                        "type": "text",
-                        "required": true
+                        "type": "tel",
+                        "required": true,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Reference 2 Name",
@@ -229,8 +231,9 @@
                     },
                     {
                         "label": "Reference 2 Phone Number",
-                        "type": "text",
-                        "required": true
+                        "type": "tel",
+                        "required": true,
+                        "isPhoneNumber": true
                     },
                     {
                         "label": "Reference 3 Name",
@@ -239,8 +242,9 @@
                     },
                     {
                         "label": "Reference 3 Phone Number",
-                        "type": "text",
-                        "required": false
+                        "type": "tel",
+                        "required": false,
+                        "isPhoneNumber": true
                     }
                 ]
             },
@@ -380,8 +384,9 @@
                             },
                             {
                                 "label": "Cell Number",
-                                "type": "text",
+                                "type": "tel",
                                 "required": true,
+                                "isPhoneNumber": true,
                                 "id": "director{index}_cellNumber"
                             },
                             {
@@ -409,8 +414,9 @@
                             },
                             {
                                 "label": "Phone Numbers",
-                                "type": "text",
+                                "type": "tel",
                                 "required": true,
+                                "isPhoneNumber": true,
                                 "id": "director{index}_nextOfKinPhone"
                             },
                             {

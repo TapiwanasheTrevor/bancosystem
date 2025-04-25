@@ -27,41 +27,78 @@ export const calculateFormProgress = (formData: FormData): number => {
  * Maps employer type to form ID
  */
 export const getFormIdByEmployer = (
-  employer: string,
+  employerId: string,
   hasAccount: string,
   wantsAccount: string
 ): string => {
-  // If user has account, use account holder loan application
-  if (hasAccount === 'yes') {
-    return 'account_holder_loan_application';
-  }
-  
-  // If user wants a new account or needs one
-  if (wantsAccount === 'yes' || (hasAccount === 'no' && wantsAccount === 'yes')) {
-    switch (employer) {
-      case 'GOZ (Government of Zimbabwe) - SSB':
-        return 'ssb_account_opening_form';
-      case 'GOZ - ZAPPA':
-      case 'GOZ - Pension':
-        return 'pensioners_loan_account';
-      case 'SME (Small & Medium Enterprises)':
-        return 'smes_business_account_opening';
-      default:
-        return 'individual_account_opening';
+  // Define the mapping from employer ID to base form type
+  const employerFormMapping: Record<string, string> = {
+    'Government of Zimbabwe': 'ssb_direct_loan', // Changed name and using direct loan for SSB
+    'GOZ - ZAPPA': 'check-account',
+    'GOZ - Pension': 'pensioners_loan_account',
+    'Town Council': 'check-account',
+    'Parastatal': 'check-account', // Base type for parastatals
+    'Mission and Private Schools': 'check-account',
+    'I am an Entrepreneur': 'smes_business_account_opening',
+    'Large Corporate': 'check-account', // Base type for large corporates
+    'Other': 'check-account',
+  };
+
+  // Get the base form type for the selected employer
+  // Handle dynamic employer IDs like "Parastatal - Name (Acronym)"
+  let baseFormType = employerFormMapping[employerId];
+
+  // If the exact employerId is not found, check for dynamic types
+  if (!baseFormType) {
+    if (employerId.startsWith('Parastatal - ')) {
+      baseFormType = 'check-account';
+    } else if (employerId.startsWith('Corporate - ')) {
+      baseFormType = 'check-account';
+    } else {
+      // Default to check-account if employer ID is unknown
+      baseFormType = 'check-account';
     }
   }
-  
-  // Default to individual account opening
-  return 'individual_account_opening';
+
+  // Special case for SSB employees - bypass account creation, go straight to loan
+  if (baseFormType === 'ssb_direct_loan') {
+    return 'account_holder_loan_application'; // Skip account creation for SSB
+  }
+
+  // Determine the final form ID based on the base form type and account status
+  if (baseFormType === 'check-account') {
+    if (hasAccount === 'yes') {
+      return 'account_holder_loan_application';
+    } else if (wantsAccount === 'yes') {
+      return 'individual_account_opening';
+    } else {
+      // Default for check-account if neither hasAccount nor wantsAccount is 'yes'
+      // This case might need refinement based on actual flow, defaulting to individual for now
+      return 'individual_account_opening';
+    }
+  } else {
+    // For other base form types, return the type directly
+    return baseFormType;
+  }
 };
 
 /**
  * Gets account type text based on employer
  */
 export const getAccountTypeByEmployer = (employer: string): string => {
-  if (employer === 'SME (Small & Medium Enterprises)') {
+  if (employer === 'SME (Small & Medium Enterprises)' || employer === 'I am an Entrepreneur') {
     return 'SME Transaction Account';
   }
   
-  return 'Individual Transaction Account';
+  // Check if employer is a parastatal
+  if (employer.startsWith('Parastatal - ')) {
+    return 'Parastatal Employee Transaction Account';
+  }
+  
+  // Check if employer is a corporate
+  if (employer.startsWith('Corporate - ')) {
+    return 'Corporate Employee Transaction Account';
+  }
+  
+  return 'New ZB Transaction Account';
 };

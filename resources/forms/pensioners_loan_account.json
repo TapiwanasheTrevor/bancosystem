@@ -147,7 +147,35 @@
                     },
                     {
                         "label": "Job Title",
-                        "type": "text",
+                        "type": "select",
+                        "options": [
+                            "Accountant",
+                            "Administrator",
+                            "Architect",
+                            "Artist",
+                            "Attorney/Lawyer",
+                            "Banker",
+                            "Business Owner",
+                            "Chef",
+                            "Consultant",
+                            "Doctor",
+                            "Engineer",
+                            "Farmer",
+                            "Healthcare Professional",
+                            "IT Professional",
+                            "Manager",
+                            "Marketing Professional",
+                            "Nurse",
+                            "Pharmacist",
+                            "Professor/Teacher",
+                            "Retired",
+                            "Sales Professional",
+                            "Self-employed",
+                            "Student",
+                            "Technician",
+                            "Unemployed",
+                            "Other"
+                        ],
                         "required": false
                     },
                     {
@@ -156,12 +184,12 @@
                         "required": false
                     },
                     {
-                        "label": "Name of Head of Institution",
+                        "label": "Name of Immediate Supervisor",
                         "type": "text",
                         "required": false
                     },
                     {
-                        "label": "Cell No of Head of Institution",
+                        "label": "Cell No of Immediate Supervisor",
                         "type": "text",
                         "required": false
                     },
@@ -330,16 +358,6 @@
                     {
                         "label": "Repayment Amount (USD)",
                         "type": "number",
-                        "required": true
-                    },
-                    {
-                        "label": "Current Loan Balance (USD)",
-                        "type": "number",
-                        "required": true
-                    },
-                    {
-                        "label": "Maturity Date",
-                        "type": "date",
                         "required": true
                     }
                 ]

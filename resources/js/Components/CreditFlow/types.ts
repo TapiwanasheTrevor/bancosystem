@@ -158,6 +158,7 @@ export interface WantAccountProps extends StepProps {
 
 export interface FinalStepProps extends StepProps {
   formData: FormData;
+  isTerminated?: boolean; // Added isTerminated prop
 }
 
 export interface StatusCheckProps extends StepProps {

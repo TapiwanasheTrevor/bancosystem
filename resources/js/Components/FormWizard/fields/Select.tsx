@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, ChevronDown } from 'lucide-react';
+import { Search, ChevronDown, AlertCircle } from 'lucide-react';
 
 interface SelectProps {
   fieldId: string;
@@ -28,9 +28,19 @@ const Select: React.FC<SelectProps> = ({
   // State
   const [query, setQuery] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [displayValue, setDisplayValue] = useState(value || '');
   
   // Refs
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Special handling for "Period at current address" to ensure it renders correctly
+  const isPeriodField = fieldId.toLowerCase().includes('period') || 
+                       (label && label.toLowerCase().includes('period'));
+  
+  // Update displayed value when value prop changes (important for field re-rendering)
+  useEffect(() => {
+    setDisplayValue(value || '');
+  }, [value]);
   
   // Handle outside clicks to close dropdown
   useEffect(() => {
@@ -54,40 +64,59 @@ const Select: React.FC<SelectProps> = ({
   // Handle option selection
   const handleSelect = (option: string) => {
     onChange(option);
+    setDisplayValue(option);
     setDropdownOpen(false);
     setQuery('');
   };
   
+  // Force initial display of dropdown for period fields (to fix the rendering bug)
+  useEffect(() => {
+    if (isPeriodField && options.length > 0 && !value) {
+      // Short delay to ensure field is rendered properly
+      const timer = setTimeout(() => {
+        setDropdownOpen(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isPeriodField, options.length, value]);
+  
   return (
-    <div className="w-full">
+    <div className="w-full mb-3">
       {label && (
-        <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-1">
-          {label} {required && <span className="text-red-500">*</span>}
+        <label htmlFor={fieldId} className="block text-xs font-medium text-gray-700 mb-1">
+          {label} {required && <span className="text-emerald-500">*</span>}
         </label>
       )}
       
       <div className="relative" ref={dropdownRef}>
         <div 
-          className={`flex items-center border rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500
-            ${error ? 'border-red-300' : 'border-gray-300'}`
+          className={`flex items-center border rounded-md shadow-sm focus-within:ring-1 focus-within:ring-emerald-300 focus-within:border-emerald-400
+            ${error ? 'border-red-300' : 'border-gray-300'}
+            cursor-pointer hover:border-emerald-300 transition-all duration-300`
           }
+          onClick={() => setDropdownOpen(!dropdownOpen)}
         >
-          <div className="pl-3 text-gray-400">
-            <Search size={18} />
+          <div className="pl-2 text-gray-400">
+            <Search size={16} />
           </div>
           <input
             type="text"
             id={fieldId}
-            value={value || query}
+            value={displayValue || query}
             onChange={(e) => {
               setQuery(e.target.value);
+              setDisplayValue('');
               if (value) onChange('');
               setDropdownOpen(true);
             }}
-            onClick={() => setDropdownOpen(true)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setDropdownOpen(true);
+            }}
             placeholder={placeholder}
-            className="w-full p-2.5 outline-none rounded-lg"
+            className="w-full p-2 outline-none rounded-md bg-transparent text-sm"
             required={required}
+            readOnly={isPeriodField} // Make period fields use dropdown only
           />
           <div className="pr-3 text-gray-400">
             <ChevronDown 
@@ -98,13 +127,13 @@ const Select: React.FC<SelectProps> = ({
         </div>
         
         {dropdownOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+          <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (
                 <div
                   key={index}
                   className={`px-4 py-2 cursor-pointer hover:bg-emerald-50 transition-colors
-                    ${option === value ? 'bg-emerald-50 font-medium' : ''}`}
+                    ${option === displayValue ? 'bg-emerald-50 font-medium' : ''}`}
                   onClick={() => handleSelect(option)}
                 >
                   {option}
@@ -118,7 +147,10 @@ const Select: React.FC<SelectProps> = ({
       </div>
       
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <div className="text-red-500 text-sm mt-1 flex items-center">
+          <AlertCircle size={14} className="mr-1" />
+          {error}
+        </div>
       )}
     </div>
   );

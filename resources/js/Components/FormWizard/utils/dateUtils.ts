@@ -24,7 +24,9 @@ export const calculateLoanEndDate = (startDateStr: string, loanPeriodMonths: num
     const startDate = new Date(startDateStr);
     // Create a date for the loan period months later
     // Then get the last day of that month
-    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + loanPeriodMonths, 0);
+    // Note: To get the last day of a month after adding loanPeriodMonths,
+    // we need to get day 0 of the month after 
+    const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + loanPeriodMonths + 1, 0);
     return endDate.toISOString().split('T')[0];
   } catch (error) {
     console.error("Error calculating loan end date:", error);
@@ -70,4 +72,34 @@ export const getLastDayOfMonth = (year: number, month: number): number => {
 export const getDaysBetween = (startDate: Date, endDate: Date): number => {
   const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
   return Math.round(Math.abs((startDate.getTime() - endDate.getTime()) / oneDay));
+};
+
+/**
+ * Zimbabwe provinces for address selection
+ */
+export const zimbabweProvinces = [
+  'Bulawayo',
+  'Harare',
+  'Manicaland',
+  'Mashonaland Central',
+  'Mashonaland East',
+  'Mashonaland West',
+  'Masvingo',
+  'Matabeleland North',
+  'Matabeleland South',
+  'Midlands'
+];
+
+/**
+ * Zimbabwe districts by province for address selection
+ */
+export const zimbabweDistricts: Record<string, string[]> = {
+  'Manicaland': ['Buhera', 'Chimanimani', 'Chipinge', 'Makoni', 'Mutare', 'Mutasa', 'Nyanga'],
+  'Mashonaland Central': ['Bindura', 'Centenary', 'Guruve', 'Mazowe', 'Mount Darwin', 'Rushinga', 'Shamva'],
+  'Mashonaland East': ['Chikomba', 'Goromonzi', 'Hwedza', 'Marondera', 'Mudzi', 'Murehwa', 'Mutoko', 'Seke', 'UMP'],
+  'Mashonaland West': ['Chegutu', 'Chinhoyi', 'Hurungwe', 'Kadoma', 'Kariba', 'Makonde', 'Mhondoro-Ngezi', 'Sanyati', 'Zvimba'],
+  'Masvingo': ['Bikita', 'Chiredzi', 'Chivi', 'Gutu', 'Masvingo', 'Mwenezi', 'Zaka'],
+  'Matabeleland North': ['Binga', 'Bubi', 'Hwange', 'Lupane', 'Nkayi', 'Tsholotsho', 'Umguza'],
+  'Matabeleland South': ['Beitbridge', 'Bulilima', 'Gwanda', 'Insiza', 'Mangwe', 'Matobo', 'Umzingwane'],
+  'Midlands': ['Chirumhanzu', 'Gokwe North', 'Gokwe South', 'Gweru', 'Kwekwe', 'Mberengwa', 'Shurugwi', 'Zvishavane']
 };

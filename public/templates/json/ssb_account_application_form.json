@@ -137,7 +137,35 @@
                     },
                     {
                         "label": "Job Title",
-                        "type": "text",
+                        "type": "select",
+                        "options": [
+                            "Accountant",
+                            "Administrator",
+                            "Architect",
+                            "Artist",
+                            "Attorney/Lawyer",
+                            "Banker",
+                            "Business Owner",
+                            "Chef",
+                            "Consultant",
+                            "Doctor",
+                            "Engineer",
+                            "Farmer",
+                            "Healthcare Professional",
+                            "IT Professional",
+                            "Manager",
+                            "Marketing Professional",
+                            "Nurse",
+                            "Pharmacist",
+                            "Professor/Teacher",
+                            "Retired",
+                            "Sales Professional",
+                            "Self-employed",
+                            "Student",
+                            "Technician",
+                            "Unemployed",
+                            "Other"
+                        ],
                         "required": true
                     },
                     {
@@ -146,12 +174,12 @@
                         "required": true
                     },
                     {
-                        "label": "Name of Head of Institution",
+                        "label": "Name of Immediate Supervisor",
                         "type": "text",
                         "required": true
                     },
                     {
-                        "label": "Cell No of Head of Institution",
+                        "label": "Cell No of Immediate Supervisor",
                         "type": "text",
                         "required": true
                     },

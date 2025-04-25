@@ -286,7 +286,7 @@
                         }
                     },
                     {
-                        "label": "Name of Head of Institution",
+                        "label": "Name of Immediate Supervisor",
                         "name": "name_of_head_of_institution",
                         "type": "text",
                         "required": true,
@@ -298,8 +298,8 @@
                         }
                     },
                     {
-                        "label": "Cell No of Head of Institution",
-                        "name": "cell_no_of_head_of_institution",
+                        "label": "Cell No of Immediate Supervisor",
+                        "name": "cell_no_of_immediate_supervisor",
                         "type": "text",
                         "required": true,
                         "coordinates": {
